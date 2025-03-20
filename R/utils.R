@@ -13,3 +13,13 @@ SQLtype <- function(x) {
     fld.type
 }
 
+
+format_field_names <- function(x) {
+    x <- gsub(pattern="\\+|\\-", replacement="", x=x)
+    x <- gsub(pattern="\\(|\\)|\\[|\\]|\\{|\\}]", replacement="", x=x)
+    x <- gsub(pattern="\\!|\\?|\\*|\\&|\\%|\\^]", replacement="", x=x)
+    x <- gsub(pattern="\\s+", replacement="_", x=x)
+    x <- gsub(pattern="\\$", replacement="USD", x=x)
+    x <- gsub(pattern="[\\.\\,\\;\\:\\|]", replacement="_", x=x)
+    x
+}

@@ -22,6 +22,8 @@ dbTableFromXlsx(
 )
 }
 \arguments{
+\item{input_file}{the file name (including path) to be read}
+
 \item{sheet_name}{...}
 
 \item{first_row}{...}
@@ -43,8 +45,6 @@ dbTableFromXlsx(
 \item{constant_values}{...}
 
 \item{...}{...}
-
-\item{input.file}{the file name (including path) to be read}
 }
 \value{
 nothing

@@ -1,8 +1,8 @@
-#' The dbTableFromCSV function reads the data from a rectangula region
+#' The dbTableFromCSV function reads the data from a rectangular region
 #' of a sheet in an Excel file and copies it to a table in a SQLite
-#' database. If table does not exist, it will create it.
+#' database. If the destination table does not exist, it will create it.
 #'
-#' @param input.file the file name (including path) to be read
+#' @param input_file the file name (including path) to be read
 #' @param schema_file ...
 #' @param header ...
 #' @param dbcon ...
@@ -18,8 +18,8 @@
 #' @import RSQLite
 #' @importFrom utils read.table
 #' @export
-dbTableFromCSV <- function(input_file, schema_file, header = FALSE,
-                           dbcon, table_name, drop_table = FALSE,
+dbTableFromCSV <- function(input_file, schema_file, dbcon, table_name,
+                           header = FALSE, drop_table = FALSE,
                            auto_pk = FALSE, build_pk = FALSE,
                            constant_values = NULL, chunk_size = 10000, ...) {
 
@@ -46,8 +46,9 @@ dbTableFromCSV <- function(input_file, schema_file, header = FALSE,
 
     cclass <- df.scm$RTYPE
     fields <- sapply(df.scm$RTYPE, SQLtype)
-    cnames <- df.scm$VARNAME
-	
+    cnames1 <- df.scm$VARNAME
+	cnames <- paste("[",cnames1,"]", sep="")
+    
     ## create empty table .........................
     if (drop_table) {
         sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
@@ -90,12 +91,12 @@ dbTableFromCSV <- function(input_file, schema_file, header = FALSE,
             cv_names <- c(cv_names, fld.name)
             cv_types <- c(cv_types, fld.type)
         }		
-        cnames <- c(cnames, cv_names)
+        cnames1 <- c(cnames1, cv_names)
     }
 
     if (autoPK) {
         sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-		cnames <- c(cnames, "SEQ")
+		cnames1 <- c(cnames1, "SEQ")
     }
 
     sql.tail <- ");"
@@ -139,7 +140,7 @@ dbTableFromCSV <- function(input_file, schema_file, header = FALSE,
             dfbuffer <- cbind(dfbuffer, constant_values)
             names(dfbuffer) <- c(df.scm$VARNAME, cv_names)
         } else {
-            names(dfbuffer) <- cnames
+            names(dfbuffer) <- cnames1
         }
 
         dfbuffer[, which(cclass == "Date")] <-

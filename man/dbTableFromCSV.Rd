@@ -2,16 +2,16 @@
 % Please edit documentation in R/dbTableFromCSV.R
 \name{dbTableFromCSV}
 \alias{dbTableFromCSV}
-\title{The dbTableFromCSV function reads the data from a rectangula region
+\title{The dbTableFromCSV function reads the data from a rectangular region
 of a sheet in an Excel file and copies it to a table in a SQLite
-database. If table does not exist, it will create it.}
+database. If the destination table does not exist, it will create it.}
 \usage{
 dbTableFromCSV(
   input_file,
   schema_file,
-  header = FALSE,
   dbcon,
   table_name,
+  header = FALSE,
   drop_table = FALSE,
   auto_pk = FALSE,
   build_pk = FALSE,
@@ -21,13 +21,15 @@ dbTableFromCSV(
 )
 }
 \arguments{
-\item{schema_file}{...}
+\item{input_file}{the file name (including path) to be read}
 
-\item{header}{...}
+\item{schema_file}{...}
 
 \item{dbcon}{...}
 
 \item{table_name}{...}
+
+\item{header}{...}
 
 \item{drop_table}{...}
 
@@ -40,14 +42,12 @@ dbTableFromCSV(
 \item{chunk_size}{...}
 
 \item{...}{...}
-
-\item{input.file}{the file name (including path) to be read}
 }
 \value{
 nothing
 }
 \description{
-The dbTableFromCSV function reads the data from a rectangula region
+The dbTableFromCSV function reads the data from a rectangular region
 of a sheet in an Excel file and copies it to a table in a SQLite
-database. If table does not exist, it will create it.
+database. If the destination table does not exist, it will create it.
 }
