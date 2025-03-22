@@ -1,14 +1,20 @@
-#' @importFrom stringr str_split
+#' dbExecFile 
+#'
+#' @param input_file the file name (including path) to be read.
+#' @param dbcon database connection, as created by the dbConnect function.
+#' @param plist a list with value to be binded to parameters of
+#'    SQL statements
+#' 
 #' @import RSQLite
 #' @export
-dbExecFile <- function(dbcon, input_file, plist=NULL) {
+dbExecFile <- function(input_file, dbcon, plist=NULL) {
     sql <- readLines(input_file)
     sql <- sql[grep("^--", sql, invert = T)]
 
     idx <- grep("--", sql)
     sql[idx] <- sub("(--).+", "", sql[idx])
 
-    sql <- unlist(str_split(paste(sql, collapse = " "), ";"))
+    sql <- unlist(strsplit(paste(sql, collapse = " "), ";", fixed=TRUE))
     sql <- sql[grep("^ *$", sql, invert = T)]
 
     res<-list()
@@ -42,6 +48,14 @@ dbExecFile <- function(dbcon, input_file, plist=NULL) {
 
 
 
+#' dbCopyTable
+#'
+#' @param db_file_src ...
+#' @param db_file_tgt ...
+#' @param table_name ...
+#' @param drop_table ...
+#' @param pk_exist ...
+#' 
 #' @import RSQLite
 #' @export
 dbCopyTable <- function(db_file_src, db_file_tgt,
@@ -151,6 +165,12 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
 
 
 
+#' dbCreatePK
+#'
+#' @param dbcon ...
+#' @param table_name ...
+#' @param pk_fields ...
+#'
 #' @import RSQLite
 #' @export
 dbCreatePK <- function(dbcon, table_name, pk_fields) {

@@ -1,13 +1,18 @@
+#' dbTableFromFeather create a table in SQLite database from a
+#'   Feather file
+#'
 #' The dbTableFromFeather function reads the data from a Apache
 #' Arrow table serialized in a Feather (Arrow IPC) file and copies it
 #' to a table in a SQLite database. If table does not exist, it will
 #' create it.
 #'
-#' @param input_file the file name (including path) to be read
-#' @param dbcon ...
-#' @param table_name ...
-#' @param columns ...
-#' @param drop_table ...
+#' @param input_file the file name (including path) to be read.
+#' @param dbcon database connection, as created by the dbConnect function.
+#' @param table_name string, the name of the table.
+#' @param columns character vector, names of the columuns to be imported.
+#'    If `NULL` all columns will be imported in the db table. Defaults to `NULL`.
+#' @param drop_table logical, if `TRUE` the target table will be dropped (if exists)
+#'    and recreated before importing the data. Defaults to `FALSE`.
 #' @param auto_pk ...
 #' @param pk_fields ...
 #' @param build_pk ...
