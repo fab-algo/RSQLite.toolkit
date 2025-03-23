@@ -1,12 +1,12 @@
-#' The dbTableFromCSV function reads the data from a rectangular region
+#' The dbTableFromDSV function reads the data from a rectangular region
 #' of a sheet in an Excel file and copies it to a table in a SQLite
 #' database. If the destination table does not exist, it will create it.
 #'
 #' @param input_file the file name (including path) to be read
-#' @param schema_file ...
-#' @param header ...
 #' @param dbcon ...
 #' @param table_name ...
+#' @param schema_file ...
+#' @param header ...
 #' @param drop_table ...
 #' @param auto_pk ...
 #' @param build_pk ...
@@ -18,18 +18,19 @@
 #' @import RSQLite
 #' @importFrom utils read.table
 #' @export
-dbTableFromCSV <- function(input_file, schema_file, dbcon, table_name,
+dbTableFromDSV <- function(input_file, dbcon, table_name,
+                           schema_file, 
                            header = FALSE, drop_table = FALSE,
                            auto_pk = FALSE, build_pk = FALSE,
                            constant_values = NULL, chunk_size = 10000, ...) {
 
     ## formal checks on parameters ................
     if (!is.list(constant_values) && !is.null(constant_values)) {
-        stop("dbTableFromCSV: error in 'constant.values' param.: must be a list.")
+        stop("dbTableFromDSV: error in 'constant.values' param.: must be a list.")
     }
 
     if (is.list(constant_values) && length(constant_values) == 0) {
-        stop("dbTableFromCSV: 'constant.values' list must not be of zero length.")
+        stop("dbTableFromDSV: 'constant.values' list must not be of zero length.")
     }
 
     ## read schema ................................

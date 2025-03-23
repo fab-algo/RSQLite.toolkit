@@ -7,17 +7,17 @@ of a sheet in an Excel file and copies it to a table in a SQLite
 database. If table does not exist, it will create it.}
 \usage{
 dbTableFromView(
-  dbcon,
   view_name,
+  dbcon,
   table_name = NULL,
   pk_fields = NULL,
   build_pk = FALSE
 )
 }
 \arguments{
-\item{dbcon}{...}
-
 \item{view_name}{...}
+
+\item{dbcon}{...}
 
 \item{table_name}{...}
 

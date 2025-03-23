@@ -8,11 +8,11 @@ database. If table does not exist, it will create it.}
 \usage{
 dbTableFromXlsx(
   input_file,
+  dbcon,
+  table_name,
   sheet_name,
   first_row,
   header = TRUE,
-  dbcon,
-  table_name,
   drop_table = FALSE,
   auto_pk = FALSE,
   pk_fields = NULL,
@@ -24,15 +24,15 @@ dbTableFromXlsx(
 \arguments{
 \item{input_file}{the file name (including path) to be read}
 
+\item{dbcon}{...}
+
+\item{table_name}{...}
+
 \item{sheet_name}{...}
 
 \item{first_row}{...}
 
 \item{header}{...}
-
-\item{dbcon}{...}
-
-\item{table_name}{...}
 
 \item{drop_table}{...}
 
