@@ -29,23 +29,23 @@ feather_file_schema <- function(input_file) {
 
 #' DSV_file_schema Preview structure of a CSV file (Base R version)
 #'
-#' Reads only the first `max_lines` of a delimited separated values file
+#' Reads only the first `max_lines` of a delimiter separated values file
 #' to infer column names and data types, without reading the full dataset
 #' into memory.
 #'
-#' @param input_file Path to the CSV file.
+#' @param input_file Path to the DSV file.
 #' @param max_lines Number of lines (excluding the header) to read.
 #' @param sep Field delimiter (e.g., "," for CSV, "\\t" for TSV).
 #' @param dec Decimal separator (e.g., "." or "," depending on locale).
 #' @param ... Additional arguments passed to `read.table()`.
 #'
-#' @return A data frame with columns `column_name` and `data_type`.
+#' @return A data frame with columns `col_names` and `data_type`.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' preview_csv_structure("data.csv", max_lines = 50, sep = ",", dec = ".")
-#' preview_csv_structure("euro.csv", max_lines = 50, sep = ";", dec = ",")
+#' DSV_file_schema("data.csv", max_lines = 50, sep = ",", dec = ".")
+#' DSV_file_schema("euro.csv", max_lines = 50, sep = ";", dec = ",")
 #' }
 DSV_file_schema <- function(input_file, max_lines = 100,
                             sep = ",", dec = ".", ...) {
@@ -64,7 +64,7 @@ DSV_file_schema <- function(input_file, max_lines = 100,
   )
 
   data.frame(
-    column_name = names(df),
+    col_names = names(df),
     data_type = vapply(df, function(col) class(col)[1], character(1)),
     stringsAsFactors = FALSE
   )
