@@ -2,18 +2,21 @@
 % Please edit documentation in R/db_helpers.R
 \name{dbExecFile}
 \alias{dbExecFile}
-\title{dbExecFile}
+\title{dbExecFile execute the SQL statement contained in a text file}
 \usage{
 dbExecFile(input_file, dbcon, plist = NULL)
 }
 \arguments{
-\item{input_file}{the file name (including path) to be read.}
+\item{input_file}{the file name (including path) containing the SQL
+statements to be executed}
 
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{plist}{a list with value to be binded to parameters of
-SQL statements}
+\item{plist}{a list with values to be binded to the parameters of
+SQL statements. Defaults to \code{NULL}}
 }
 \description{
-dbExecFile
+This function reads the text in \code{input_file}, strips all comment lines
+(i.e. all lines beginning with \verb{--} characters) and parse the SQL statements
+assuming that they are separeted by the \verb{;} character.
 }

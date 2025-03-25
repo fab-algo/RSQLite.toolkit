@@ -7,19 +7,20 @@
 feather_file_schema(input_file)
 }
 \arguments{
-\item{input_file}{the file name (including path) to be read}
+\item{input_file}{File name (including path) to be read}
 }
 \value{
 a data frame with the column names (\code{col_names})
 and the Arrow data type of each column (\code{type_names}).
 }
 \description{
-Preview the table structure contained in a Feather file in order to select
-a subset of the columns to be passed to the \code{dbTableFromFeather} through
-the \code{columns} parameter.
+Preview the table structure contained in a Feather file. It can be used
+to select a subset of the columns to be passed to the \code{dbTableFromFeather}
+through the \code{columns} parameter.
 }
 \section{References}{
 
-The implementation is based on this questioon on \href{https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow}{Stackoverflow}.
+The implementation is based on this question on
+\href{https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow}{Stackoverflow}.
 }
 

@@ -5,10 +5,10 @@ Version: 0.0.0.9050
 Authors@R: 
     person("Ludovico G.", "Beretta", , "ludovicogiovanni.beretta@gmail.com", role = c("aut", "cre"))
 Description: A lightweight wrapper around the RSQLite package for streamlined loading of
-    data from tabula files (i,e. text delimited files like CSV and TSV, Microsoft Excel,
+    data from tabular files (i,e. text delimited files like CSV and TSV, Microsoft Excel,
     and Arrow IPC files) in SQLite databases.
     Includes helper functions for inspecting the structure of the input files, and
-    executing a set of SQL statements contained in a single file.
+    some functions to simplify activities on the SQLite tables.
 License: GPL (>= 3)
 Depends: R (>= 4.2.0)
 Imports:

@@ -2,12 +2,12 @@
 % Please edit documentation in R/file_helpers.R
 \name{DSV_file_schema}
 \alias{DSV_file_schema}
-\title{DSV_file_schema Preview structure of a CSV file (Base R version)}
+\title{DSV_file_schema returns a data frame with schema of a DSV file}
 \usage{
 DSV_file_schema(input_file, max_lines = 100, sep = ",", dec = ".", ...)
 }
 \arguments{
-\item{input_file}{Path to the CSV file.}
+\item{input_file}{File name (including path) to be read.}
 
 \item{max_lines}{Number of lines (excluding the header) to read.}
 
@@ -18,16 +18,16 @@ DSV_file_schema(input_file, max_lines = 100, sep = ",", dec = ".", ...)
 \item{...}{Additional arguments passed to \code{read.table()}.}
 }
 \value{
-A data frame with columns \code{column_name} and \code{data_type}.
+A data frame with columns \code{col_names} and \code{data_type}.
 }
 \description{
-Reads only the first \code{max_lines} of a delimited separated values file
-to infer column names and data types, without reading the full dataset
-into memory.
+Reads only the first \code{max_lines} of a delimiter separated values (DSV)
+file to infer column names and data types, without reading the full
+dataset into memory.
 }
 \examples{
 \dontrun{
-preview_csv_structure("data.csv", max_lines = 50, sep = ",", dec = ".")
-preview_csv_structure("euro.csv", max_lines = 50, sep = ";", dec = ",")
+DSV_file_schema("data.csv", max_lines = 50, sep = ",", dec = ".")
+DSV_file_schema("euro.csv", max_lines = 50, sep = ";", dec = ",")
 }
 }

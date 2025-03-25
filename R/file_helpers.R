@@ -1,13 +1,14 @@
 #' feather_file_schema returns a data frame with schema of the Feather file
 #'
-#' Preview the table structure contained in a Feather file in order to select
-#' a subset of the columns to be passed to the `dbTableFromFeather` through
-#' the `columns` parameter.
+#' Preview the table structure contained in a Feather file. It can be used
+#' to select a subset of the columns to be passed to the `dbTableFromFeather`
+#' through the `columns` parameter.
 #'
 #' @section References:
-#' The implementation is based on this questioon on [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow). 
+#' The implementation is based on this question on
+#' [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow). 
 #' 
-#' @param input_file the file name (including path) to be read
+#' @param input_file File name (including path) to be read
 #' @returns a data frame with the column names (`col_names`)
 #'   and the Arrow data type of each column (`type_names`).
 #' 
@@ -15,7 +16,7 @@
 #' @export
 feather_file_schema <- function(input_file) {
 
-    rf <- arrow::ReadableFile$create(input.file)
+    rf <- arrow::ReadableFile$create(input_file)
     ft <- FeatherReader$create(rf)
 
     col_names <- ft$column_names
@@ -27,13 +28,13 @@ feather_file_schema <- function(input_file) {
 }
 
 
-#' DSV_file_schema Preview structure of a CSV file (Base R version)
+#' DSV_file_schema returns a data frame with schema of a DSV file
 #'
-#' Reads only the first `max_lines` of a delimiter separated values file
-#' to infer column names and data types, without reading the full dataset
-#' into memory.
+#' Reads only the first `max_lines` of a delimiter separated values (DSV)
+#' file to infer column names and data types, without reading the full
+#' dataset into memory.
 #'
-#' @param input_file Path to the DSV file.
+#' @param input_file File name (including path) to be read.
 #' @param max_lines Number of lines (excluding the header) to read.
 #' @param sep Field delimiter (e.g., "," for CSV, "\\t" for TSV).
 #' @param dec Decimal separator (e.g., "." or "," depending on locale).
@@ -50,7 +51,7 @@ feather_file_schema <- function(input_file) {
 DSV_file_schema <- function(input_file, max_lines = 100,
                             sep = ",", dec = ".", ...) {
   if (!file.exists(input_file)) {
-    stop("DSV_file_schema: File does not exist: ", path)
+    stop("DSV_file_schema: File does not exist: ", input_file)
   }
 
   df <- utils::read.table(

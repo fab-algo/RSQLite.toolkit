@@ -1,9 +1,14 @@
-#' dbExecFile 
+#' dbExecFile execute the SQL statement contained in a text file
 #'
-#' @param input_file the file name (including path) to be read.
+#' This function reads the text in `input_file`, strips all comment lines
+#' (i.e. all lines beginning with `--` characters) and parse the SQL statements
+#' assuming that they are separeted by the `;` character.
+#' 
+#' @param input_file the file name (including path) containing the SQL
+#'    statements to be executed
 #' @param dbcon database connection, as created by the dbConnect function.
-#' @param plist a list with value to be binded to parameters of
-#'    SQL statements
+#' @param plist a list with values to be binded to the parameters of
+#'    SQL statements. Defaults to `NULL`
 #' 
 #' @import RSQLite
 #' @export
