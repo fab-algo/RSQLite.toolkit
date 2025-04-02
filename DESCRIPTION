@@ -1,7 +1,7 @@
 Package: RSQLite.toolkit
 Type: Package
 Title: Lightweight toolkit to load data in SQLite from tabular files
-Version: 0.0.0.9900
+Version: 0.0.0.9901
 Authors@R: 
     person("Ludovico G.", "Beretta", , "ludovicogiovanni.beretta@gmail.com", role = c("aut", "cre"))
 Description: A lightweight wrapper around the RSQLite package for streamlined loading of
@@ -12,7 +12,7 @@ Description: A lightweight wrapper around the RSQLite package for streamlined lo
 License: GPL (>= 3)
 Depends: R (>= 4.2.0)
 Imports:
-    DBI,
+	DBI,
 	RSQLite,
 	openxlsx2,
 	arrow

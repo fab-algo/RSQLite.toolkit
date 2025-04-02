@@ -5,19 +5,48 @@
 #' @param df the data frame to be saved in SQLite table
 #' @param dbcon ...
 #' @param table_name ...
+#'
+#' @param id_quote_method character vector,  used to specify how to build the SQLite
+#'    table's field names from the column identifiers read from `input_file`.
+#'    It can assume the following values:
+#'    - `DB_NAMES` tries to build a valid field name:
+#'      a. substituting all characters, that are not letters or digits or
+#'         the `_` character, with the `_` character;
+#'      b. prefixing `N_` to all strings starting with a digit;
+#'      c. prefixing `F_` to all strings equal to a SQL92 keyword.
+#'    - `SINGLE_QUOTES` encloses each string in single quotes.
+#'    - `DOUBLE_QUOTES` encloses each string in double quotes.
+#'    - `SQL_SERVER` encloses each string in square brackets.
+#'    - `MYSQL` encloses each string in back ticks.
+#'    Defaults to `DB_NAMES`.
+#' @param col_names character vector, names of the columuns to be imported.
+#'    Used to override the field names derived from the input file (using the
+#'    quote method selected by `id_quote_method`). Must be of the same length
+#'    of the number of columns in the input file. If `NULL` the column names
+#'    coming from the input file (after quoting) will be used. Defaults to `NULL`.
+#' @param col_types character vector of classes to be assumed for the columns.
+#'    If not null, it will override the data types inferred from the input file.
+#'    Must be of the same length of the number of columns in the input file.
+#'    If `NULL` the data type inferred from the input files will be used.
+#'    Defaults to `NULL`.
+#'
 #' @param drop_table ...
 #' @param auto_pk ...
 #' @param pk_fields ...
 #' @param build_pk ...
 #' @param constant_values ...
+#'
 #' @returns a data frame with the structure of the table created in the
 #'          database
 #'
 #' @import RSQLite
 #' @export
-dbTableFromDataFrame <- function(df, dbcon, table_name, drop_table = FALSE,
-                                 auto_pk = FALSE, pk_fields = NULL, build_pk = FALSE,
-                                 constant_values = NULL) {
+dbTableFromDataFrame <- function(df, dbcon, table_name,
+                                 id_quote_method="DB_NAMES",
+                                 col_names=NULL, col_types=NULL,
+                                 drop_table=FALSE,
+                                 auto_pk=FALSE, pk_fields=NULL, build_pk=FALSE,
+                                 constant_values=NULL) {
 
     ## formal checks on parameters ................
     if (!is.list(constant_values) && !is.null(constant_values)) {
@@ -30,10 +59,29 @@ dbTableFromDataFrame <- function(df, dbcon, table_name, drop_table = FALSE,
              "be of zero length.")
     }
 
-    cclass <- sapply(df, typeof)
-    fields <- R2SQL_types(vapply(df, function(col) class(col)[1], character(1)))
-    cnames <- names(df)
+    ## read schema ................................
+    src_names <- names(df)
 
+    cnames <- format_field_names(src_names, quote_method=id_quote_method)
+    cclass <- vapply(df, function(col) class(col)[1], character(1))
+    fields <- R2SQL_types(cclass)
+
+    if (!is.null(col_names)) {
+        if (length(col_names)!=length(cnames)) {
+            stop("dbTableFromFeather: wrong 'col_names' length, must be ",
+                 length(cnames), " elements but found ", length(col_names))
+        }
+        cnames <- col_names
+    }
+
+    if (!is.null(col_types)) {
+        if (length(col_types)!=length(cclass)) {
+            stop("dbTableFromFeather: wrong 'col_types' length, must be ",
+                 length(cclass), " elements but found ", length(col_types))
+        }
+        cclass <- col_types
+        fields <- R2SQL_types(col_types)
+    }
 
     ## create empty table .........................
 	if (drop_table) {
@@ -68,26 +116,27 @@ dbTableFromDataFrame <- function(df, dbcon, table_name, drop_table = FALSE,
                 fld.type <- "DATE"
             } else if (data.class(constant_values[[ii]]) == "integer") {
                 fld.type <- "INTEGER"
+            } else if (data.class(constant_values[[ii]]) == "logical") {
+                fld.type <- "INTEGER"
             } else {
                 fld.type <- "TEXT"
             }
 
             sql.body <- paste(sql.body, ", ", fld.name, " ", fld.type, sep = "")
 
-            cv_class <- data.class(constant_values[[ii]])
             cv_names <- c(cv_names, fld.name)
             cv_types <- c(cv_types, fld.type)
         }
-		cclass <- c(cclass, cv_class)
-        cnames <- c(cnames, cv_names)
-		fields <- c(fields, cv_types)
+        cnames1 <- c(cnames, cv_names)
+    } else {
+        cnames1 <- cnames
     }
 
     if (auto_pk) {
         sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-        cnames <- c(cnames, "SEQ")
-		cclass <- c(class, "integer")
-		fields <- c(fields, "INTEGER")
+        cnames2 <- c(cnames1, "SEQ")
+    } else {
+        cnames2 <- cnames1
     }
 
     sql.tail <- ");"
@@ -95,24 +144,26 @@ dbTableFromDataFrame <- function(df, dbcon, table_name, drop_table = FALSE,
 
     dbExecute(dbcon, sql.def)
 
-    ## Save data -------------------------------
+    
+    ## Write data -------------------------------
     if (!is.null(constant_values)) {
         df <- cbind(df, constant_values)
+        names(df) <- cnames1
+    } else {
+        names(df) <- cnames
     }
 
     if (auto_pk) {
         df <- cbind(df, NA)
     }
-
-    names(df) <- cnames    
     
-    dbWriteTable(dbcon, table_name, df, row.names = FALSE, append = TRUE)
+    dbWriteTable(dbcon, table_name, as.data.frame(df), row.names = FALSE, append = TRUE)
 
 
     ## Indexing -------------------------------
     if (drop_table && !auto_pk && !is.null(pk_fields) && build_pk) {
         
-		if (!is.character(pk_fields)) {
+        if (!is.character(pk_fields)) {
             stop("dbCreateTableFromDF: 'pk.fields' must be a character vector.")
         }
 
@@ -129,13 +180,4 @@ dbTableFromDataFrame <- function(df, dbcon, table_name, drop_table = FALSE,
             sep = " "
         ))
     }
-
-    return(
-	  data.frame(
-	    cnames = cnames,
-		cclass = cclass,
-		sqltype = fields
-	  )
-	)
-
 }

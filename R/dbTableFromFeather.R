@@ -178,7 +178,7 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
     ## Indexing -------------------------------
     if (drop_table && !auto_pk && !is.null(pk_fields) && build_pk) {
         
-		if (!is.character(pk_fields)) {
+        if (!is.character(pk_fields)) {
             stop("dbTableFromFeather: 'pk.fields' must be a character vector.")
         }
 
