@@ -2,18 +2,22 @@
 % Please edit documentation in R/dbTableFromDSV.R
 \name{dbTableFromDSV}
 \alias{dbTableFromDSV}
-\title{The dbTableFromDSV function reads the data from a rectangular region
-of a sheet in an Excel file and copies it to a table in a SQLite
-database. If the destination table does not exist, it will create it.}
+\title{dbTableFromDSV  create a table in SQLite database from a
+delimiter separated values (DSV) file}
 \usage{
 dbTableFromDSV(
   input_file,
   dbcon,
   table_name,
-  schema_file,
-  header = FALSE,
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  id_quote_method = "DB_NAMES",
+  col_names = NULL,
+  col_types = NULL,
   drop_table = FALSE,
   auto_pk = FALSE,
+  pk_fields = NULL,
   build_pk = FALSE,
   constant_values = NULL,
   chunk_size = 10000,
@@ -21,19 +25,52 @@ dbTableFromDSV(
 )
 }
 \arguments{
-\item{input_file}{the file name (including path) to be read}
+\item{input_file}{the file name (including path) to be read.}
 
-\item{dbcon}{...}
+\item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{...}
-
-\item{schema_file}{...}
+\item{table_name}{string, the name of the table.}
 
 \item{header}{...}
 
-\item{drop_table}{...}
+\item{sep}{...}
+
+\item{dec}{...}
+
+\item{id_quote_method}{character vector, used to specify how to build the SQLite
+table's field names from the column identifiers read from \code{input_file}.
+It can assume the following values:
+\itemize{
+\item \code{DB_NAMES} tries to build a valid field name:
+a. substituting all characters, that are not letters or digits or
+the \verb{_} character, with the \verb{_} character;
+b. prefixing \code{N_} to all strings starting with a digit;
+c. prefixing \code{F_} to all strings equal to a SQL92 keyword.
+\item \code{SINGLE_QUOTES} encloses each string in single quotes.
+\item \code{DOUBLE_QUOTES} encloses each string in double quotes.
+\item \code{SQL_SERVER} encloses each string in square brackets.
+\item \code{MYSQL} encloses each string in back ticks.
+Defaults to \code{DB_NAMES}.
+}}
+
+\item{col_names}{character vector, names of the columuns to be imported.
+Used to override the field names derived from the input file (using the
+quote method selected by \code{id_quote_method}). Must be of the same length
+of the number of columns in the input file. If \code{NULL} the column names
+coming from the input file (after quoting) will be used. Defaults to \code{NULL}.}
+
+\item{col_types}{character vector of classes to be assumed for the columns.
+If not null, it will override the data types inferred from the input file.
+Must be of the same length of the number of columns in the input file.
+If \code{NULL} the data type inferred from the input files will be used.
+Defaults to \code{NULL}.}
+
+\item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
+and recreated before importing the data. Defaults to \code{FALSE}.}
 
 \item{auto_pk}{...}
+
+\item{pk_fields}{...}
 
 \item{build_pk}{...}
 
@@ -47,7 +84,7 @@ dbTableFromDSV(
 nothing
 }
 \description{
-The dbTableFromDSV function reads the data from a rectangular region
-of a sheet in an Excel file and copies it to a table in a SQLite
-database. If the destination table does not exist, it will create it.
+The dbTableFromDSV function reads the data from a DSV file
+and copies it to a table in a SQLite database. If table does
+not exist, it will create it.
 }

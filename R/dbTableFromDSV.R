@@ -1,28 +1,65 @@
-#' The dbTableFromDSV function reads the data from a rectangular region
-#' of a sheet in an Excel file and copies it to a table in a SQLite
-#' database. If the destination table does not exist, it will create it.
+#' dbTableFromDSV  create a table in SQLite database from a
+#'   delimiter separated values (DSV) file
 #'
-#' @param input_file the file name (including path) to be read
-#' @param dbcon ...
-#' @param table_name ...
-#' @param schema_file ...
+#' The dbTableFromDSV function reads the data from a DSV file
+#' and copies it to a table in a SQLite database. If table does
+#' not exist, it will create it.
+#'
+#' 
+#' @param input_file the file name (including path) to be read.
+#' @param dbcon database connection, as created by the dbConnect function.
+#' @param table_name string, the name of the table.
+#'
 #' @param header ...
-#' @param drop_table ...
+#' @param sep ...
+#' @param dec ...
+#'
+#' @param id_quote_method character vector, used to specify how to build the SQLite
+#'    table's field names from the column identifiers read from `input_file`.
+#'    It can assume the following values:
+#'    - `DB_NAMES` tries to build a valid field name:
+#'      a. substituting all characters, that are not letters or digits or
+#'         the `_` character, with the `_` character;
+#'      b. prefixing `N_` to all strings starting with a digit;
+#'      c. prefixing `F_` to all strings equal to a SQL92 keyword.
+#'    - `SINGLE_QUOTES` encloses each string in single quotes.
+#'    - `DOUBLE_QUOTES` encloses each string in double quotes.
+#'    - `SQL_SERVER` encloses each string in square brackets.
+#'    - `MYSQL` encloses each string in back ticks.
+#'    Defaults to `DB_NAMES`.
+#' @param col_names character vector, names of the columuns to be imported.
+#'    Used to override the field names derived from the input file (using the
+#'    quote method selected by `id_quote_method`). Must be of the same length
+#'    of the number of columns in the input file. If `NULL` the column names
+#'    coming from the input file (after quoting) will be used. Defaults to `NULL`.
+#' @param col_types character vector of classes to be assumed for the columns.
+#'    If not null, it will override the data types inferred from the input file.
+#'    Must be of the same length of the number of columns in the input file.
+#'    If `NULL` the data type inferred from the input files will be used.
+#'    Defaults to `NULL`.
+#' 
+#' @param drop_table logical, if `TRUE` the target table will be dropped (if exists)
+#'    and recreated before importing the data. Defaults to `FALSE`.
 #' @param auto_pk ...
+#' @param pk_fields ...
 #' @param build_pk ...
 #' @param constant_values ...
+#' 
 #' @param chunk_size ...
 #' @param ... ...
+#' 
 #' @returns nothing
 #'
 #' @import RSQLite
 #' @importFrom utils read.table
 #' @export
 dbTableFromDSV <- function(input_file, dbcon, table_name,
-                           schema_file, 
-                           header = FALSE, drop_table = FALSE,
-                           auto_pk = FALSE, build_pk = FALSE,
-                           constant_values = NULL, chunk_size = 10000, ...) {
+                           header=TRUE, sep=",", dec=".",
+                           id_quote_method="DB_NAMES",
+                           col_names=NULL, col_types=NULL,
+                           drop_table=FALSE,
+                           auto_pk=FALSE, pk_fields=NULL, build_pk=FALSE,
+                           constant_values=NULL, chunk_size=10000, ...) {
 
     ## formal checks on parameters ................
     if (!is.list(constant_values) && !is.null(constant_values)) {
@@ -34,21 +71,31 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- read.table(
-        file = schema_file, 
-		header = TRUE, sep = ",",
-        skip = 0, 
-		quote = "", comment.char = "", 
-		row.names = NULL,
-        colClasses = rep("character", times = 4),
-        col.names = c("VARNAME", "SQLTYPE", "RTYPE", "PK"),
-        strip.white = TRUE, stringsAsFactors = FALSE
-    )
+    df.scm <- DSV_file_schema(input_file, id_quote_method=id_quote_method,
+                              header=header, sep=sep, dec=dec,
+                              max_lines = 200)
 
-    cclass <- df.scm$RTYPE
-    fields <- sapply(df.scm$RTYPE, SQLtype)
-    cnames1 <- df.scm$VARNAME
-	cnames <- paste("[",cnames1,"]", sep="")
+    cnames <- df.scm$col_names
+    cclass <- df.scm$col_types
+    fields <- df.scm$sql_types
+
+    if (!is.null(col_names)) {
+        if (length(col_names)!=length(cnames)) {
+            stop("dbTableFromFeather: wrong 'col_names' length, must be ",
+                 length(cnames), " elements but found ", length(col_names))
+        }
+        cnames <- col_names
+    }
+
+    if (!is.null(col_types)) {
+        if (length(col_types)!=length(cclass)) {
+            stop("dbTableFromFeather: wrong 'col_types' length, must be ",
+                 length(cclass), " elements but found ", length(col_types))
+        }
+        cclass <- col_types
+        fields <- R2SQL_types(col_types)
+    }
+
     
     ## create empty table .........................
     if (drop_table) {
@@ -57,8 +104,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     }
 
     autoPK <- FALSE
-    if (length(df.scm[which(df.scm$PK == "Y"), "VARNAME"]) == 0 && auto_pk)
-        autoPK <- TRUE
+    if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
 
     sql.head <- 
 		paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
@@ -83,6 +129,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                 fld.type <- "DATE"
             } else if (data.class(constant_values[[ii]]) == "integer") {
                 fld.type <- "INTEGER"
+            } else if (data.class(constant_values[[ii]]) == "logical") {
+                fld.type <- "INTEGER"
             } else {
                 fld.type <- "TEXT"
             }
@@ -92,12 +140,16 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             cv_names <- c(cv_names, fld.name)
             cv_types <- c(cv_types, fld.type)
         }		
-        cnames1 <- c(cnames1, cv_names)
+        cnames1 <- c(cnames, cv_names)
+    } else {
+        cnames1 <- cnames
     }
 
     if (autoPK) {
         sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-		cnames1 <- c(cnames1, "SEQ")
+		cnames2 <- c(cnames1, "SEQ")
+    } else {
+        cnames2 <- cnames1
     }
 
     sql.tail <- ");"
@@ -106,7 +158,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     dbExecute(dbcon, sql.def)
 
 
-    ## read data ..................................
+    ## read & write data ..................................
     lclass <- list()
     for (ii in seq_along(cclass)) {
         if (cclass[ii] == "Date") {
@@ -125,7 +177,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     nread <- 0
     repeat {
         dfbuffer <- scan(
-            file = fcon,
+            file = fcon, sep=sep, dec=dec,
             what = lclass,
             nlines = chunk_size,
             strip.white = TRUE, flush = TRUE, fill = TRUE,
@@ -139,9 +191,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
         if (!is.null(constant_values)) {
             dfbuffer <- cbind(dfbuffer, constant_values)
-            names(dfbuffer) <- c(df.scm$VARNAME, cv_names)
-        } else {
             names(dfbuffer) <- cnames1
+        } else {
+            names(dfbuffer) <- cnames
         }
 
         dfbuffer[, which(cclass == "Date")] <-
@@ -158,15 +210,21 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     close(fcon)
 
     ## Indexing -------------------------------
-    if (drop_table && !auto_pk &&
-        length(df.scm[which(df.scm$PK == "Y"), "VARNAME"]) > 0 &&
-        build_pk) {
+    if (drop_table && !auto_pk &&  !is.null(pk_fields) && build_pk) {
         
-		cnames <- df.scm[which(df.scm$PK == "Y"), "VARNAME"]
+		if (!is.character(pk_fields)) {
+            stop("dbTableFromDSV: 'pk.fields' must be a character vector.")
+        }
+
+        check_fields <- setdiff(pk_fields, cnames1)
+        if (length(check_fields) > 0) {
+            stop("dbTableFromDSV: 'pk.fields' contains unknown field names: ",
+                 check_fields)
+        }
         
 		dbExecute(dbcon, paste(
             "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-            "ON ", table_name, " (", paste(cnames, collapse = ", "),
+            "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
             ");",
             sep = " "
         ))

@@ -2,14 +2,16 @@
 % Please edit documentation in R/dbTableFromFeather.R
 \name{dbTableFromFeather}
 \alias{dbTableFromFeather}
-\title{dbTableFromFeather create a table in SQLite database from a
+\title{dbTableFromFeather create a table in a SQLite database from a
 Feather file}
 \usage{
 dbTableFromFeather(
   input_file,
   dbcon,
   table_name,
-  columns = NULL,
+  id_quote_method = "DB_NAMES",
+  col_names = NULL,
+  col_types = NULL,
   drop_table = FALSE,
   auto_pk = FALSE,
   pk_fields = NULL,
@@ -24,8 +26,33 @@ dbTableFromFeather(
 
 \item{table_name}{string, the name of the table.}
 
-\item{columns}{character vector, names of the columuns to be imported.
-If \code{NULL} all columns will be imported in the db table. Defaults to \code{NULL}.}
+\item{id_quote_method}{character vector,  used to specify how to build the SQLite
+table's field names from the column identifiers read from \code{input_file}.
+It can assume the following values:
+\itemize{
+\item \code{DB_NAMES} tries to build a valid field name:
+a. substituting all characters, that are not letters or digits or
+the \verb{_} character, with the \verb{_} character;
+b. prefixing \code{N_} to all strings starting with a digit;
+c. prefixing \code{F_} to all strings equal to a SQL92 keyword.
+\item \code{SINGLE_QUOTES} encloses each string in single quotes.
+\item \code{DOUBLE_QUOTES} encloses each string in double quotes.
+\item \code{SQL_SERVER} encloses each string in square brackets.
+\item \code{MYSQL} encloses each string in back ticks.
+Defaults to \code{DB_NAMES}.
+}}
+
+\item{col_names}{character vector, names of the columuns to be imported.
+Used to override the field names derived from the input file (using the
+quote method selected by \code{id_quote_method}). Must be of the same length
+of the number of columns in the input file. If \code{NULL} the column names
+coming from the input file (after quoting) will be used. Defaults to \code{NULL}.}
+
+\item{col_types}{character vector of classes to be assumed for the columns.
+If not null, it will override the data types inferred from the input file.
+Must be of the same length of the number of columns in the input file.
+If \code{NULL} the data type inferred from the input files will be used.
+Defaults to \code{NULL}.}
 
 \item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
 and recreated before importing the data. Defaults to \code{FALSE}.}

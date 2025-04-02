@@ -31,7 +31,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name, drop_table = FALSE,
     }
 
     cclass <- sapply(df, typeof)
-    fields <- sapply(sapply(df, typeof), SQLtype)
+    fields <- R2SQL_types(vapply(df, function(col) class(col)[1], character(1)))
     cnames <- names(df)
 
 

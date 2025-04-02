@@ -2,32 +2,59 @@
 % Please edit documentation in R/file_helpers.R
 \name{DSV_file_schema}
 \alias{DSV_file_schema}
-\title{DSV_file_schema returns a data frame with schema of a DSV file}
+\title{DSV_file_schema returns a data frame with the schema of a DSV file}
 \usage{
-DSV_file_schema(input_file, max_lines = 100, sep = ",", dec = ".", ...)
+DSV_file_schema(
+  input_file,
+  id_quote_method = "DB_NAMES",
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  max_lines = 100,
+  ...
+)
 }
 \arguments{
 \item{input_file}{File name (including path) to be read.}
 
-\item{max_lines}{Number of lines (excluding the header) to read.}
+\item{id_quote_method}{Character, the quote method to be use to
+form the column names from the field names read from the input
+file.}
 
-\item{sep}{Field delimiter (e.g., "," for CSV, "\\t" for TSV).}
+\item{header}{Logical, if \code{TRUE} the first line contains the fields'
+names. If \code{FALSE}, the column names will be formed  using a "V"
+followed by the column number (as specified in \code{read.table}}
+
+\item{sep}{...
+function).#' @param sep Field delimiter (e.g., "," for CSV, "\\t" for TSV).}
 
 \item{dec}{Decimal separator (e.g., "." or "," depending on locale).}
+
+\item{max_lines}{Number of lines (excluding the header) to read.
+Defaults to 100.}
 
 \item{...}{Additional arguments passed to \code{read.table()}.}
 }
 \value{
-A data frame with columns \code{col_names} and \code{data_type}.
+A data frame with columns \code{col_names}, \code{col_types} and
+\code{src_names}.
 }
 \description{
 Reads only the first \code{max_lines} of a delimiter separated values (DSV)
 file to infer column names and data types, without reading the full
 dataset into memory.
 }
+\details{
+The returned data frame consists of these columns:
+\itemize{
+\item \code{col_names}: input file's field names that have been
+\item \code{col_types}: R data type
+\item \code{src_names}:
+}
+}
 \examples{
 \dontrun{
-DSV_file_schema("data.csv", max_lines = 50, sep = ",", dec = ".")
-DSV_file_schema("euro.csv", max_lines = 50, sep = ";", dec = ",")
+DSV_file_schema("data.csv", sep=",", dec=".", max_lines=50)
+DSV_file_schema("euro.csv", sep=";", dec=",", header=FALSE)
 }
 }
