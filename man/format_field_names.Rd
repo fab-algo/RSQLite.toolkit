@@ -2,23 +2,24 @@
 % Please edit documentation in R/utils.R
 \name{format_field_names}
 \alias{format_field_names}
-\title{format_field_names Format a vector of strings so that they can be
+\title{format_field_names format a vector of strings that can be
 used as field names for a table in a database}
 \usage{
 format_field_names(x, quote_method = "DB_NAMES", unique_names = TRUE)
 }
 \arguments{
-\item{x}{character vector with the identifier names to be quoted.}
+\item{x}{character vector with the identifiers' names to be quoted.}
 
-\item{quote_method}{used to specify how to build the SQLite table's
-field names from the column identifiers read from \code{input_file}.
+\item{quote_method}{character, used to specify how to build the SQLite
+fields' names from the column identifiers passed through the \code{x}
+parameter.
 It can assume the following values:
 \itemize{
 \item \code{DB_NAMES} tries to build a valid field name:
 a. substituting all characters, that are not letters or digits or
 the \verb{_} character, with the \verb{_} character;
 b. prefixing \code{N_} to all strings starting with a digit;
-c. prefixing \code{F_} to all strings equal to a SQL92 keyword.
+c. prefixing \code{F_} to all strings equal to any SQL92 keyword.
 \item \code{SINGLE_QUOTES} encloses each string in single quotes.
 \item \code{DOUBLE_QUOTES} encloses each string in double quotes.
 \item \code{SQL_SERVER} encloses each string in square brackets.
@@ -29,9 +30,9 @@ Defaults to \code{DB_NAMES}.
 \item{unique_names}{Logical, checks for any duplicate name after
 applying the selected quote methods. If duplicates exist, they
 will be made unique by adding a postfix \verb{_[n]}, where \code{n} is
-a progessive integer.}
+a progressive integer.}
 }
 \description{
-format_field_names Format a vector of strings so that they can be
+format_field_names format a vector of strings that can be
 used as field names for a table in a database
 }

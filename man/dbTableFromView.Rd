@@ -2,14 +2,14 @@
 % Please edit documentation in R/dbTableFromView.R
 \name{dbTableFromView}
 \alias{dbTableFromView}
-\title{The dbTableFromView function reads the data from a rectangula region
-of a sheet in an Excel file and copies it to a table in a SQLite
-database. If table does not exist, it will create it.}
+\title{dbTableFromView create a table in a SQLite database from  a
+view already present in the same database.}
 \usage{
 dbTableFromView(
   view_name,
   dbcon,
   table_name = NULL,
+  drop_table = FALSE,
   pk_fields = NULL,
   build_pk = FALSE
 )
@@ -17,9 +17,11 @@ dbTableFromView(
 \arguments{
 \item{view_name}{...}
 
-\item{dbcon}{...}
+\item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{...}
+\item{table_name}{string, the name of the table.}
+
+\item{drop_table}{...}
 
 \item{pk_fields}{...}
 
@@ -29,7 +31,6 @@ dbTableFromView(
 nothing
 }
 \description{
-The dbTableFromView function reads the data from a rectangula region
-of a sheet in an Excel file and copies it to a table in a SQLite
-database. If table does not exist, it will create it.
+dbTableFromView create a table in a SQLite database from  a
+view already present in the same database.
 }

@@ -42,8 +42,12 @@ Arrow2R_types <- function(x) {
 
 
 R2SQL_types <- function(x) {
-    r2sql_dict <- c("character"="TEXT",  "double"="REAL", "integer"="INTEGER",
-                    "logical"="INTEGER", "numeric"="REAL", "Date"="DATE")
+    r2sql_dict <- c("character"= "TEXT",
+                    "double"   = "REAL",
+                    "integer"  = "INTEGER",
+                    "logical"  = "INTEGER",
+                    "numeric"  = "REAL",
+                    "Date"     = "DATE")
     
     y <- r2sql_dict[x]
     y[which(is.na(y))] <- "TEXT"
@@ -52,18 +56,19 @@ R2SQL_types <- function(x) {
 }
 
 
-#' format_field_names Format a vector of strings so that they can be
+#' format_field_names format a vector of strings that can be
 #'   used as field names for a table in a database
 #'
-#' @param x character vector with the identifier names to be quoted.
-#' @param quote_method used to specify how to build the SQLite table's
-#'    field names from the column identifiers read from `input_file`.
+#' @param x character vector with the identifiers' names to be quoted.
+#' @param quote_method character, used to specify how to build the SQLite
+#'    fields' names from the column identifiers passed through the `x`
+#'    parameter.
 #'    It can assume the following values:
 #'    - `DB_NAMES` tries to build a valid field name:
 #'      a. substituting all characters, that are not letters or digits or
 #'         the `_` character, with the `_` character;
 #'      b. prefixing `N_` to all strings starting with a digit;
-#'      c. prefixing `F_` to all strings equal to a SQL92 keyword.
+#'      c. prefixing `F_` to all strings equal to any SQL92 keyword.
 #'    - `SINGLE_QUOTES` encloses each string in single quotes.
 #'    - `DOUBLE_QUOTES` encloses each string in double quotes.
 #'    - `SQL_SERVER` encloses each string in square brackets.
@@ -72,7 +77,7 @@ R2SQL_types <- function(x) {
 #' @param unique_names Logical, checks for any duplicate name after
 #'    applying the selected quote methods. If duplicates exist, they
 #'    will be made unique by adding a postfix `_[n]`, where `n` is
-#'    a progessive integer.
+#'    a progressive integer.
 #' 
 #' @importFrom DBI .SQL92Keywords
 #' 

@@ -172,7 +172,8 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
         df <- cbind(df, NA)
     }
 
-    dbWriteTable(dbcon, table_name, as.data.frame(df), row.names = FALSE, append = TRUE)
+    dbWriteTable(dbcon, table_name, as.data.frame(df),
+                 row.names = FALSE, append = TRUE)
 
 
     ## Indexing -------------------------------
