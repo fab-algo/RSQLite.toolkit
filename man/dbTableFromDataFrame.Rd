@@ -15,59 +15,62 @@ dbTableFromDataFrame(
   col_types = NULL,
   drop_table = FALSE,
   auto_pk = FALSE,
-  pk_fields = NULL,
   build_pk = FALSE,
+  pk_fields = NULL,
   constant_values = NULL
 )
 }
 \arguments{
-\item{df}{the data frame to be saved in SQLite table}
+\item{df}{the data frame to be saved in the SQLite table.}
 
-\item{dbcon}{...}
+\item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{...}
+\item{table_name}{character, the name of the table.}
 
-\item{id_quote_method}{character vector,  used to specify how to build the SQLite
-table's field names from the column identifiers read from \code{input_file}.
-It can assume the following values:
-\itemize{
-\item \code{DB_NAMES} tries to build a valid field name:
-a. substituting all characters, that are not letters or digits or
-the \verb{_} character, with the \verb{_} character;
-b. prefixing \code{N_} to all strings starting with a digit;
-c. prefixing \code{F_} to all strings equal to a SQL92 keyword.
-\item \code{SINGLE_QUOTES} encloses each string in single quotes.
-\item \code{DOUBLE_QUOTES} encloses each string in double quotes.
-\item \code{SQL_SERVER} encloses each string in square brackets.
-\item \code{MYSQL} encloses each string in back ticks.
-Defaults to \code{DB_NAMES}.
-}}
+\item{id_quote_method}{character, used to specify how to build the SQLite
+columns' names using the fields' identifiers read from the input file.
+For details see the description of the \code{quote_method} parameter of
+the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{col_names}{character vector, names of the columuns to be imported.
-Used to override the field names derived from the input file (using the
+Used to override the field names derived from the data frame (using the
 quote method selected by \code{id_quote_method}). Must be of the same length
-of the number of columns in the input file. If \code{NULL} the column names
-coming from the input file (after quoting) will be used. Defaults to \code{NULL}.}
+of the number of columns in the data frame. If \code{NULL} the column names
+coming from the input (after quoting) will be used. Defaults to \code{NULL}.}
 
 \item{col_types}{character vector of classes to be assumed for the columns.
-If not null, it will override the data types inferred from the input file.
-Must be of the same length of the number of columns in the input file.
-If \code{NULL} the data type inferred from the input files will be used.
+If not null, it will override the data types inferred from the input data
+frame. Must be of the same length of the number of columns in the input.
+If \code{NULL} the data type inferred from the input will be used.
 Defaults to \code{NULL}.}
 
-\item{drop_table}{...}
+\item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
+and recreated before importing the data.  if \code{FALSE}, data from input data
+frame will be appended to an existing table. Defaults to \code{FALSE}.}
 
-\item{auto_pk}{...}
+\item{auto_pk}{logical, if \code{TRUE}, and \code{pk_fields} parameter is \code{NULL}, an
+additional column named \code{SEQ} will be added to the table and it will be
+defined to be \verb{INTEGER PRIMARY KEY} (i.e. in effect an alias for
+\code{ROWID}). Defaults to \code{FALSE}.}
 
-\item{pk_fields}{...}
+\item{build_pk}{logical, if \code{TRUE} creates a \verb{UNIQUE INDEX} named
+\verb{<table_name>_PK} defined by the combination of fields specified
+in the \code{pk_fields} parameter. It will be effective only if
+\code{pk_fields} is not null. Defaults to \code{FALSE}.}
 
-\item{build_pk}{...}
+\item{pk_fields}{character vector, the list of the fields' names that
+define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
 
-\item{constant_values}{...}
+\item{constant_values}{a one row data frame whose columns will be added to
+the table in the database. The additional table columns will be named
+as the data frame columns, and the corresponding values will be associeted
+to each record imported from the input data frame. It is useful to keep
+track of additional information (e.g., additional context data not available
+in the input data frame, ...) when writing the content of multiple
+input data frame in the same table. Defults to \code{NULL}.}
 }
 \value{
-a data frame with the structure of the table created in the
-database
+nothing
 }
 \description{
 The dbTableFromDataFrame function reads the data from a rectangula region

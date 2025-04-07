@@ -7,7 +7,7 @@
 #'
 #' @param input_file character, the file name (including path) to be read.
 #' @param dbcon database connection, as created by the dbConnect function.
-#' @param table_name string, the name of the table.
+#' @param table_name character, the name of the table.
 #'
 #' @param header logical, if `TRUE` the first line contains the columns'
 #'    names. If `FALSE`, the columns' names will be formed sing a "V"
@@ -16,7 +16,7 @@
 #'    in the input file. Defaults to ",".
 #' @param dec character, decimal separator (e.g., "." or "," depending on locale)
 #'    in the input file. Defaults to ".".
-
+#' 
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
@@ -38,14 +38,14 @@
 #' @param auto_pk logical, if `TRUE`, and `pk_fields` parameter is `NULL`, an
 #'    additional column named `SEQ` will be added to the table and it will be
 #'    defined to be `INTEGER PRIMARY KEY` (i.e. in effect an alias for
-#'    `ROWID`). 
+#'    `ROWID`). Defaults to `FALSE`.
 #' @param build_pk logical, if `TRUE` creates a `UNIQUE INDEX` named
 #'    `<table_name>_PK` defined by the combination of fields specified
-#'    in the `pk_fields` parameter. It will be effective only if `drop_table`
-#'    is `TRUE` and `pk_fields` is not null. Defaults to `FALSE`.
+#'    in the `pk_fields` parameter. It will be effective only if 
+#'    `pk_fields` is not null. Defaults to `FALSE`.
 #' @param pk_fields character vector, the list of the fields' names that
-#'    define the `UNIQUE INDEX`. Defults to `NULL`.
-
+#'    define the `UNIQUE INDEX`. Defaults to `NULL`.
+#'
 #' @param constant_values a one row data frame whose columns will be added to
 #'    the table in the database. The additional table columns will be named
 #'    as the data frame columns, and the corresponding values will be associeted
@@ -87,8 +87,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- DSV_file_schema(input_file, id_quote_method=id_quote_method,
+    df.scm <- DSV_file_schema(input_file, 
                               header=header, sep=sep, dec=dec,
+                              id_quote_method=id_quote_method,
                               max_lines = 200)
 
     cnames <- df.scm$col_names
@@ -97,7 +98,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
     if (!is.null(col_names)) {
         if (length(col_names)!=length(cnames)) {
-            stop("dbTableFromFeather: wrong 'col_names' length, must be ",
+            stop("dbTableFromDSV: wrong 'col_names' length, must be ",
                  length(cnames), " elements but found ", length(col_names))
         }
         cnames <- col_names
@@ -105,7 +106,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
     if (!is.null(col_types)) {
         if (length(col_types)!=length(cclass)) {
-            stop("dbTableFromFeather: wrong 'col_types' length, must be ",
+            stop("dbTableFromDSV: wrong 'col_types' length, must be ",
                  length(cclass), " elements but found ", length(col_types))
         }
         cclass <- col_types
@@ -120,7 +121,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     }
 
     sql.head <- 
-		paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
+        paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
     sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
 
     cv_names <- c()
@@ -163,7 +164,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
     if (autoPK) {
         sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-		cnames2 <- c(cnames1, "SEQ")
+        cnames2 <- c(cnames1, "SEQ")
     } else {
         cnames2 <- cnames1
     }
@@ -228,9 +229,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     close(fcon)
 
     ## Indexing -------------------------------
-    if (drop_table && !auto_pk &&  !is.null(pk_fields) && build_pk) {
+    if (!is.null(pk_fields) && build_pk) {
         
-		if (!is.character(pk_fields)) {
+        if (!is.character(pk_fields)) {
             stop("dbTableFromDSV: 'pk_fields' must be a character vector.")
         }
 
@@ -240,7 +241,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                  check_fields)
         }
         
-		dbExecute(dbcon, paste(
+        dbExecute(dbcon, paste(
             "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
             "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
             ");",

@@ -8,24 +8,30 @@ view already present in the same database.}
 dbTableFromView(
   view_name,
   dbcon,
-  table_name = NULL,
+  table_name,
   drop_table = FALSE,
-  pk_fields = NULL,
-  build_pk = FALSE
+  build_pk = FALSE,
+  pk_fields = NULL
 )
 }
 \arguments{
-\item{view_name}{...}
+\item{view_name}{character, name of the view.}
 
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{string, the name of the table.}
+\item{table_name}{character, the name of the table.}
 
-\item{drop_table}{...}
+\item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
+and recreated when importing the data.  if \code{FALSE}, data from input
+file will be appended to an existing table. Defaults to \code{FALSE}.}
 
-\item{pk_fields}{...}
+\item{build_pk}{logical, if \code{TRUE} creates a \verb{UNIQUE INDEX} named
+\verb{<table_name>_PK} defined by the combination of fields specified
+in the \code{pk_fields} parameter. It will be effective only if
+\code{pk_fields} is not null. Defaults to \code{FALSE}.}
 
-\item{build_pk}{...}
+\item{pk_fields}{character vector, the list of the fields' names that
+define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
 }
 \value{
 nothing

@@ -2,42 +2,48 @@
 #' of a sheet in an Excel file and copies it to a table in a SQLite
 #' database. If table does not exist, it will create it.
 #'
-#' @param df the data frame to be saved in SQLite table
-#' @param dbcon ...
-#' @param table_name ...
+#' @param df the data frame to be saved in the SQLite table.
+#' @param dbcon database connection, as created by the dbConnect function.
+#' @param table_name character, the name of the table.
 #'
-#' @param id_quote_method character vector,  used to specify how to build the SQLite
-#'    table's field names from the column identifiers read from `input_file`.
-#'    It can assume the following values:
-#'    - `DB_NAMES` tries to build a valid field name:
-#'      a. substituting all characters, that are not letters or digits or
-#'         the `_` character, with the `_` character;
-#'      b. prefixing `N_` to all strings starting with a digit;
-#'      c. prefixing `F_` to all strings equal to a SQL92 keyword.
-#'    - `SINGLE_QUOTES` encloses each string in single quotes.
-#'    - `DOUBLE_QUOTES` encloses each string in double quotes.
-#'    - `SQL_SERVER` encloses each string in square brackets.
-#'    - `MYSQL` encloses each string in back ticks.
-#'    Defaults to `DB_NAMES`.
+#' @param id_quote_method character, used to specify how to build the SQLite
+#'    columns' names using the fields' identifiers read from the input file.
+#'    For details see the description of the `quote_method` parameter of
+#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
 #' @param col_names character vector, names of the columuns to be imported.
-#'    Used to override the field names derived from the input file (using the
+#'    Used to override the field names derived from the data frame (using the
 #'    quote method selected by `id_quote_method`). Must be of the same length
-#'    of the number of columns in the input file. If `NULL` the column names
-#'    coming from the input file (after quoting) will be used. Defaults to `NULL`.
+#'    of the number of columns in the data frame. If `NULL` the column names
+#'    coming from the input (after quoting) will be used. Defaults to `NULL`.
 #' @param col_types character vector of classes to be assumed for the columns.
-#'    If not null, it will override the data types inferred from the input file.
-#'    Must be of the same length of the number of columns in the input file.
-#'    If `NULL` the data type inferred from the input files will be used.
+#'    If not null, it will override the data types inferred from the input data
+#'    frame. Must be of the same length of the number of columns in the input.
+#'    If `NULL` the data type inferred from the input will be used.
 #'    Defaults to `NULL`.
+#' 
+#' @param drop_table logical, if `TRUE` the target table will be dropped (if exists)
+#'    and recreated before importing the data.  if `FALSE`, data from input data
+#'    frame will be appended to an existing table. Defaults to `FALSE`.
+#' @param auto_pk logical, if `TRUE`, and `pk_fields` parameter is `NULL`, an
+#'    additional column named `SEQ` will be added to the table and it will be
+#'    defined to be `INTEGER PRIMARY KEY` (i.e. in effect an alias for
+#'    `ROWID`). Defaults to `FALSE`.
+#' @param build_pk logical, if `TRUE` creates a `UNIQUE INDEX` named
+#'    `<table_name>_PK` defined by the combination of fields specified
+#'    in the `pk_fields` parameter. It will be effective only if
+#'    `pk_fields` is not null. Defaults to `FALSE`.
+#' @param pk_fields character vector, the list of the fields' names that
+#'    define the `UNIQUE INDEX`. Defaults to `NULL`.
 #'
-#' @param drop_table ...
-#' @param auto_pk ...
-#' @param pk_fields ...
-#' @param build_pk ...
-#' @param constant_values ...
-#'
-#' @returns a data frame with the structure of the table created in the
-#'          database
+#' @param constant_values a one row data frame whose columns will be added to
+#'    the table in the database. The additional table columns will be named
+#'    as the data frame columns, and the corresponding values will be associeted
+#'    to each record imported from the input data frame. It is useful to keep
+#'    track of additional information (e.g., additional context data not available
+#'    in the input data frame, ...) when writing the content of multiple
+#'    input data frame in the same table. Defults to `NULL`.
+#' 
+#' @returns nothing
 #'
 #' @import RSQLite
 #' @export
@@ -45,7 +51,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
                                  id_quote_method="DB_NAMES",
                                  col_names=NULL, col_types=NULL,
                                  drop_table=FALSE,
-                                 auto_pk=FALSE, pk_fields=NULL, build_pk=FALSE,
+                                 auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL,
                                  constant_values=NULL) {
 
     ## formal checks on parameters ................
@@ -153,7 +159,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
         names(df) <- cnames
     }
 
-    if (auto_pk) {
+    if (autoPK) {
         df <- cbind(df, NA)
     }
     
@@ -161,7 +167,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
 
     ## Indexing -------------------------------
-    if (drop_table && !auto_pk && !is.null(pk_fields) && build_pk) {
+    if (!is.null(pk_fields) && build_pk) {
         
         if (!is.character(pk_fields)) {
             stop("dbCreateTableFromDF: 'pk.fields' must be a character vector.")

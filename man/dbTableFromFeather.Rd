@@ -24,7 +24,7 @@ dbTableFromFeather(
 
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{string, the name of the table.}
+\item{table_name}{character, the name of the table.}
 
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
@@ -50,12 +50,12 @@ file will be appended to an existing table. Defaults to \code{FALSE}.}
 \item{auto_pk}{logical, if \code{TRUE}, and \code{pk_fields} parameter is \code{NULL}, an
 additional column named \code{SEQ} will be added to the table and it will be
 defined to be \verb{INTEGER PRIMARY KEY} (i.e. in effect an alias for
-\code{ROWID}).}
+\code{ROWID}). Defaults to \code{FALSE}.}
 
 \item{build_pk}{logical, if \code{TRUE} creates a \verb{UNIQUE INDEX} named
 \verb{<table_name>_PK} defined by the combination of fields specified
-in the \code{pk_fields} parameter. It will be effective only if \code{drop_table}
-is \code{TRUE} and \code{pk_fields} is not null. Defaults to \code{FALSE}.}
+in the \code{pk_fields} parameter. It will be effective only if
+\code{pk_fields} is not null. Defaults to \code{FALSE}.}
 
 \item{pk_fields}{character vector, the list of the fields' names that
 define the \verb{UNIQUE INDEX}. Defults to \code{NULL}.}
@@ -66,7 +66,7 @@ as the data frame columns, and the corresponding values will be associeted
 to each record imported from the input file. It is useful to keep
 track of additional information (e.g., the input file name, additional
 context data not available in the data set, ...) when loading
-the content of multiple input files in the same table.}
+the content of multiple input files in the same table. Defults to \code{NULL}.}
 }
 \value{
 nothing

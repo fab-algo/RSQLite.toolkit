@@ -62,10 +62,6 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 #' frame columns' names and data types.
 #'
 #' @param input_file character, file name (including path) to be read.
-#' @param id_quote_method character, used to specify how to build the SQLite
-#'    columns' names using the fields' identifiers read from the input file.
-#'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
 #' @param header logical, if `TRUE` the first line contains the fields'
 #'    names. If `FALSE`, the column names will be formed sing a "V"
 #'    followed by the column number (as specified in [utils::read.table()]).
@@ -73,6 +69,10 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 #'    in the input file. Defaults to ",".
 #' @param dec character, decimal separator (e.g., "." or "," depending on locale)
 #'    in the input file. Defaults to ".".
+#' @param id_quote_method character, used to specify how to build the SQLite
+#'    columns' names using the fields' identifiers read from the input file.
+#'    For details see the description of the `quote_method` parameter of
+#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
 #'    read to infer columns' data types. Defaults to 100.
 #' @param ... Additional arguments passed to [utils::read.table()].
@@ -91,8 +91,9 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 #' DSV_file_schema("data.csv", sep=",", dec=".", max_lines=50)
 #' DSV_file_schema("euro.csv", sep=";", dec=",", header=FALSE)
 #' }
-DSV_file_schema <- function(input_file, id_quote_method="DB_NAMES",
+DSV_file_schema <- function(input_file,
                             header=TRUE, sep=",", dec=".",
+                            id_quote_method="DB_NAMES",
                             max_lines = 100, ...) {
     if (!file.exists(input_file)) {
         stop("DSV_file_schema: File does not exist: ", input_file)
@@ -131,13 +132,6 @@ DSV_file_schema <- function(input_file, id_quote_method="DB_NAMES",
 #' of an Excel file. 
 #'
 #' @param input_file character, file name (including path) to be read.
-#' @param id_quote_method character, used to specify how to build the SQLite
-#'    columns' names using the fields' identifiers read from the input file.
-#'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
-#' @param header logical, if `TRUE` the first row contains the fields'
-#'    names. If `FALSE`, the column names will be formed sing a "V"
-#'    followed by the column number.
 #' @param sheet_name character, the name of the worksheet containing the data
 #'    table.
 #' @param first_row integer, the row number where the data table starts. 
@@ -145,6 +139,13 @@ DSV_file_schema <- function(input_file, id_quote_method="DB_NAMES",
 #'    the row number of the first row of data. 
 #' @param cols_range integer, a numeric vector specifying which columns in
 #'    the worksheet to be read.
+#' @param header logical, if `TRUE` the first row contains the fields'
+#'    names. If `FALSE`, the column names will be the column names of the
+#'    Excel worksheet (i.e. letters).
+#' @param id_quote_method character, used to specify how to build the SQLite
+#'    columns' names using the fields' identifiers read from the input file.
+#'    For details see the description of the `quote_method` parameter of
+#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
 #'    read to infer columns' data types. Defaults to 100.
 #' @param ...  parameters passed to [openxlsx2::wb_to_df()] function.
@@ -159,9 +160,10 @@ DSV_file_schema <- function(input_file, id_quote_method="DB_NAMES",
 #' 
 #' @importFrom openxlsx2 wb_to_df
 #' @export
-Xlsx_file_schema <- function(input_file, id_quote_method="DB_NAMES",
-                             header = TRUE, sheet_name, first_row,
-                             cols_range, max_lines = 100, ...) {
+Xlsx_file_schema <- function(input_file,
+                             sheet_name, first_row, cols_range, header = TRUE,
+                             id_quote_method="DB_NAMES",
+                             max_lines = 100, ...) {
 
     if (!file.exists(input_file)) {
         stop("Xlsx_file_schema: File does not exist: ", input_file)

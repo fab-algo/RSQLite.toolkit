@@ -29,7 +29,7 @@ dbTableFromDSV(
 
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{string, the name of the table.}
+\item{table_name}{character, the name of the table.}
 
 \item{header}{logical, if \code{TRUE} the first line contains the columns'
 names. If \code{FALSE}, the columns' names will be formed sing a "V"
@@ -65,15 +65,15 @@ file will be appended to an existing table. Defaults to \code{FALSE}.}
 \item{auto_pk}{logical, if \code{TRUE}, and \code{pk_fields} parameter is \code{NULL}, an
 additional column named \code{SEQ} will be added to the table and it will be
 defined to be \verb{INTEGER PRIMARY KEY} (i.e. in effect an alias for
-\code{ROWID}).}
+\code{ROWID}). Defaults to \code{FALSE}.}
 
 \item{build_pk}{logical, if \code{TRUE} creates a \verb{UNIQUE INDEX} named
 \verb{<table_name>_PK} defined by the combination of fields specified
-in the \code{pk_fields} parameter. It will be effective only if \code{drop_table}
-is \code{TRUE} and \code{pk_fields} is not null. Defaults to \code{FALSE}.}
+in the \code{pk_fields} parameter. It will be effective only if
+\code{pk_fields} is not null. Defaults to \code{FALSE}.}
 
 \item{pk_fields}{character vector, the list of the fields' names that
-define the \verb{UNIQUE INDEX}. Defults to \code{NULL}.}
+define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
 
 \item{constant_values}{a one row data frame whose columns will be added to
 the table in the database. The additional table columns will be named

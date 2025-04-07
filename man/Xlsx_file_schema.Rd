@@ -6,26 +6,17 @@
 \usage{
 Xlsx_file_schema(
   input_file,
-  id_quote_method = "DB_NAMES",
-  header = TRUE,
   sheet_name,
   first_row,
   cols_range,
+  header = TRUE,
+  id_quote_method = "DB_NAMES",
   max_lines = 100,
   ...
 )
 }
 \arguments{
 \item{input_file}{character, file name (including path) to be read.}
-
-\item{id_quote_method}{character, used to specify how to build the SQLite
-columns' names using the fields' identifiers read from the input file.
-For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
-
-\item{header}{logical, if \code{TRUE} the first row contains the fields'
-names. If \code{FALSE}, the column names will be formed sing a "V"
-followed by the column number.}
 
 \item{sheet_name}{character, the name of the worksheet containing the data
 table.}
@@ -36,6 +27,15 @@ the row number of the first row of data.}
 
 \item{cols_range}{integer, a numeric vector specifying which columns in
 the worksheet to be read.}
+
+\item{header}{logical, if \code{TRUE} the first row contains the fields'
+names. If \code{FALSE}, the column names will be the column names of the
+Excel worksheet (i.e. letters).}
+
+\item{id_quote_method}{character, used to specify how to build the SQLite
+columns' names using the fields' identifiers read from the input file.
+For details see the description of the \code{quote_method} parameter of
+the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 100.}

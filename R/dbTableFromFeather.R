@@ -8,7 +8,7 @@
 #'
 #' @param input_file character, the file name (including path) to be read.
 #' @param dbcon database connection, as created by the dbConnect function.
-#' @param table_name string, the name of the table.
+#' @param table_name character, the name of the table.
 #'
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
@@ -31,11 +31,11 @@
 #' @param auto_pk logical, if `TRUE`, and `pk_fields` parameter is `NULL`, an
 #'    additional column named `SEQ` will be added to the table and it will be
 #'    defined to be `INTEGER PRIMARY KEY` (i.e. in effect an alias for
-#'    `ROWID`). 
+#'    `ROWID`). Defaults to `FALSE`.
 #' @param build_pk logical, if `TRUE` creates a `UNIQUE INDEX` named
 #'    `<table_name>_PK` defined by the combination of fields specified
-#'    in the `pk_fields` parameter. It will be effective only if `drop_table`
-#'    is `TRUE` and `pk_fields` is not null. Defaults to `FALSE`.
+#'    in the `pk_fields` parameter. It will be effective only if
+#'    `pk_fields` is not null. Defaults to `FALSE`.
 #' @param pk_fields character vector, the list of the fields' names that
 #'    define the `UNIQUE INDEX`. Defults to `NULL`.
 #' 
@@ -45,7 +45,7 @@
 #'    to each record imported from the input file. It is useful to keep
 #'    track of additional information (e.g., the input file name, additional
 #'    context data not available in the data set, ...) when loading
-#'    the content of multiple input files in the same table.
+#'    the content of multiple input files in the same table. Defults to `NULL`.
 #'
 #'
 #' @returns nothing
@@ -183,7 +183,7 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
 
 
     ## Indexing -------------------------------
-    if (drop_table && !auto_pk && !is.null(pk_fields) && build_pk) {
+    if (!is.null(pk_fields) && build_pk) {
         
         if (!is.character(pk_fields)) {
             stop("dbTableFromFeather: 'pk_fields' must be a character vector.")

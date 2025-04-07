@@ -6,21 +6,16 @@
 \usage{
 DSV_file_schema(
   input_file,
-  id_quote_method = "DB_NAMES",
   header = TRUE,
   sep = ",",
   dec = ".",
+  id_quote_method = "DB_NAMES",
   max_lines = 100,
   ...
 )
 }
 \arguments{
 \item{input_file}{character, file name (including path) to be read.}
-
-\item{id_quote_method}{character, used to specify how to build the SQLite
-columns' names using the fields' identifiers read from the input file.
-For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{header}{logical, if \code{TRUE} the first line contains the fields'
 names. If \code{FALSE}, the column names will be formed sing a "V"
@@ -31,6 +26,11 @@ in the input file. Defaults to ",".}
 
 \item{dec}{character, decimal separator (e.g., "." or "," depending on locale)
 in the input file. Defaults to ".".}
+
+\item{id_quote_method}{character, used to specify how to build the SQLite
+columns' names using the fields' identifiers read from the input file.
+For details see the description of the \code{quote_method} parameter of
+the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 100.}
