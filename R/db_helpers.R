@@ -180,12 +180,12 @@ dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
 #'
 #' This functions create a `UNIQUE INDEX` named `<table_name>_PK`
 #' defined by the combination of fields specified in the `pk_fields`
-#' parameters.
+#' parameter.
 #'
 #' @param dbcon database connection, as created by the dbConnect function.
 #' @param table_name charater, the name of the table where the index
 #'    will be created.
-#' @param pk_fields character vector, the list of the fileds' names that
+#' @param pk_fields character vector, the list of the fields' names that
 #'    define the `UNIQUE INDEX`.
 #' @param drop_index logical, if `TRUE` the index named `<table_name>_PK` will be
 #'   dropped (if exists) before recreating it. If `FALSE`, it will check

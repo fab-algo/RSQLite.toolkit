@@ -3,7 +3,7 @@
 \name{dbTableFromFeather}
 \alias{dbTableFromFeather}
 \title{dbTableFromFeather create a table in a SQLite database from a
-Feather file}
+Feather (Arrow IPC) file}
 \usage{
 dbTableFromFeather(
   input_file,
@@ -14,33 +14,22 @@ dbTableFromFeather(
   col_types = NULL,
   drop_table = FALSE,
   auto_pk = FALSE,
-  pk_fields = NULL,
   build_pk = FALSE,
+  pk_fields = NULL,
   constant_values = NULL
 )
 }
 \arguments{
-\item{input_file}{the file name (including path) to be read.}
+\item{input_file}{character, the file name (including path) to be read.}
 
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
 \item{table_name}{string, the name of the table.}
 
-\item{id_quote_method}{character vector,  used to specify how to build the SQLite
-table's field names from the column identifiers read from \code{input_file}.
-It can assume the following values:
-\itemize{
-\item \code{DB_NAMES} tries to build a valid field name:
-a. substituting all characters, that are not letters or digits or
-the \verb{_} character, with the \verb{_} character;
-b. prefixing \code{N_} to all strings starting with a digit;
-c. prefixing \code{F_} to all strings equal to a SQL92 keyword.
-\item \code{SINGLE_QUOTES} encloses each string in single quotes.
-\item \code{DOUBLE_QUOTES} encloses each string in double quotes.
-\item \code{SQL_SERVER} encloses each string in square brackets.
-\item \code{MYSQL} encloses each string in back ticks.
-Defaults to \code{DB_NAMES}.
-}}
+\item{id_quote_method}{character, used to specify how to build the SQLite
+columns' names using the fields' identifiers read from the input file.
+For details see the description of the \code{quote_method} parameter of
+the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{col_names}{character vector, names of the columuns to be imported.
 Used to override the field names derived from the input file (using the
@@ -55,15 +44,29 @@ If \code{NULL} the data type inferred from the input files will be used.
 Defaults to \code{NULL}.}
 
 \item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
-and recreated before importing the data. Defaults to \code{FALSE}.}
+and recreated before importing the data.  if \code{FALSE}, data from the input
+file will be appended to an existing table. Defaults to \code{FALSE}.}
 
-\item{auto_pk}{...}
+\item{auto_pk}{logical, if \code{TRUE}, and \code{pk_fields} parameter is \code{NULL}, an
+additional column named \code{SEQ} will be added to the table and it will be
+defined to be \verb{INTEGER PRIMARY KEY} (i.e. in effect an alias for
+\code{ROWID}).}
 
-\item{pk_fields}{...}
+\item{build_pk}{logical, if \code{TRUE} creates a \verb{UNIQUE INDEX} named
+\verb{<table_name>_PK} defined by the combination of fields specified
+in the \code{pk_fields} parameter. It will be effective only if \code{drop_table}
+is \code{TRUE} and \code{pk_fields} is not null. Defaults to \code{FALSE}.}
 
-\item{build_pk}{...}
+\item{pk_fields}{character vector, the list of the fields' names that
+define the \verb{UNIQUE INDEX}. Defults to \code{NULL}.}
 
-\item{constant_values}{...}
+\item{constant_values}{a one row data frame whose columns will be added to
+the table in the database. The additional table columns will be named
+as the data frame columns, and the corresponding values will be associeted
+to each record imported from the input file. It is useful to keep
+track of additional information (e.g., the input file name, additional
+context data not available in the data set, ...) when loading
+the content of multiple input files in the same table.}
 }
 \value{
 nothing

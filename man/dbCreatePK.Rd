@@ -12,7 +12,7 @@ dbCreatePK(dbcon, table_name, pk_fields, drop_index = FALSE)
 \item{table_name}{charater, the name of the table where the index
 will be created.}
 
-\item{pk_fields}{character vector, the list of the fileds' names that
+\item{pk_fields}{character vector, the list of the fields' names that
 define the \verb{UNIQUE INDEX}.}
 
 \item{drop_index}{logical, if \code{TRUE} the index named \verb{<table_name>_PK} will be
@@ -25,5 +25,5 @@ nothing
 \description{
 This functions create a \verb{UNIQUE INDEX} named \verb{<table_name>_PK}
 defined by the combination of fields specified in the \code{pk_fields}
-parameters.
+parameter.
 }
