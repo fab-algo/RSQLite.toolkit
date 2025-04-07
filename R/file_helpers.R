@@ -1,20 +1,27 @@
 #' Feather_file_schema returns a data frame with the schema of a Feather file
 #'
-#' Preview the table structure contained in a Feather file. It can be used
-#' to select a subset of the columns to be passed to the `dbTableFromFeather`
-#' through the `columns` parameter.
+#' Preview the table structure contained in a Feather file. This function
+#' inspects the input file metadata to read the field identifiers' names and
+#' data types, then converts them to the candidate data frame columns' names
+#' and data types. The dataset contained in the input file is not read in to
+#' memory, only meta-data are accessed.
 #'
+#' @param input_file File name (including path) to be read
+#' @param id_quote_method character, used to specify how to build the SQLite
+#'    columns' names using the fields' identifiers read from the input file.
+#'    For details see the description of the `quote_method` parameter of
+#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#' 
+#' @returns a data frame with these columns:
+#'    - `col_names`: columns' names, after applying the selected quote method;
+#'    - `col_types`: columns' R data types;
+#'    - `sql_types`: columns' SQLite data types;
+#'    - `src_names`: columns' names as they appear in the input file;
+#'    - `src_types`: the Arrow's data type of each column.
+#' 
 #' @section References:
 #' The implementation is based on this question on
 #' [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow). 
-#' 
-#' @param input_file File name (including path) to be read
-#' @param id_quote_method Character, the quote method to be use to
-#'   form the column names from the field names read from the input
-#'   file. 
-#' 
-#' @returns a data frame with the column names (`col_names`)
-#'   and the Arrow's data type of each column (`src_types`).
 #' 
 #' @import arrow
 #' @export
@@ -40,7 +47,9 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
     data.frame(col_names,
                col_types=Arrow2R_types(src_types),
                sql_types=R2SQL_types(Arrow2R_types(src_types)),
-               src_names, src_types,
+               src_names,
+               src_types,
+               stringsAsFactors = FALSE,
                row.names=NULL)    
 }
 
@@ -48,32 +57,33 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 #' DSV_file_schema returns a data frame with the schema of a DSV file
 #'
 #' Reads only the first `max_lines` of a delimiter separated values (DSV)
-#' file to infer column names and data types, without reading the full
-#' dataset into memory.
+#' text file to infer column names and data types, without reading the full
+#' dataset into memory. Then it converts them to the candidate data
+#' frame columns' names and data types.
 #'
-#' The returned data frame consists of these columns:
-#' - `col_names`: input file's field names that have been 
-#' - `col_types`: R data type
-#' - `src_names`:
+#' @param input_file character, file name (including path) to be read.
+#' @param id_quote_method character, used to specify how to build the SQLite
+#'    columns' names using the fields' identifiers read from the input file.
+#'    For details see the description of the `quote_method` parameter of
+#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#' @param header logical, if `TRUE` the first line contains the fields'
+#'    names. If `FALSE`, the column names will be formed sing a "V"
+#'    followed by the column number (as specified in [utils::read.table()]).
+#' @param sep character, field delimiter (e.g., "," for CSV, "\\t" for TSV)
+#'    in the input file. Defaults to ",".
+#' @param dec character, decimal separator (e.g., "." or "," depending on locale)
+#'    in the input file. Defaults to ".".
+#' @param max_lines integer, number of lines (excluding the header) to be
+#'    read to infer columns' data types. Defaults to 100.
+#' @param ... Additional arguments passed to [utils::read.table()].
 #'
-#' @param input_file File name (including path) to be read.
-#' @param id_quote_method Character, the quote method to be use to
-#'   form the column names from the field names read from the input
-#'   file. 
-#' @param header Logical, if `TRUE` the first line contains the fields'
-#'    names. If `FALSE`, the column names will be formed  using a "V"
-#'    followed by the column number (as specified in `read.table`
-#' @param sep ...
-#'    function).#' @param sep Field delimiter (e.g., "," for CSV, "\\t" for TSV).
-#' @param dec Decimal separator (e.g., "." or "," depending on locale).
-#' @param max_lines Number of lines (excluding the header) to read.
-#'    Defaults to 100.
-#' @param ... Additional arguments passed to `read.table()`.
+#' @returns a data frame with these columns:
+#'    - `col_names`: columns' names, after applying the selected quote method;
+#'    - `col_types`: columns' R data types;
+#'    - `sql_types`: columns' SQLite data types;
+#'    - `src_names`: columns' names as they appear in the input file.
 #'
-#' @return A data frame with columns `col_names`, `col_types` and
-#'    `src_names`.
-#' 
-#' @importFrom RSQLite dbQuoteIdentifier
+#' @importFrom utils read.table
 #' @export
 #'
 #' @examples
@@ -95,7 +105,7 @@ DSV_file_schema <- function(input_file, id_quote_method="DB_NAMES",
                      dec = dec,
                      nrows = max_lines,
                      stringsAsFactors = FALSE,
-                     ... # Allow custom options like quote, colClasses, etc.
+                     ... # allow custom options like quote, colClasses, etc.
                  )
     
     src_names <- names(df)
@@ -117,24 +127,35 @@ DSV_file_schema <- function(input_file, id_quote_method="DB_NAMES",
 
 #' Xlsx_file_schema returns a data frame with the schema of an Excel data table
 #'
-#' Preview the table structure contained in a rectangula range of worksheet
-#' of an Excel file. It can be used to select a subset of the columns to be
-#' passed to the `dbTableFromXlsx` through the `col_names` parameter.
+#' Preview the table structure contained in a rectangular range of worksheet
+#' of an Excel file. 
 #'
+#' @param input_file character, file name (including path) to be read.
+#' @param id_quote_method character, used to specify how to build the SQLite
+#'    columns' names using the fields' identifiers read from the input file.
+#'    For details see the description of the `quote_method` parameter of
+#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#' @param header logical, if `TRUE` the first row contains the fields'
+#'    names. If `FALSE`, the column names will be formed sing a "V"
+#'    followed by the column number.
+#' @param sheet_name character, the name of the worksheet containing the data
+#'    table.
+#' @param first_row integer, the row number where the data table starts. 
+#'    If present, it is the row number of the header row, otherwise it is
+#'    the row number of the first row of data. 
+#' @param cols_range integer, a numeric vector specifying which columns in
+#'    the worksheet to be read.
+#' @param max_lines integer, number of lines (excluding the header) to be
+#'    read to infer columns' data types. Defaults to 100.
+#' @param ...  parameters passed to [openxlsx2::wb_to_df()] function.
 #' 
-#' @param input_file File name (including path) to be read
-#' @param id_quote_method Character, the quote method to be use to
-#'   form the column names from the field names read from the input
-#'   file.
-#' @param header ...
-#' @param sheet_name ...
-#' @param first_row ...
-#' @param cols_range ...
-#' @param max_lines ...
-#' @param ...  parameters passed to openxlsx2::wb_to_df
-#' 
-#' @returns a data frame with the column names (`col_names`)
-#'   and the Arrow's data type of each column (`src_types`).
+#' @returns a data frame with these columns:
+#'    - `col_names`: columns' names, after applying the selected quote method;
+#'    - `col_types`: columns' R data types;
+#'    - `sql_types`: columns' SQLite data types;
+#'    - `src_names`: columns' names as they appear in the input file;
+#'    - `src_types`: data type attribute of each column, as determined by the
+#'       [openxlsx2::wb_to_df()] function.
 #' 
 #' @importFrom openxlsx2 wb_to_df
 #' @export
@@ -167,7 +188,8 @@ Xlsx_file_schema <- function(input_file, id_quote_method="DB_NAMES",
                                     unique_names=TRUE)
     
     data.frame(
-        col_names, col_types,
+        col_names,
+        col_types,
         sql_types=R2SQL_types(col_types),
         src_names,
         src_types=attr(df, "types"),

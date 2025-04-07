@@ -2,7 +2,7 @@
 % Please edit documentation in R/db_helpers.R
 \name{dbExecFile}
 \alias{dbExecFile}
-\title{dbExecFile execute the SQL statement contained in a text file}
+\title{dbExecFile execute the SQL statements contained in a text file}
 \usage{
 dbExecFile(input_file, dbcon, plist = NULL)
 }
@@ -15,8 +15,13 @@ statements to be executed}
 \item{plist}{a list with values to be binded to the parameters of
 SQL statements. Defaults to \code{NULL}}
 }
+\value{
+a list with the results of each statement executed.
+}
 \description{
 This function reads the text in \code{input_file}, strips all comment lines
-(i.e. all lines beginning with \verb{--} characters) and parse the SQL statements
-assuming that they are separeted by the \verb{;} character.
+(i.e. all lines beginning with \verb{--} characters) and splits the SQL statements
+assuming that they are separeted by the \verb{;} character. The list of SQL
+statements is then executed, one at a time; the results of each statements
+are stored in a list with length equal to the number of statements.
 }

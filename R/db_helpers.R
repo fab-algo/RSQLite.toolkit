@@ -1,14 +1,18 @@
-#' dbExecFile execute the SQL statement contained in a text file
+#' dbExecFile execute the SQL statements contained in a text file
 #'
 #' This function reads the text in `input_file`, strips all comment lines
-#' (i.e. all lines beginning with `--` characters) and parse the SQL statements
-#' assuming that they are separeted by the `;` character.
+#' (i.e. all lines beginning with `--` characters) and splits the SQL statements
+#' assuming that they are separeted by the `;` character. The list of SQL
+#' statements is then executed, one at a time; the results of each statements
+#' are stored in a list with length equal to the number of statements.
 #' 
 #' @param input_file the file name (including path) containing the SQL
 #'    statements to be executed
 #' @param dbcon database connection, as created by the dbConnect function.
 #' @param plist a list with values to be binded to the parameters of
 #'    SQL statements. Defaults to `NULL`
+#'
+#' @returns a list with the results of each statement executed.
 #' 
 #' @import RSQLite
 #' @export
@@ -34,7 +38,7 @@ dbExecFile <- function(input_file, dbcon, plist=NULL) {
 
             if (length(sql) != length(plist)) {
                 stop("RSQLite.toolkit: dbExecFile: ",
-                     "number of statements should match length of parameters list.")
+                     "number of parameters in list should match the length of the statements.")
             }
             
             for (ii in seq_along(sql)) {
@@ -53,18 +57,32 @@ dbExecFile <- function(input_file, dbcon, plist=NULL) {
 
 
 
-#' dbCopyTable
+#' dbCopyTable copy a table from one SQLite database to another
 #'
-#' @param db_file_src ...
-#' @param db_file_tgt ...
-#' @param table_name ...
-#' @param drop_table ...
-#' @param pk_exist ...
+#' This function can be used to create a copy of the data in a table
+#' of a SQLite database in another database. The data can be appended
+#' to an already existing table (with the same name of the source one), or
+#' a new table can be created. It is possible to move also the indexes
+#' from source to target.
+#'
+#' @param db_file_src character, the file name (including path) of the source
+#'    database containing the table to be copied.
+#' @param db_file_tgt character, the file name (including path) of the target
+#'    database where the table will be copied.
+#' @param table_name character, the table name.
+#' @param drop_table logical, if `TRUE` the table in the target database will be
+#'   dropped (if exists) before copying the data. If `FALSE`, the data will be
+#'   appended to an existing table in the target database. Defaults to `FALSE`.
+#' @param copy_indexes logical, if `TRUE` and also `drop_table` is `TRUE`,
+#'   all indexes defined on the source table will be created on the target
+#'   table. Defaults to `FALSE`.
+#'
+#' @returns nothing
 #' 
 #' @import RSQLite
 #' @export
-dbCopyTable <- function(db_file_src, db_file_tgt,
-                        table_name, drop_table = FALSE, pk_exist = TRUE) {
+dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
+                        drop_table=FALSE, copy_indexes=FALSE) {
     if (substr(db_file_src, 1, 1) == ".") {
         db.file.src <- file.path(getwd(), db_file_src)
     }
@@ -75,7 +93,6 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
     dbsource <- dbConnect(dbDriver("SQLite"), db_file_src)
     dbtarget <- dbConnect(dbDriver("SQLite"), db_file_tgt)
 
-
     ## ---------------------------------------------------------------
     check <- dbGetQuery(dbtarget, paste("select name ",
         "from sqlite_master ",
@@ -85,10 +102,9 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
         sep = ""
     ))
 
-    if (drop_table == FALSE && dim(check)[1] > 0) {
+    if (drop_table==FALSE && dim(check)[1] > 0) {
         stop("dbCopyTable: table already exists in target db.")
     }
-
 
     check <- dbGetQuery(dbsource, paste("select name ",
         "from sqlite_master ",
@@ -102,7 +118,6 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
         stop("dbCopyTable: table does not exist in source db.")
     }
 
-
     ## ---------------------------------------------------------------
     if (drop_table) {
         dbExecute(dbtarget, paste("DROP TABLE IF EXISTS ",
@@ -110,7 +125,6 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
             sep = ""
         ))
     }
-
 
     ## ---------------------------------------------------------------
     sqlcmd <- dbGetQuery(dbsource, paste("select sql ",
@@ -120,9 +134,7 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
         table_name, "'",
         sep = ""
     ))
-
     dbExecute(dbtarget, sqlcmd[1, 1])
-
 
     ## ---------------------------------------------------------------
     sqlcmd <- paste("ATTACH DATABASE '",
@@ -130,7 +142,6 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
         "AS TGT",
         sep = ""
     )
-
     dbExecute(dbsource, sqlcmd)
 
     sqlcmd <- paste("INSERT INTO TGT.",
@@ -139,15 +150,11 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
         table_name,
         sep = ""
     )
-
     dbExecute(dbsource, sqlcmd)
-
     dbExecute(dbsource, "DETACH DATABASE TGT")
 
-
-
     ## ---------------------------------------------------------------
-    if (pk_exist) {
+    if (copy_indexes && drop_table) {
         sqlcmd <- dbGetQuery(dbsource, paste("select sql ",
             "from  sqlite_master ",
             "where type='index' ",
@@ -164,24 +171,56 @@ dbCopyTable <- function(db_file_src, db_file_tgt,
 
     ## ---------------------------------------------------------------
     dbDisconnect(dbsource)
-
     dbDisconnect(dbtarget)
 }
 
 
 
-#' dbCreatePK
+#' dbCreatePK creates a uniqe index on a table in a SQLite database
 #'
-#' @param dbcon ...
-#' @param table_name ...
-#' @param pk_fields ...
+#' This functions create a `UNIQUE INDEX` named `<table_name>_PK`
+#' defined by the combination of fields specified in the `pk_fields`
+#' parameters.
+#'
+#' @param dbcon database connection, as created by the dbConnect function.
+#' @param table_name charater, the name of the table where the index
+#'    will be created.
+#' @param pk_fields character vector, the list of the fileds' names that
+#'    define the `UNIQUE INDEX`.
+#' @param drop_index logical, if `TRUE` the index named `<table_name>_PK` will be
+#'   dropped (if exists) before recreating it. If `FALSE`, it will check
+#'   if an index with that name exists and eventually stops. Default to `FALSE`.
+#'
+#' @returns nothing
 #'
 #' @import RSQLite
 #' @export
-dbCreatePK <- function(dbcon, table_name, pk_fields) {
+dbCreatePK <- function(dbcon, table_name, pk_fields, drop_index=FALSE) {
+
+    sqlcmd <- dbGetQuery(dbcon, paste("select name ",
+                                      "from  sqlite_master ",
+                                      "where type='index' ",
+                                      "and   tbl_name='",
+                                      table_name, "' ",
+                                      "and   name='",
+                                      table_name, "_PK' ",
+                                      sep = ""
+                                      ))
+    if (dim(sqlcmd)[1] > 0 && !drop_index) {
+        stop("RSQLite.toolkit: dbCreatePK: '",
+              table_name, "_PK' index already exists and drop_index=FALSE.")
+    }
+    
     sql.def <- paste("DROP INDEX IF EXISTS ",
                      paste(table_name, "_PK", sep = ""), ";", sep = "")
     dbExecute(dbcon, sql.def)
+
+    cnames <- dbListFields(dbcon, table_name)
+    check_fields <- setdiff(pk_fields, cnames)
+    if (length(check_fields) > 0) {
+        stop("RSQLite.toolkit: dbCreatePK: 'pk_fields' contains unknown field names: ",
+             check_fields)
+    }
 
     sql.def <- paste("CREATE UNIQUE INDEX ",
                      paste(table_name, "_PK", sep = ""),

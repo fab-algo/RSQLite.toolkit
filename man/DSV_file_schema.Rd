@@ -15,42 +15,42 @@ DSV_file_schema(
 )
 }
 \arguments{
-\item{input_file}{File name (including path) to be read.}
+\item{input_file}{character, file name (including path) to be read.}
 
-\item{id_quote_method}{Character, the quote method to be use to
-form the column names from the field names read from the input
-file.}
+\item{id_quote_method}{character, used to specify how to build the SQLite
+columns' names using the fields' identifiers read from the input file.
+For details see the description of the \code{quote_method} parameter of
+the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
-\item{header}{Logical, if \code{TRUE} the first line contains the fields'
-names. If \code{FALSE}, the column names will be formed  using a "V"
-followed by the column number (as specified in \code{read.table}}
+\item{header}{logical, if \code{TRUE} the first line contains the fields'
+names. If \code{FALSE}, the column names will be formed sing a "V"
+followed by the column number (as specified in \code{\link[utils:read.table]{utils::read.table()}}).}
 
-\item{sep}{...
-function).#' @param sep Field delimiter (e.g., "," for CSV, "\\t" for TSV).}
+\item{sep}{character, field delimiter (e.g., "," for CSV, "\\t" for TSV)
+in the input file. Defaults to ",".}
 
-\item{dec}{Decimal separator (e.g., "." or "," depending on locale).}
+\item{dec}{character, decimal separator (e.g., "." or "," depending on locale)
+in the input file. Defaults to ".".}
 
-\item{max_lines}{Number of lines (excluding the header) to read.
-Defaults to 100.}
+\item{max_lines}{integer, number of lines (excluding the header) to be
+read to infer columns' data types. Defaults to 100.}
 
-\item{...}{Additional arguments passed to \code{read.table()}.}
+\item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
 }
 \value{
-A data frame with columns \code{col_names}, \code{col_types} and
-\code{src_names}.
+a data frame with these columns:
+\itemize{
+\item \code{col_names}: columns' names, after applying the selected quote method;
+\item \code{col_types}: columns' R data types;
+\item \code{sql_types}: columns' SQLite data types;
+\item \code{src_names}: columns' names as they appear in the input file.
+}
 }
 \description{
 Reads only the first \code{max_lines} of a delimiter separated values (DSV)
-file to infer column names and data types, without reading the full
-dataset into memory.
-}
-\details{
-The returned data frame consists of these columns:
-\itemize{
-\item \code{col_names}: input file's field names that have been
-\item \code{col_types}: R data type
-\item \code{src_names}:
-}
+text file to infer column names and data types, without reading the full
+dataset into memory. Then it converts them to the candidate data
+frame columns' names and data types.
 }
 \examples{
 \dontrun{

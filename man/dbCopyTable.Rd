@@ -2,27 +2,40 @@
 % Please edit documentation in R/db_helpers.R
 \name{dbCopyTable}
 \alias{dbCopyTable}
-\title{dbCopyTable}
+\title{dbCopyTable copy a table from one SQLite database to another}
 \usage{
 dbCopyTable(
   db_file_src,
   db_file_tgt,
   table_name,
   drop_table = FALSE,
-  pk_exist = TRUE
+  copy_indexes = FALSE
 )
 }
 \arguments{
-\item{db_file_src}{...}
+\item{db_file_src}{character, the file name (including path) of the source
+database containing the table to be copied.}
 
-\item{db_file_tgt}{...}
+\item{db_file_tgt}{character, the file name (including path) of the target
+database where the table will be copied.}
 
-\item{table_name}{...}
+\item{table_name}{character, the table name.}
 
-\item{drop_table}{...}
+\item{drop_table}{logical, if \code{TRUE} the table in the target database will be
+dropped (if exists) before copying the data. If \code{FALSE}, the data will be
+appended to an existing table in the target database. Defaults to \code{FALSE}.}
 
-\item{pk_exist}{...}
+\item{copy_indexes}{logical, if \code{TRUE} and also \code{drop_table} is \code{TRUE},
+all indexes defined on the source table will be created on the target
+table. Defaults to \code{FALSE}.}
+}
+\value{
+nothing
 }
 \description{
-dbCopyTable
+This function can be used to create a copy of the data in a table
+of a SQLite database in another database. The data can be appended
+to an already existing table (with the same name of the source one), or
+a new table can be created. It is possible to move also the indexes
+from source to target.
 }

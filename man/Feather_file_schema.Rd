@@ -9,18 +9,27 @@ Feather_file_schema(input_file, id_quote_method = "DB_NAMES")
 \arguments{
 \item{input_file}{File name (including path) to be read}
 
-\item{id_quote_method}{Character, the quote method to be use to
-form the column names from the field names read from the input
-file.}
+\item{id_quote_method}{character, used to specify how to build the SQLite
+columns' names using the fields' identifiers read from the input file.
+For details see the description of the \code{quote_method} parameter of
+the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 }
 \value{
-a data frame with the column names (\code{col_names})
-and the Arrow's data type of each column (\code{src_types}).
+a data frame with these columns:
+\itemize{
+\item \code{col_names}: columns' names, after applying the selected quote method;
+\item \code{col_types}: columns' R data types;
+\item \code{sql_types}: columns' SQLite data types;
+\item \code{src_names}: columns' names as they appear in the input file;
+\item \code{src_types}: the Arrow's data type of each column.
+}
 }
 \description{
-Preview the table structure contained in a Feather file. It can be used
-to select a subset of the columns to be passed to the \code{dbTableFromFeather}
-through the \code{columns} parameter.
+Preview the table structure contained in a Feather file. This function
+inspects the input file metadata to read the field identifiers' names and
+data types, then converts them to the candidate data frame columns' names
+and data types. The dataset contained in the input file is not read in to
+memory, only meta-data are accessed.
 }
 \section{References}{
 

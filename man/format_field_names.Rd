@@ -2,8 +2,8 @@
 % Please edit documentation in R/utils.R
 \name{format_field_names}
 \alias{format_field_names}
-\title{format_field_names format a vector of strings that can be
-used as field names for a table in a database}
+\title{format_field_names format a vector of strings to be
+used as columns' names for a table in a SQLite database}
 \usage{
 format_field_names(x, quote_method = "DB_NAMES", unique_names = TRUE)
 }
@@ -11,11 +11,11 @@ format_field_names(x, quote_method = "DB_NAMES", unique_names = TRUE)
 \item{x}{character vector with the identifiers' names to be quoted.}
 
 \item{quote_method}{character, used to specify how to build the SQLite
-fields' names from the column identifiers passed through the \code{x}
+columns' names from the identifiers passed through the \code{x}
 parameter.
-It can assume the following values:
+Supported values for \code{quote_method}:
 \itemize{
-\item \code{DB_NAMES} tries to build a valid field name:
+\item \code{DB_NAMES} tries to build a valid SQLite column name:
 a. substituting all characters, that are not letters or digits or
 the \verb{_} character, with the \verb{_} character;
 b. prefixing \code{N_} to all strings starting with a digit;
@@ -24,15 +24,19 @@ c. prefixing \code{F_} to all strings equal to any SQL92 keyword.
 \item \code{DOUBLE_QUOTES} encloses each string in double quotes.
 \item \code{SQL_SERVER} encloses each string in square brackets.
 \item \code{MYSQL} encloses each string in back ticks.
-Defaults to \code{DB_NAMES}.
-}}
+}
 
-\item{unique_names}{Logical, checks for any duplicate name after
+Defaults to \code{DB_NAMES}.}
+
+\item{unique_names}{logical, checks for any duplicate name after
 applying the selected quote methods. If duplicates exist, they
 will be made unique by adding a postfix \verb{_[n]}, where \code{n} is
-a progressive integer.}
+a progressive integer. Defaults to \code{TRUE}.}
+}
+\value{
+A character vector containing the columns' identifiers
 }
 \description{
-format_field_names format a vector of strings that can be
-used as field names for a table in a database
+format_field_names format a vector of strings to be
+used as columns' names for a table in a SQLite database
 }

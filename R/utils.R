@@ -56,15 +56,15 @@ R2SQL_types <- function(x) {
 }
 
 
-#' format_field_names format a vector of strings that can be
-#'   used as field names for a table in a database
+#' format_field_names format a vector of strings to be
+#'   used as columns' names for a table in a SQLite database
 #'
 #' @param x character vector with the identifiers' names to be quoted.
 #' @param quote_method character, used to specify how to build the SQLite
-#'    fields' names from the column identifiers passed through the `x`
+#'    columns' names from the identifiers passed through the `x`
 #'    parameter.
-#'    It can assume the following values:
-#'    - `DB_NAMES` tries to build a valid field name:
+#'    Supported values for `quote_method`:
+#'    - `DB_NAMES` tries to build a valid SQLite column name:
 #'      a. substituting all characters, that are not letters or digits or
 #'         the `_` character, with the `_` character;
 #'      b. prefixing `N_` to all strings starting with a digit;
@@ -73,14 +73,17 @@ R2SQL_types <- function(x) {
 #'    - `DOUBLE_QUOTES` encloses each string in double quotes.
 #'    - `SQL_SERVER` encloses each string in square brackets.
 #'    - `MYSQL` encloses each string in back ticks.
+#' 
 #'    Defaults to `DB_NAMES`.
-#' @param unique_names Logical, checks for any duplicate name after
+#' @param unique_names logical, checks for any duplicate name after
 #'    applying the selected quote methods. If duplicates exist, they
 #'    will be made unique by adding a postfix `_[n]`, where `n` is
-#'    a progressive integer.
+#'    a progressive integer. Defaults to `TRUE`.
+#'
+#' @returns A character vector containing the columns' identifiers
 #' 
 #' @importFrom DBI .SQL92Keywords
-#' 
+#' @export
 format_field_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
     allowed_methods <- c("DB_NAMES",
                          "SINGLE_QUOTES", "DOUBLE_QUOTES",

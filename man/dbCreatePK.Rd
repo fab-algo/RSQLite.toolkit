@@ -2,17 +2,28 @@
 % Please edit documentation in R/db_helpers.R
 \name{dbCreatePK}
 \alias{dbCreatePK}
-\title{dbCreatePK}
+\title{dbCreatePK creates a uniqe index on a table in a SQLite database}
 \usage{
-dbCreatePK(dbcon, table_name, pk_fields)
+dbCreatePK(dbcon, table_name, pk_fields, drop_index = FALSE)
 }
 \arguments{
-\item{dbcon}{...}
+\item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{...}
+\item{table_name}{charater, the name of the table where the index
+will be created.}
 
-\item{pk_fields}{...}
+\item{pk_fields}{character vector, the list of the fileds' names that
+define the \verb{UNIQUE INDEX}.}
+
+\item{drop_index}{logical, if \code{TRUE} the index named \verb{<table_name>_PK} will be
+dropped (if exists) before recreating it. If \code{FALSE}, it will check
+if an index with that name exists and eventually stops. Default to \code{FALSE}.}
+}
+\value{
+nothing
 }
 \description{
-dbCreatePK
+This functions create a \verb{UNIQUE INDEX} named \verb{<table_name>_PK}
+defined by the combination of fields specified in the \code{pk_fields}
+parameters.
 }
