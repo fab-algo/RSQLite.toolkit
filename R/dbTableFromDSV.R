@@ -203,7 +203,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         }
 
         dfbuffer[, which(cclass == "Date")] <-
-            format(dfbuffer[, which(cclass == "Date")], format = "%Y-%m-%d")
+            as.data.frame(apply(dfbuffer[, which(cclass == "Date")], 2,
+                                function(x) format(x,format = "%Y-%m-%d"))
+                          )
 
         if (autoPK) {
             dfbuffer <- cbind(dfbuffer, NA)

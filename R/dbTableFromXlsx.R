@@ -182,7 +182,9 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
     }
 
     df[, which(cclass == "Date")] <-
-        format(df[, which(cclass == "Date")], format = "%Y-%m-%d")
+        as.data.frame(apply(df[, which(cclass == "Date")], 2,
+                            function(x) format(x,format = "%Y-%m-%d"))
+                      )
 
     if (autoPK) {
         df <- cbind(df, NA)

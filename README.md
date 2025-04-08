@@ -8,10 +8,12 @@
 
 RSQLite.toolkit is lightweight wrapper around the RSQLite package for
 streamlined loading of data from tabular files (i.e. text delimited
-files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in a
-SQLite databases. It includes also helper functions for inspecting the
-structure of the input files, and some functions to simplify activities
-on the SQLite tables.
+files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in SQLite
+databases.
+
+It includes also helper functions for inspecting the structure of the
+input files, and some functions to simplify activities on the SQLite
+tables.
 
 ## Installation
 
@@ -25,33 +27,23 @@ pak::pak("fab-algo/RSQLite.toolkit")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This basic example shows you how to use the core functions of the
+package to load some data in different tables in a test database:
 
 ``` r
 library(RSQLite.toolkit)
-## basic example code
+
+dbcon <- dbConnect(dbDriver("SQLite"), "./data/test.sqlite")
+
+## creates the table IRIS from a CSV file, adding
+## the field 'SEQ' with the ROWID of each record
+## through the use of the parameter 'auto_pk=TRUE'
+dbTableFromDSV(input_file = "./data/src/iris.csv",
+               dbcon=dbcon, table_name="IRIS",
+               header=T, sep=",", dec=".",
+               drop_table=TRUE, auto_pk=TRUE)
+
+## creates table PASSENGERS from Feather file
+dbTableFromFeather(input_file="./data/src/passengers.feather",
+                   dbcon=dbcon, table_name="PASSENGERS")
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
