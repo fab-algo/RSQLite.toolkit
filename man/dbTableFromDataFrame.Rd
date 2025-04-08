@@ -16,8 +16,7 @@ dbTableFromDataFrame(
   drop_table = FALSE,
   auto_pk = FALSE,
   build_pk = FALSE,
-  pk_fields = NULL,
-  constant_values = NULL
+  pk_fields = NULL
 )
 }
 \arguments{
@@ -60,14 +59,6 @@ in the \code{pk_fields} parameter. It will be effective only if
 
 \item{pk_fields}{character vector, the list of the fields' names that
 define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
-
-\item{constant_values}{a one row data frame whose columns will be added to
-the table in the database. The additional table columns will be named
-as the data frame columns, and the corresponding values will be associeted
-to each record imported from the input data frame. It is useful to keep
-track of additional information (e.g., additional context data not available
-in the input data frame, ...) when writing the content of multiple
-input data frame in the same table. Defults to \code{NULL}.}
 }
 \value{
 nothing

@@ -21,7 +21,6 @@ the \verb{_} character, with the \verb{_} character;
 b. prefixing \code{N_} to all strings starting with a digit;
 c. prefixing \code{F_} to all strings equal to any SQL92 keyword.
 \item \code{SINGLE_QUOTES} encloses each string in single quotes.
-\item \code{DOUBLE_QUOTES} encloses each string in double quotes.
 \item \code{SQL_SERVER} encloses each string in square brackets.
 \item \code{MYSQL} encloses each string in back ticks.
 }

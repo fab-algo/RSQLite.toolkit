@@ -70,7 +70,6 @@ R2SQL_types <- function(x) {
 #'      b. prefixing `N_` to all strings starting with a digit;
 #'      c. prefixing `F_` to all strings equal to any SQL92 keyword.
 #'    - `SINGLE_QUOTES` encloses each string in single quotes.
-#'    - `DOUBLE_QUOTES` encloses each string in double quotes.
 #'    - `SQL_SERVER` encloses each string in square brackets.
 #'    - `MYSQL` encloses each string in back ticks.
 #' 
@@ -117,9 +116,9 @@ format_field_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
         x1 <- gsub(pattern="'", replacement="\"", x=x1)
         x1 <- paste0("'", x1, "'")
         
-    } else if (quote_method=="DOUBLE_QUOTES") {
-        x1 <- gsub(pattern="\"", replacement="'", x=x1)
-        x1 <- paste0("\"", x1, "\"")
+    ## } else if (quote_method=="DOUBLE_QUOTES") {
+    ##     x1 <- gsub(pattern="\"", replacement="'", x=x1)
+    ##     x1 <- paste0("\"", x1, "\"")
         
     } else if (quote_method=="SQL_SERVER") {
         x1 <- gsub(pattern="[\\[\\]]", replacement="_", x=x1)

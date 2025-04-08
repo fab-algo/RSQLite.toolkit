@@ -35,14 +35,6 @@
 #' @param pk_fields character vector, the list of the fields' names that
 #'    define the `UNIQUE INDEX`. Defaults to `NULL`.
 #'
-#' @param constant_values a one row data frame whose columns will be added to
-#'    the table in the database. The additional table columns will be named
-#'    as the data frame columns, and the corresponding values will be associeted
-#'    to each record imported from the input data frame. It is useful to keep
-#'    track of additional information (e.g., additional context data not available
-#'    in the input data frame, ...) when writing the content of multiple
-#'    input data frame in the same table. Defults to `NULL`.
-#' 
 #' @returns nothing
 #'
 #' @import RSQLite
@@ -51,19 +43,8 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
                                  id_quote_method="DB_NAMES",
                                  col_names=NULL, col_types=NULL,
                                  drop_table=FALSE,
-                                 auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL,
-                                 constant_values=NULL) {
+                                 auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL) {
 
-    ## formal checks on parameters ................
-    if (!is.list(constant_values) && !is.null(constant_values)) {
-        stop("dbTableFromDataFrame: error in 'constant.values' param.: ",
-             "must be a list.")
-    }
-
-    if (is.list(constant_values) && length(constant_values) == 0) {
-        stop("dbTableFromDataFrame: 'constant.values' list must not ",
-             "be of zero length.")
-    }
 
     ## read schema ................................
     src_names <- names(df)
@@ -96,53 +77,17 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
     }
 
     autoPK <- FALSE
-    if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
+    if (is.null(pk_fields) && auto_pk) autoPK <- TRUE
 
     sql.head <-
         paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
     sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
 
-    cv_class <- c()
-    cv_names <- c()
-    cv_types <- c()
-
-    if (!is.null(constant_values)) {
-        for (ii in seq_along(constant_values)) {
-            if (is.null(names(constant_values)[ii])) {
-                fld.name <- paste("V", ii, sep = "")
-            } else {
-                fld.name <- names(constant_values)[ii]
-            }
-
-            if (data.class(constant_values[[ii]]) == "character") {
-                fld.type <- "TEXT"
-            } else if (data.class(constant_values[[ii]]) == "numeric") {
-                fld.type <- "REAL"
-            } else if (data.class(constant_values[[ii]]) == "Date") {
-                fld.type <- "DATE"
-            } else if (data.class(constant_values[[ii]]) == "integer") {
-                fld.type <- "INTEGER"
-            } else if (data.class(constant_values[[ii]]) == "logical") {
-                fld.type <- "INTEGER"
-            } else {
-                fld.type <- "TEXT"
-            }
-
-            sql.body <- paste(sql.body, ", ", fld.name, " ", fld.type, sep = "")
-
-            cv_names <- c(cv_names, fld.name)
-            cv_types <- c(cv_types, fld.type)
-        }
-        cnames1 <- c(cnames, cv_names)
-    } else {
-        cnames1 <- cnames
-    }
-
-    if (auto_pk) {
+    if (autoPK) {
         sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-        cnames2 <- c(cnames1, "SEQ")
+        cnames2 <- c(cnames, "SEQ")
     } else {
-        cnames2 <- cnames1
+        cnames2 <- cnames
     }
 
     sql.tail <- ");"
@@ -152,30 +97,27 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
     
     ## Write data -------------------------------
-    if (!is.null(constant_values)) {
-        df <- cbind(df, constant_values)
-        names(df) <- cnames1
-    } else {
-        names(df) <- cnames
-    }
+    names(df) <- cnames
 
     if (autoPK) {
         df <- cbind(df, NA)
+        names(df) <- cnames2
     }
     
-    dbWriteTable(dbcon, table_name, as.data.frame(df), row.names = FALSE, append = TRUE)
+    dbWriteTable(dbcon, table_name, as.data.frame(df),
+                 row.names = FALSE, append = TRUE)
 
 
     ## Indexing -------------------------------
     if (!is.null(pk_fields) && build_pk) {
         
         if (!is.character(pk_fields)) {
-            stop("dbCreateTableFromDF: 'pk.fields' must be a character vector.")
+            stop("dbCreateTableFromDF: 'pk_fields' must be a character vector.")
         }
 
         check_fields <- setdiff(pk_fields, cnames)
         if (length(check_fields) > 0) {
-            stop("dbCreateTableFromDF: 'pk.fields' contains unknown field names: ",
+            stop("dbCreateTableFromDF: 'pk_fields' contains unknown field names: ",
                  check_fields)
         }
 

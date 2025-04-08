@@ -61,12 +61,16 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
                                constant_values=NULL) {
 
     ## formal checks on parameters ................
-    if (!is.list(constant_values) && !is.null(constant_values)) {
-        stop("dbTableFromFeather: error in 'constant_values' param.: must be a list.")
+    if (!("data.frame" %in% class(constant_values)) && !is.null(constant_values)) {
+        stop("dbTableFromFeather: 'constant_values' must be a data frame.")
     }
 
-    if (is.list(constant_values) && length(constant_values) == 0) {
-        stop("dbTableFromFeather: 'constant_values' list must not be of zero length.")
+    if (("data.frame" %in% class(constant_values)) && length(constant_values) == 0) {
+        stop("dbTableFromFeather: 'constant_values' must not be of zero length.")
+    }
+
+    if (("data.frame" %in% class(constant_values)) && dim(constant_values)[1]>1) {
+        stop("dbTableFromFeather: 'constant_values' must have one row.")
     }
 
     ## read schema ................................
@@ -107,32 +111,16 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
     cv_types <- c()
 
     if (!is.null(constant_values)) {
-        for (ii in seq_along(constant_values)) {
-            if (is.null(names(constant_values)[ii])) {
-                fld.name <- paste("V", ii, sep = "")
-            } else {
-                fld.name <- names(constant_values)[ii]
-            }
-
-            if (data.class(constant_values[[ii]]) == "character") {
-                fld.type <- "TEXT"
-            } else if (data.class(constant_values[[ii]]) == "numeric") {
-                fld.type <- "REAL"
-            } else if (data.class(constant_values[[ii]]) == "Date") {
-                fld.type <- "DATE"
-            } else if (data.class(constant_values[[ii]]) == "integer") {
-                fld.type <- "INTEGER"
-            } else if (data.class(constant_values[[ii]]) == "logical") {
-                fld.type <- "INTEGER"
-            } else {
-                fld.type <- "TEXT"
-            }
-
-            sql.body <- paste(sql.body, ", ", fld.name, " ", fld.type, sep = "")
-
-            cv_names <- c(cv_names, fld.name)
-            cv_types <- c(cv_types, fld.type)
-        }
+        src_names <- names(constant_values)
+        cv_names <- format_field_names(x=src_names, quote_method=id_quote_method,
+                                       unique_names=TRUE)
+        cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
+        
+        sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
+        sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
+        
+        names(constant_values) <- cv_names
+        
         cnames1 <- c(cnames, cv_names)
     } else {
         cnames1 <- cnames
@@ -176,6 +164,7 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
 
     if (autoPK) {
         df <- cbind(df, NA)
+        names(df) <- cnames2
     }
 
     dbWriteTable(dbcon, table_name, as.data.frame(df),
