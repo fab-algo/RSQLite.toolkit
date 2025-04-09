@@ -94,7 +94,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     df.scm <- DSV_file_schema(input_file, 
                               header=header, sep=sep, dec=dec,
                               id_quote_method=id_quote_method,
-                              max_lines = 200)
+                              max_lines = 200, ...)
 
     cnames <- df.scm$col_names
     cclass <- df.scm$col_types
@@ -182,7 +182,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     nread <- 0
     repeat {
         dfbuffer <- scan(
-            file = fcon, sep=sep, dec=dec,
+            file = fcon, sep = sep, dec = dec,
             what = lclass,
             nlines = chunk_size,
             strip.white = TRUE, flush = TRUE, fill = TRUE,
