@@ -1,10 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit">
-
-<img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" />
-</a>
+# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit"><img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" /></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
