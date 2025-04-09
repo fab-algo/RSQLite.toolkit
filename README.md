@@ -1,7 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# RSQLite.toolkit
+# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit">
+
+<img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" />
+</a>
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -46,4 +49,8 @@ dbTableFromDSV(input_file = "./data/src/iris.csv",
 ## creates table PASSENGERS from Feather file
 dbTableFromFeather(input_file="./data/src/passengers.feather",
                    dbcon=dbcon, table_name="PASSENGERS")
+
+dbListTables(dbcon)
+
+dbDisconnect(dbcon)
 ```
