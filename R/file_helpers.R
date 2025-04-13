@@ -82,6 +82,7 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 #'    - `col_types`: columns' R data types;
 #'    - `sql_types`: columns' SQLite data types;
 #'    - `src_names`: columns' names as they appear in the input file.
+#'    - `src_types`: dafults to `text` for all columns.
 #'
 #' @importFrom utils read.table
 #' @export
@@ -119,6 +120,7 @@ DSV_file_schema <- function(input_file,
         col_names, col_types,
         sql_types=R2SQL_types(col_types),
         src_names,
+        src_types=c("text"),
         stringsAsFactors = FALSE,
         row.names=NULL
     )

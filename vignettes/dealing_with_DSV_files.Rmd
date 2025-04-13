@@ -1,0 +1,22 @@
+---
+title: "Dealing with DSV files"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{dealing_with_DSV_files}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(RSQLite.toolkit)
+```
+
+Let's start with a simple example. But first we need some data to
+use 
