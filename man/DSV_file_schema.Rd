@@ -44,6 +44,7 @@ a data frame with these columns:
 \item \code{col_types}: columns' R data types;
 \item \code{sql_types}: columns' SQLite data types;
 \item \code{src_names}: columns' names as they appear in the input file.
+\item \code{src_types}: dafults to \code{text} for all columns.
 }
 }
 \description{
