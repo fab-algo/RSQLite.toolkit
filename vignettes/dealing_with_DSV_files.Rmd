@@ -2,7 +2,7 @@
 title: "Dealing with DSV files"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{dealing_with_DSV_files}
+  %\VignetteIndexEntry{Dealing with DSV files}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,9 +14,123 @@ knitr::opts_chunk$set(
 )
 ```
 
+## What to check in a DSV file
+
 ```{r setup}
+library(RSQLite)
 library(RSQLite.toolkit)
 ```
 
 Let's start with a simple example. But first we need some data to
-use 
+use in it, for that purpose you can use the package `package?piggyback`
+to retrieve some public data that is stored in the
+[RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
+GitHub repository[^1].
+
+The first example will deal with a single table contained in a "standard" CSV file
+(i.e. a text file with the first line containing column names, using the
+comma to separate divide fields' values and the dot as a decimal separator),
+using the `dbTableFromDSV()` function the data will be transfered in a new
+table inside a SQLite database.
+
+First we get the data from the repo:
+
+```{r getdata}
+library("piggyback")
+pb_download(file="14536105.zip", dest=tempdir(),
+            repo="fab-algo/RSQLite.toolkit-tests", tag="latest")
+unzip(zipfile=file.path(tempdir(), "14536105.zip"), exdir=tempdir())
+fs::dir_tree(tempdir())
+```
+
+After unzipping the downloaded file, we get the `DOS_V2.10.csv` file that
+contains the dataset we are interested in.
+
+We can check the structure of the dataset using the `DSV_file_schema()` function,
+that uses the same euristic algorithm[^2] used by `dbTableFromDSV()` to
+determine the column names and data types from the input file. Since the file
+is formatted as expected by the default values of the DSV file format parameters
+(i.e. `header = TRUE, sep = ",", dec = "."`) we can call it using just the 
+`input_file` parameter.
+
+
+```{r inspect_file1}
+data_file <- file.path(tempdir(), "DOSE_V2.10.csv")
+schema <- DSV_file_schema(input_file=data_file)
+head(schema,5)
+tail(schema,5)
+```
+
+
+The table in the `DOS_V2.10.csv` file consists of 35 fields. The schema shows
+the input data type (`src_types`), the intermediate data type used for the 
+data frame in R (`col_types`) and the target data type for the SQLite table 
+(`sql_type`).
+
+We can now check the number of rows in the input file:
+
+
+```{r inspect_file2}
+n_rows <- length(count.fields(data_file))
+n_rows
+```
+
+So we expect to have `r format(n_rows-1, nsmall=0)` in the SQLite table.
+Now we connect to a sample database (i.e. `DOSE.sqlite`) and move the
+dataset in a table there, calling the `dbTableFromDSV()` function specifying 
+the connection to the database (i.e.  `dbcon` parameter) and the table name 
+(i.e. `table_name` parameter). Again we don't need to specify the parameters
+for the CSV file strucuture since the default values will be fine.
+
+```{r loaddata1}
+dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"DOSE.sqlite"))
+dbTableFromDSV(input_file=data_file, dbcon=dbcon, table_name="DOSE")
+```
+
+The warning message tells us that something probably went wrong. If we check 
+the table in the database:
+
+```{r checks1}
+dbListFields(dbcon, "DOSE")
+dbGetQuery(dbcon, "select count(*) from DOSE")
+```
+
+We see that all the fields in the input file have been read, but the number
+of records is not the expected one: at some point the reading of the input file
+was interrupted due to a "EOF character".
+
+If we open the file and inspect some records we understand that:
+
+- there are strings with comma and single quote inside, surrounded by 
+  double quotes, so the file is using a specific quoting convention;
+- many string are using special characters that need a specific enconding 
+  system; in this file the UTF-8 enconding is used.
+
+Since the `dbTableFromDSV()` function uses the `base::scan()` and 
+`utils::read.table()` functions, their default values for quoting, comment
+characters, encoding and similar parameters should be adjusted according
+to the standard used by the file we want to read. 
+
+For the input file used in this example we need to explicitly force the 
+`quote` parameter to `\"` and to tell to the `base::scan()` function that
+the input file is encodedn in UTF-8: `fileEncoding="UTF-8"`.
+
+
+```{r loaddata2}
+dbTableFromDSV(input_file=data_file, dbcon=dbcon, table_name="DOSE",
+               drop_table=TRUE, quote="\"", fileEncoding="UTF-8")
+
+dbGetQuery(dbcon, "select count(*) from DOSE")
+```
+
+As we can see now we got all the expected records in the SQLite table.
+
+```{r close_db}
+dbDisconnect(dbcon)
+```
+
+
+
+[^1]: The original source of each dataset is described in the README page of the GitHub repo.
+[^2]: the euristic is based on the `utils::read.table()` function, with the exception that if a colum hasa all NULL values, the default data type will be `character`.
+
