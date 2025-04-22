@@ -76,6 +76,9 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    the [format_field_names()] function. Defautls to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
 #'    read to infer columns' data types. Defaults to 100.
+#' @param comment.char character, dafaults to `""` (i.e. interpretation of
+#'    comments is turned off). Used to alig this parameter value between
+#'    `scan` and `read.table` that assume different default values for it. 
 #' @param ... Additional arguments passed to [utils::read.table()].
 #'
 #' @returns a data frame with these columns:
@@ -96,11 +99,27 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 file_schema_dsv <- function(input_file,
                             header = TRUE, sep = ",", dec = ".",
                             id_quote_method = "DB_NAMES",
-                            max_lines = 100, ...) {
+                            max_lines = 100,
+                            comment.char = "", ...) {
     if (!file.exists(input_file)) {
         stop("file_schema_dsv: File does not exist: ", input_file)
     }
 
+    if (is.na(comment.char)) {
+        comment.char <- ""
+    }
+
+    if (header) {
+        raw_names <- scan(file = input_file,
+                          nlines = 1,
+                          sep = sep,
+                          what = "character",
+                          strip.white = TRUE,
+                          comment.char = comment.char,
+                          ...
+                          )
+    }
+    
     df <- utils::read.table(
                      file = input_file,
                      header = header,
@@ -108,15 +127,22 @@ file_schema_dsv <- function(input_file,
                      dec = dec,
                      nrows = max_lines,
                      stringsAsFactors = FALSE,
+                     comment.char = comment.char,
                      ... # allow custom options like quote, colClasses, etc.
                  )
-    
-    src_names <- names(df)
-    col_types <- vapply(df, function(col) class(col)[1], character(1))
+
+    if (header) {
+        src_names <- raw_names
+    } else {
+        src_names <- names(df)
+    }
     
     col_names <- format_field_names(x=src_names, quote_method=id_quote_method,
                                     unique_names=TRUE)
 
+    
+    col_types <- vapply(df, function(col) class(col)[1], character(1))
+    
     data.frame(
         col_names, col_types,
         sql_types=R2SQL_types(col_types),

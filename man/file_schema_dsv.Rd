@@ -11,6 +11,7 @@ file_schema_dsv(
   dec = ".",
   id_quote_method = "DB_NAMES",
   max_lines = 100,
+  comment.char = "",
   ...
 )
 }
@@ -34,6 +35,10 @@ the \code{\link[=format_field_names]{format_field_names()}} function. Defautls t
 
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 100.}
+
+\item{comment.char}{character, dafaults to \code{""} (i.e. interpretation of
+comments is turned off). Used to alig this parameter value between
+\code{scan} and \code{read.table} that assume different default values for it.}
 
 \item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
 }
