@@ -14,43 +14,50 @@ knitr::opts_chunk$set(
 )
 ```
 
+"Delimiter-separated values" (DSV) files are (unfortunately) still a very common way
+to serialize tabular data and are widely used as a data exchange format.
+Since there isn't a strict technical standard that specifies how different data types
+should be represented in plain text, but a lot of possible customization are left to
+the final users, it is very common to incurr in issues importing data from this kind 
+of files. 
+The purpose of this article is to show some problems you can encounter 
+importing data in a SQLite database from DSV files and how to deal with them.
+
 ## What to check in a DSV file
 
 ```{r setup}
 library(RSQLite.toolkit)
 ```
 
-Let's start with a simple example. But first we need some data to
-use in it, for that purpose you can use the package `package?piggyback`
-to retrieve some public data that is stored in the
-[RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
-GitHub repository[^1].
+Let's start with a simple example using real world data. To retrieve the data
+we need, we can use the package `package?piggyback` to download some public data that 
+has been stored in the [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests) GitHub repository[^1].
 
-The first example will deal with a table contained in a "standard" CSV file
+This example will deal with a table contained in a "standard" CSV file
 (i.e. a text file with the first line containing column names, using the
-comma to separate divide fields' values and the dot as a decimal separator),
+comma to separate fields' values and the dot as a decimal separator),
 using the `dbTableFromDSV()` function the data will be transfered in a new
 table inside a SQLite database.
 
-First we get the data from the repo:
+First we download the data from the repo:
 
 ```{r getdata}
-library("piggyback")
+library("piggyback", quietly=TRUE)
 pb_download(file="14536105.zip", dest=tempdir(),
             repo="fab-algo/RSQLite.toolkit-tests", tag="latest")
 unzip(zipfile=file.path(tempdir(), "14536105.zip"), exdir=tempdir())
 dir(tempdir())
 ```
 
-After unzipping the downloaded file, we get the `DOS_V2.10.csv` file that
+After unzipping the downloaded file, we get the `DOSE_V2.10.csv` file that
 contains the dataset we are interested in.
 
 We can check the structure of the dataset using the `file_schema_dsv()` function,
 that uses the same euristic algorithm[^2] used by `dbTableFromDSV()` to
 determine the column names and data types from the input file. Since the file
 is formatted as expected by the default values of the DSV file format parameters
-(i.e. `header = TRUE, sep = ",", dec = "."`) we can call it using just the 
-`input_file` parameter.
+(i.e. `header = TRUE, sep = ",", dec = "."`), we can call that function using the 
+`input_file` parameter alone.
 
 
 ```{r inspect_file1}
@@ -60,7 +67,6 @@ head(schema,5)
 tail(schema,5)
 ```
 
-
 The table in the `DOS_V2.10.csv` file consists of 35 fields. The schema shows
 the input data type (`src_types`), the intermediate data type used for the 
 data frame in R (`col_types`) and the target data type for the SQLite table 
@@ -68,58 +74,111 @@ data frame in R (`col_types`) and the target data type for the SQLite table
 
 We can now check the number of rows in the input file:
 
-
 ```{r inspect_file2}
 n_rows <- length(count.fields(data_file))
 n_rows
 ```
 
-So we expect to have `r format(n_rows-1, nsmall=0)` in the SQLite table.
-Now we connect to a sample database (i.e. `DOSE.sqlite`) and move the
+So we expect to have `r format(n_rows-1, nsmall=0)` records in the SQLite table.
+Now we connect to a sample database (i.e. `tests.sqlite`) and move the
 dataset in a table there, calling the `dbTableFromDSV()` function specifying 
 the connection to the database (i.e.  `dbcon` parameter) and the table name 
 (i.e. `table_name` parameter). Again we don't need to specify the parameters
 for the CSV file strucuture since the default values will be fine.
 
 ```{r loaddata1}
-dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"DOSE.sqlite"))
+dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"tests.sqlite"))
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
 
-The warning message tells us that something probably went wrong. If we check 
-the table in the database:
+The warning message tells us that something probably went wrong. If we check the 
+table in the database:
 
 ```{r checks1}
 dbListFields(dbcon, "DOSE")
 dbGetQuery(dbcon, "select count(*) from DOSE")
 ```
 
-We see that all the fields in the input file have been read, but the number
+we see that all the fields in the input file have been read, but the number
 of records is not the expected one: at some point the reading of the input file
 was interrupted due to a "EOF character".
+
+To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
+function uses the `read.table` function (from the `utils` package) to guess the
+table structure stored in the DSV file, and the `scan` function to actually
+read the data in a data frame and then write it to the SQLite table.
+
+Both these functions make some assumptions on how the data is stored in the DSV
+file as "plain text". More in detail, both functions use the parameters listed in the 
+following table along with their default values.
+
+| parameters   | scan    | read.table |
+|--------------|---------|------------|
+| quote        | `"'\""` | `"\"'"`    |
+| allowEscapes | `FALSE` | `FALSE`    |
+| na.strings   | `"NA"`  | `"NA"`     |
+| skipNul      | `FALSE` | `FALSE`    |
+| strip.white  | `FALSE` | `FALSE`    |
+| comment.char | `""`    | `"#"`      |
+| fileEncoding | `""`    | `""`       |
+
+:`scan` and `read.table` parameters to handle data interpretation.
+
+These parameters control the conventions used to interpret the text read from the file:
+
+- *quoting*: convention used to inclued in strings "special" characters or to
+   preserve the exact string without interpretation.
+   Parameter: `quote`
+- *escaping*: rule used to represent characters that would otherwise be interpreted 
+   as delimiters or special commands.
+   Parameter: `allowEscapes`
+- *missing data*: how missing data is represented in the file.
+   Parameters: `na.strings` and `skipNul`
+- *whitespace stripping*: if unwanted spaces from the beginning, end, or middle of a 
+   string should be removed. 
+   Parameter: `strip.white`
+- *commenting*: character used to identify that one line (or the rest of a line after
+   the "comment" identifier) does not contain data and should be ignored.
+   Parameter: `comment.char`
+- *encoding*: the technical standard used to represent characters in binary form, as
+   for example ASCII, UTF-8, EBCDIC.
+   Parameter: `fileEncoding`
+
+To understand how to use each of these parameters you are strongly encouraged to read 
+the help pages of the `scan` and `read.table` functions.
+
+It should be noted that the default values are seldom (... almost never) the right
+ones and we should invest some time to better understand the strategies used by the
+data source. If we have a technical description of the assumptions used in 
+creating the file we can follow those guidelines, otherwise we have to inspect the file
+and determine them by direct guess.
+
+To explore a DSV file (especially big files) it is better to use log file explorers
+and avoid general purpose text editors. As an example, we can use [klogg](https://klogg.filimonov.dev/) that is available for all major operating systems.
 
 If we open the file and inspect some records we understand that:
 
 - there are strings with comma and single quote inside, surrounded by 
   double quotes, so the file is using a specific quoting convention;
-- many string are using special characters that need a specific enconding 
+- missing data is represented by a "zero-lenght" string;
+- many strings are using special characters that need a specific enconding 
   system; in this file the UTF-8 enconding is used.
 
-Since the `dbTableFromDSV()` function uses the `base::scan()` and 
-`utils::read.table()` functions, their default values for quoting, comment
-characters, encoding and similar parameters should be adjusted according
-to the standard used by the file we want to read. 
+For the input file used in this example we need:
 
-For the input file used in this example we need to explicitly force the 
-`quote` parameter to `\"` and to tell to the `base::scan()` function that
-the input file is encodedn in UTF-8: `fileEncoding="UTF-8"`.
+- to explicitly force the `quote` parameter to `"\""` (i.e. only the double quote character)
+  and the `na.strings` parameter to `""`;
+- to turn off the commenting option: `comment.char = ""`;
+- to tell to the `base::scan()` function that the input file is encoded in UTF-8: 
+  `fileEncoding = "UTF-8"`.
 
+We also need to delete the data from the first import attempt and load it from scratch:
+`drop_table = TRUE`.
 
 ```{r loaddata2}
-dbTableFromDSV(input_file=data_file, dbcon=dbcon, table_name="DOSE",
-               drop_table=TRUE, quote="\"", fileEncoding="UTF-8")
-
-dbGetQuery(dbcon, "select count(*) from DOSE")
+dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",
+               drop_table = TRUE, quote = "\"", na.strings = "",
+               comment.char = "", fileEncoding = "UTF-8")
 ```
 
 As we can see now we got all the expected records in the SQLite table.
@@ -127,11 +186,14 @@ As we can see now we got all the expected records in the SQLite table.
 ```{r close_db}
 dbDisconnect(dbcon)
 ```
+## Issues with column names
+
 
 ## Conclusions
 
-To handle in a safer way (and avoid some unexpected results) DSV files here are
-the 
+To handle in a safer way DSV files (and avoid some unexpected results)
+
+	  
 
 
 

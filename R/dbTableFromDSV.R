@@ -186,8 +186,11 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             file = fcon, sep = sep, dec = dec,
             what = lclass,
             nlines = chunk_size,
-            strip.white = TRUE, flush = TRUE, fill = TRUE,
-            multi.line = FALSE, quiet = TRUE, ...
+            flush = TRUE,
+            fill = TRUE,
+            multi.line = FALSE,
+            quiet = TRUE,
+            ...
         )
 
         if (length(dfbuffer[[1]]) == 0) break
