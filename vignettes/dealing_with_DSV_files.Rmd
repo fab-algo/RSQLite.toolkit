@@ -129,6 +129,11 @@ As we can see now we got all the expected records in the SQLite table.
 dbDisconnect(dbcon)
 ```
 
+## Conclusions
+
+To handle in a safer way (and avoid some unexpected results) DSV files here are
+the 
+
 
 
 [^1]: The original source of each dataset is described in the README page of the GitHub repo.
