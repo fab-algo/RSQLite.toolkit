@@ -94,7 +94,8 @@ text file in one pass. Default to zero.}
 to read input data.}
 }
 \value{
-nothing
+integer, the number of records in \code{table_name} after reading data
+from \code{input_file}.
 }
 \description{
 The dbTableFromDSV function reads the data from a DSV file

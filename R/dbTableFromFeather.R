@@ -48,7 +48,8 @@
 #'    the content of multiple input files in the same table. Defults to `NULL`.
 #'
 #'
-#' @returns nothing
+#' @returns integer, the number of records in `table_name` after reading data
+#'    from `input_file`.
 #'
 #' @import RSQLite
 #' @importFrom arrow read_feather
@@ -74,7 +75,7 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- Feather_file_schema(input_file, id_quote_method=id_quote_method)
+    df.scm <- file_schema_feather(input_file, id_quote_method=id_quote_method)
 
     cnames <- df.scm$col_names
     cclass <- df.scm$col_types
@@ -193,4 +194,7 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
             sep = " "
         ))
     }
+    
+    dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ", table_name, sep=""))
+    dr[1,1]
 }

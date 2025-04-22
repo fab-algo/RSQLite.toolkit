@@ -64,7 +64,8 @@
 #'    to read input data.
 #'
 #' 
-#' @returns nothing
+#' @returns integer, the number of records in `table_name` after reading data
+#'    from `input_file`.
 #'
 #' @import RSQLite
 #' @importFrom utils read.table
@@ -91,7 +92,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- DSV_file_schema(input_file, 
+    df.scm <- file_schema_dsv(input_file, 
                               header=header, sep=sep, dec=dec,
                               id_quote_method=id_quote_method,
                               max_lines = 200, ...)
@@ -212,7 +213,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             names(dfbuffer) <- cnames2
         }
 
-        dbWriteTable(dbcon, table_name, as.data.frame(dfbuffer),
+        dbWriteTable(dbcon, table_name , as.data.frame(dfbuffer),
                      row.names = FALSE, append = TRUE)
         nread <- nread + chunk_size
     }
@@ -239,4 +240,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             sep = " "
         ))
     }
+
+    dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ", table_name, sep=""))
+    dr[1,1]
 }

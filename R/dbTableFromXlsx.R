@@ -60,7 +60,8 @@
 #' @param ... additional arguments passed to [openxlsx2::wb_to_df()] function used
 #'    to read input data.
 #' 
-#' @returns nothing
+#' @returns integer, the number of records in `table_name` after reading data
+#'    from `input_file`.
 #'
 #' @import RSQLite
 #' @importFrom openxlsx2 wb_to_df
@@ -87,7 +88,7 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- Xlsx_file_schema(input_file, sheet_name=sheet_name,
+    df.scm <- file_schema_xlsx(input_file, sheet_name=sheet_name,
                                first_row=first_row, cols_range=cols_range,
                                header=header, 
                                id_quote_method=id_quote_method)
@@ -215,4 +216,7 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
             sep = " "
         ))
     }
+    
+    dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ", table_name, sep=""))
+    dr[1,1]
 }

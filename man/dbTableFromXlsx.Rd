@@ -91,7 +91,8 @@ the content of multiple input files in the same table. Defults to \code{NULL}.}
 to read input data.}
 }
 \value{
-nothing
+integer, the number of records in \code{table_name} after reading data
+from \code{input_file}.
 }
 \description{
 The dbTableFromXlsx function reads the data from a range of

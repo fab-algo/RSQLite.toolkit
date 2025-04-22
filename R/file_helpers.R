@@ -1,4 +1,4 @@
-#' Feather_file_schema returns a data frame with the schema of a Feather file
+#' file_schema_feather returns a data frame with the schema of a Feather file
 #'
 #' Preview the table structure contained in a Feather file. This function
 #' inspects the input file metadata to read the field identifiers' names and
@@ -23,16 +23,17 @@
 #' The implementation is based on this question on
 #' [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow). 
 #' 
-#' @import arrow
+#' @importFrom arrow ReadableFile
+#' @importFrom arrow FeatherReader
 #' @export
-Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
+file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 
     if (!file.exists(input_file)) {
-        stop("Feather_file_schema: File does not exist: ", input_file)
+        stop("file_schema_feather: File does not exist: ", input_file)
     }
     
     rf <- arrow::ReadableFile$create(input_file)
-    ft <- FeatherReader$create(rf)
+    ft <- arrow::FeatherReader$create(rf)
 
     src_names <- ft$column_names
 
@@ -54,7 +55,7 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 }
 
 
-#' DSV_file_schema returns a data frame with the schema of a DSV file
+#' file_schema_dsv returns a data frame with the schema of a DSV file
 #'
 #' Reads only the first `max_lines` of a delimiter separated values (DSV)
 #' text file to infer column names and data types, without reading the full
@@ -89,15 +90,15 @@ Feather_file_schema <- function(input_file, id_quote_method="DB_NAMES") {
 #'
 #' @examples
 #' \dontrun{
-#' DSV_file_schema("data.csv", sep=",", dec=".", max_lines=50)
-#' DSV_file_schema("euro.csv", sep=";", dec=",", header=FALSE)
+#' file_schema_dsv("data.csv", sep=",", dec=".", max_lines=50)
+#' file_schema_dsv("euro.csv", sep=";", dec=",", header=FALSE)
 #' }
-DSV_file_schema <- function(input_file,
-                            header=TRUE, sep=",", dec=".",
-                            id_quote_method="DB_NAMES",
+file_schema_dsv <- function(input_file,
+                            header = TRUE, sep = ",", dec = ".",
+                            id_quote_method = "DB_NAMES",
                             max_lines = 100, ...) {
     if (!file.exists(input_file)) {
-        stop("DSV_file_schema: File does not exist: ", input_file)
+        stop("file_schema_dsv: File does not exist: ", input_file)
     }
 
     df <- utils::read.table(
@@ -128,7 +129,7 @@ DSV_file_schema <- function(input_file,
 
 
 
-#' Xlsx_file_schema returns a data frame with the schema of an Excel data table
+#' file_schema_xlsx returns a data frame with the schema of an Excel data table
 #'
 #' Preview the table structure contained in a rectangular range of worksheet
 #' of an Excel file. 
@@ -162,13 +163,13 @@ DSV_file_schema <- function(input_file,
 #' 
 #' @importFrom openxlsx2 wb_to_df
 #' @export
-Xlsx_file_schema <- function(input_file,
+file_schema_xlsx <- function(input_file,
                              sheet_name, first_row, cols_range, header = TRUE,
                              id_quote_method="DB_NAMES",
                              max_lines = 100, ...) {
 
     if (!file.exists(input_file)) {
-        stop("Xlsx_file_schema: File does not exist: ", input_file)
+        stop("file_schema_xlsx: File does not exist: ", input_file)
     }
     
     df <- openxlsx2::wb_to_df(

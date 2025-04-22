@@ -16,7 +16,7 @@
 #' 
 #' @import RSQLite
 #' @export
-dbExecFile <- function(input_file, dbcon, plist=NULL) {
+dbExecFile <- function(input_file, dbcon, plist = NULL) {
     sql <- readLines(input_file)
     sql <- sql[grep("^--", sql, invert = T)]
 
@@ -38,7 +38,8 @@ dbExecFile <- function(input_file, dbcon, plist=NULL) {
 
             if (length(sql) != length(plist)) {
                 stop("RSQLite.toolkit: dbExecFile: ",
-                     "number of parameters in list should match the length of the statements.")
+                     "number of parameters in list should match ",
+                     "the length of the statements.")
             }
             
             for (ii in seq_along(sql)) {
@@ -82,7 +83,7 @@ dbExecFile <- function(input_file, dbcon, plist=NULL) {
 #' @import RSQLite
 #' @export
 dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
-                        drop_table=FALSE, copy_indexes=FALSE) {
+                        drop_table = FALSE, copy_indexes = FALSE) {
     if (substr(db_file_src, 1, 1) == ".") {
         db.file.src <- file.path(getwd(), db_file_src)
     }
@@ -195,7 +196,7 @@ dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
 #'
 #' @import RSQLite
 #' @export
-dbCreatePK <- function(dbcon, table_name, pk_fields, drop_index=FALSE) {
+dbCreatePK <- function(dbcon, table_name, pk_fields, drop_index = FALSE) {
 
     sqlcmd <- dbGetQuery(dbcon, paste("select name ",
                                       "from  sqlite_master ",

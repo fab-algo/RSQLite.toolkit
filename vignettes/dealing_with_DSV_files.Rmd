@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
 ## What to check in a DSV file
 
 ```{r setup}
-library(RSQLite)
 library(RSQLite.toolkit)
 ```
 
@@ -27,7 +26,7 @@ to retrieve some public data that is stored in the
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
 GitHub repository[^1].
 
-The first example will deal with a single table contained in a "standard" CSV file
+The first example will deal with a table contained in a "standard" CSV file
 (i.e. a text file with the first line containing column names, using the
 comma to separate divide fields' values and the dot as a decimal separator),
 using the `dbTableFromDSV()` function the data will be transfered in a new
@@ -40,13 +39,13 @@ library("piggyback")
 pb_download(file="14536105.zip", dest=tempdir(),
             repo="fab-algo/RSQLite.toolkit-tests", tag="latest")
 unzip(zipfile=file.path(tempdir(), "14536105.zip"), exdir=tempdir())
-fs::dir_tree(tempdir())
+dir(tempdir())
 ```
 
 After unzipping the downloaded file, we get the `DOS_V2.10.csv` file that
 contains the dataset we are interested in.
 
-We can check the structure of the dataset using the `DSV_file_schema()` function,
+We can check the structure of the dataset using the `file_schema_dsv()` function,
 that uses the same euristic algorithm[^2] used by `dbTableFromDSV()` to
 determine the column names and data types from the input file. Since the file
 is formatted as expected by the default values of the DSV file format parameters
@@ -56,7 +55,7 @@ is formatted as expected by the default values of the DSV file format parameters
 
 ```{r inspect_file1}
 data_file <- file.path(tempdir(), "DOSE_V2.10.csv")
-schema <- DSV_file_schema(input_file=data_file)
+schema <- file_schema_dsv(input_file=data_file)
 head(schema,5)
 tail(schema,5)
 ```
@@ -84,7 +83,7 @@ for the CSV file strucuture since the default values will be fine.
 
 ```{r loaddata1}
 dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"DOSE.sqlite"))
-dbTableFromDSV(input_file=data_file, dbcon=dbcon, table_name="DOSE")
+dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
 
 The warning message tells us that something probably went wrong. If we check 
