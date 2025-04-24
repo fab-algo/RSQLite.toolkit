@@ -77,7 +77,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    For details see the description of the `quote_method` parameter of
 #'    the [format_field_names()] function. Defautls to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
-#'    read to infer columns' data types. Defaults to 100.
+#'    read to infer columns' data types. Defaults to 2000.
 #' @param comment.char character, dafaults to `""` (i.e. interpretation of
 #'    comments is turned off). Used to alig this parameter value between
 #'    `scan` and `read.table` that assume different default values for it. 
@@ -101,7 +101,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 file_schema_dsv <- function(input_file,
                             header = TRUE, sep = ",", dec = ".", grp = "",
                             id_quote_method = "DB_NAMES",
-                            max_lines = 100, 
+                            max_lines = 2000, 
                             comment.char = "", ...) {
 
     if (!file.exists(input_file)) {
@@ -126,6 +126,7 @@ file_schema_dsv <- function(input_file,
                           what = "character",
                           strip.white = TRUE,
                           comment.char = comment.char,
+                          quiet = TRUE,
                           ...
                           )
     }
@@ -163,26 +164,28 @@ file_schema_dsv <- function(input_file,
             
             id1 <- which(is.na(test))
             id2 <- which(test == "")
-            test <- test[-c(id1,id2)]
+            if (length(-c(id1,id2)) > 0) {
+                test <- test[-c(id1,id2)]
+            }
 
             if (length(test) > 0) {
-
-                if (grp == "") {
-                    test1 <- test
-                    grp_suffix <- ""
+                check1 <-  grep(pattern="[.\\|()[{^$*+?]", x=dec)
+                if (length(check1) > 0) {
+                    pd <- paste0("\\", dec)
                 } else {
-                    check1 <-  grep(pattern="[.\\|()[{^$*+?]", x=grp)
-                    if (length(check1) > 0) {
+                    pd <- dec
+                }
+                
+                if (grp == "") {
+                    test1 <- gsub(pattern = pd, replacement = ".", x = test)
+                    grp_suffix <- ""
+                    
+                } else {
+                    check2 <-  grep(pattern="[.\\|()[{^$*+?]", x=grp)
+                    if (length(check2) > 0) {
                         pg <- paste0("\\", grp)
                     } else {
                         pg <- grp
-                    }
-                    
-                    check2 <-  grep(pattern="[.\\|()[{^$*+?]", x=dec)
-                    if (length(check1) > 0) {
-                        pd <- paste0("\\", dec)
-                    } else {
-                        pd <- dec
                     }
                     
                     test1 <- gsub(pattern = pd, replacement = ".", 
@@ -191,12 +194,13 @@ file_schema_dsv <- function(input_file,
                     grp_suffix <- "_grouped"
                 }
                 
-                if (!any(is.na(suppressWarnings(as.integer(test1))))) {
+                if (all(grepl(pattern="^[\\+\\-]?[0-9]+($|\\.[0]+)", x=test1))) {
                     col_types[ii] <- paste0("integer", grp_suffix)
                 } else if (!any(is.na(suppressWarnings(as.numeric(test1))))) {
                     col_types[ii] <- paste0("numeric", grp_suffix)
                 } else if (!any(is.na(suppressWarnings(
-                                as.Date(dd$a, optional=TRUE, format = date_format)
+                                as.Date(test1, optional=TRUE,
+                                        format = date_format)
                             )))) {
                     col_types[ii] <- "Date"
                 }

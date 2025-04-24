@@ -56,13 +56,15 @@ We can check the structure of the dataset using the `file_schema_dsv()` function
 that uses the same euristic algorithm[^2] used by `dbTableFromDSV()` to
 determine the column names and data types from the input file. Since the file
 is formatted as expected by the default values of the DSV file format parameters
-(i.e. `header = TRUE, sep = ",", dec = "."`), we can call that function using the 
-`input_file` parameter alone.
+(i.e. `header = TRUE, sep = ",", dec = ".", grp = ""`), we can call that function
+using the `input_file` parameter alone.
 
 
 ```{r inspect_file1}
 data_file <- file.path(tempdir(), "DOSE_V2.10.csv")
-schema <- file_schema_dsv(input_file=data_file)
+schema <- file_schema_dsv(input_file=data_file,
+                          quote = "\"", na.strings = "",
+                          comment.char = "", fileEncoding = "UTF-8")
 head(schema,5)
 tail(schema,5)
 ```

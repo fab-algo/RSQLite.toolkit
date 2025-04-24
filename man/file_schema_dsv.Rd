@@ -9,8 +9,9 @@ file_schema_dsv(
   header = TRUE,
   sep = ",",
   dec = ".",
+  grp = "",
   id_quote_method = "DB_NAMES",
-  max_lines = 100,
+  max_lines = 2000,
   comment.char = "",
   ...
 )
@@ -28,13 +29,16 @@ in the input file. Defaults to ",".}
 \item{dec}{character, decimal separator (e.g., "." or "," depending on locale)
 in the input file. Defaults to ".".}
 
+\item{grp}{character, character used for digit grouping. It defaults
+to \code{""} (i.e. no grouping).}
+
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
 the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{max_lines}{integer, number of lines (excluding the header) to be
-read to infer columns' data types. Defaults to 100.}
+read to infer columns' data types. Defaults to 2000.}
 
 \item{comment.char}{character, dafaults to \code{""} (i.e. interpretation of
 comments is turned off). Used to alig this parameter value between

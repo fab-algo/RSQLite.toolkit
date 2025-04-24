@@ -34,7 +34,8 @@ in the \code{pk_fields} parameter. It will be effective only if
 define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
 }
 \value{
-nothing
+integer, the number of records in \code{table_name} after writing data
+from the input view.
 }
 \description{
 dbTableFromView create a table in a SQLite database from  a

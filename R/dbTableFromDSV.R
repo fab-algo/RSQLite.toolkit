@@ -97,7 +97,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     df.scm <- file_schema_dsv(input_file, 
                               header = header, sep = sep, dec = dec, grp = grp,
                               id_quote_method = id_quote_method,
-                              max_lines = 200, ...)
+                              max_lines = 2000, ...)
 
     cnames <- df.scm$col_names
     cclass <- df.scm$col_types
@@ -183,7 +183,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     fcon <- file(input_file, "r", blocking = FALSE)
 
     if (header) {
-        scan(file = fcon, what = character(), nlines = 1)
+        scan(file = fcon, what = character(),
+             nlines = 1, quiet = TRUE, ...)
     }
 
     nread <- 0
@@ -212,26 +213,32 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             names(dfbuffer) <- cnames
         }
 
-        idx <- which(cclass %in% c("numeric_grouped","double_grouped"))
-        dfbuffer[, idx] <-
-            as.data.frame(apply(X = dfbuffer[, idx], MARGIN = 2,
-                                FUN = convert_grouped_digits,
-                                to = "numeric", dec = dec, grp = grp )
-                          )
+        idx1 <- which(cclass %in% c("numeric_grouped","double_grouped"))
+        if (length(idx1)>0) {
+            dfbuffer[, idx1] <-
+                as.data.frame(apply(X = dfbuffer[, idx1], MARGIN = 2,
+                                    FUN = convert_grouped_digits,
+                                    to = "numeric", dec = dec, grp = grp )
+                              )
+        }
         
-        idx <- which(cclass %in% c("integer_grouped"))
-        dfbuffer[, idx] <-
-            as.data.frame(apply(X = dfbuffer[, idx], MARGIN = 2,
-                                FUN = convert_grouped_digits,
-                                to = "integer", dec = dec, grp = grp )
-                          )
+        idx2 <- which(cclass %in% c("integer_grouped"))
+        if (length(idx2)>0) {
+            dfbuffer[, idx2] <-
+                as.data.frame(apply(X = dfbuffer[, idx2], MARGIN = 2,
+                                    FUN = convert_grouped_digits,
+                                    to = "integer", dec = dec, grp = grp )
+                              )
+        }
         
-        dfbuffer[, which(cclass == "Date")] <-
-            as.data.frame(apply(X = dfbuffer[, which(cclass == "Date")],
-                                MARGIN = 2, FUN = function(x)
-                                    format(x, format = "%Y-%m-%d")
-                                )
-                          )
+        idx3 <- which(cclass == "Date")
+        if (length(idx3)>0) {
+            dfbuffer[, idx3] <-
+                as.data.frame(apply(X = dfbuffer[, idx3], MARGIN = 2,
+                                    FUN = function(x)
+                                        format(x, format = "%Y-%m-%d") )
+                              )
+        }
 
         ## Write data ...............................
         if (autoPK) {

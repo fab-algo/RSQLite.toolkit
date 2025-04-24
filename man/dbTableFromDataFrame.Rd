@@ -61,7 +61,8 @@ in the \code{pk_fields} parameter. It will be effective only if
 define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
 }
 \value{
-nothing
+integer, the number of records in \code{table_name} after reading data
+from the data frame.
 }
 \description{
 The dbTableFromDataFrame function reads the data from a rectangula region

@@ -12,6 +12,7 @@ dbTableFromDSV(
   header = TRUE,
   sep = ",",
   dec = ".",
+  grp = "",
   id_quote_method = "DB_NAMES",
   col_names = NULL,
   col_types = NULL,
@@ -40,6 +41,9 @@ in the input file. Defaults to ",".}
 
 \item{dec}{character, decimal separator (e.g., "." or "," depending on locale)
 in the input file. Defaults to ".".}
+
+\item{grp}{character, character used for digit grouping. It defaults
+to \code{""} (i.e. no grouping).}
 
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
