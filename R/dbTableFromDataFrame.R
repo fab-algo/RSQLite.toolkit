@@ -35,7 +35,8 @@
 #' @param pk_fields character vector, the list of the fields' names that
 #'    define the `UNIQUE INDEX`. Defaults to `NULL`.
 #'
-#' @returns nothing
+#' @returns integer, the number of records in `table_name` after reading data
+#'    from the data frame.
 #'
 #' @import RSQLite
 #' @export
@@ -128,4 +129,8 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
             sep = " "
         ))
     }
+    
+    dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ",
+                                  table_name, sep=""))
+    dr[1,1]
 }

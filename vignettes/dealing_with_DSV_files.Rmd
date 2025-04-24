@@ -17,11 +17,11 @@ knitr::opts_chunk$set(
 "Delimiter-separated values" (DSV) files are (unfortunately) still a very common way
 to serialize tabular data and are widely used as a data exchange format.
 Since there isn't a strict technical standard that specifies how different data types
-should be represented in plain text, but a lot of possible customization are left to
-the final users, it is very common to incurr in issues importing data from this kind 
-of files. 
+should be represented in plain text, but a lot of possible customizations are left to
+the final users, it is very common to incurr in issues when data is imported from this
+kind of files. 
 The purpose of this article is to show some problems you can encounter 
-importing data in a SQLite database from DSV files and how to deal with them.
+loading data in a SQLite database from DSV files and how to deal with them.
 
 ## What to check in a DSV file
 
@@ -30,8 +30,8 @@ library(RSQLite.toolkit)
 ```
 
 Let's start with a simple example using real world data. To retrieve the data
-we need, we can use the package `package?piggyback` to download some public data that 
-has been stored in the [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests) GitHub repository[^1].
+we need, we can use the package `package?piggyback` to download some public datasets 
+that has been stored in the [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests) GitHub repository[^1].
 
 This example will deal with a table contained in a "standard" CSV file
 (i.e. a text file with the first line containing column names, using the
@@ -124,7 +124,8 @@ following table along with their default values.
 
 :`scan` and `read.table` parameters to handle data interpretation.
 
-These parameters control the conventions used to interpret the text read from the file:
+These parameters control the conventions used to interpret the text read 
+from the file:
 
 - *quoting*: convention used to inclued in strings "special" characters or to
    preserve the exact string without interpretation.
@@ -150,8 +151,8 @@ the help pages of the `scan` and `read.table` functions.
 It should be noted that the default values are seldom (... almost never) the right
 ones and we should invest some time to better understand the strategies used by the
 data source. If we have a technical description of the assumptions used in 
-creating the file we can follow those guidelines, otherwise we have to inspect the file
-and determine them by direct guess.
+creating the file we can follow those guidelines, otherwise we have to inspect the 
+file and determine them by direct guess.
 
 To explore a DSV file (especially big files) it is better to use log file explorers
 and avoid general purpose text editors. As an example, we can use [klogg](https://klogg.filimonov.dev/) that is available for all major operating systems.
@@ -166,14 +167,14 @@ If we open the file and inspect some records we understand that:
 
 For the input file used in this example we need:
 
-- to explicitly force the `quote` parameter to `"\""` (i.e. only the double quote character)
-  and the `na.strings` parameter to `""`;
+- to explicitly force the `quote` parameter to `"\""` (i.e. only the double quote 
+  character) and the `na.strings` parameter to `""`;
 - to turn off the commenting option: `comment.char = ""`;
 - to tell to the `base::scan()` function that the input file is encoded in UTF-8: 
   `fileEncoding = "UTF-8"`.
 
-We also need to delete the data from the first import attempt and load it from scratch:
-`drop_table = TRUE`.
+We also need to delete the data from the first import attempt and load it from 
+scratch: `drop_table = TRUE`.
 
 ```{r loaddata2}
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",
@@ -186,6 +187,7 @@ As we can see now we got all the expected records in the SQLite table.
 ```{r close_db}
 dbDisconnect(dbcon)
 ```
+
 ## Issues with column names
 
 

@@ -16,6 +16,8 @@
 #'    in the input file. Defaults to ",".
 #' @param dec character, decimal separator (e.g., "." or "," depending on locale)
 #'    in the input file. Defaults to ".".
+#' @param grp character, character used for digit grouping. It defaults
+#'    to `""` (i.e. no grouping).
 #' 
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
@@ -71,12 +73,12 @@
 #' @importFrom utils read.table
 #' @export
 dbTableFromDSV <- function(input_file, dbcon, table_name,
-                           header=TRUE, sep=",", dec=".",
-                           id_quote_method="DB_NAMES",
-                           col_names=NULL, col_types=NULL,
-                           drop_table=FALSE,
-                           auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL,
-                           constant_values=NULL, chunk_size=0, ...) {
+                           header = TRUE, sep = ",", dec = ".", grp = "",
+                           id_quote_method = "DB_NAMES",
+                           col_names = NULL, col_types = NULL,
+                           drop_table = FALSE,
+                           auto_pk = FALSE, build_pk = FALSE, pk_fields = NULL,
+                           constant_values = NULL, chunk_size = 0, ...) {
 
     ## formal checks on parameters ................
     if (!("data.frame" %in% class(constant_values)) && !is.null(constant_values)) {
@@ -93,8 +95,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
     ## read schema ................................
     df.scm <- file_schema_dsv(input_file, 
-                              header=header, sep=sep, dec=dec,
-                              id_quote_method=id_quote_method,
+                              header = header, sep = sep, dec = dec, grp = grp,
+                              id_quote_method = id_quote_method,
                               max_lines = 200, ...)
 
     cnames <- df.scm$col_names
@@ -136,7 +138,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         src_names <- names(constant_values)
         cv_names <- format_field_names(x=src_names, quote_method=id_quote_method,
                                        unique_names=TRUE)
-        cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
+        cv_types <- vapply(constant_values,
+                           function(col) class(col)[1], character(1))
         
         sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
         sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
@@ -169,6 +172,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     for (ii in seq_along(cclass)) {
         if (cclass[ii] == "Date") {
             lclass[[ii]] <- vector("character", 0)
+        } else if (cclass[ii] %in%
+                   c("integer_grouped","numeric_grouped","double_grouped")) {
+            lclass[[ii]] <- vector("character", 0)            
         } else {
             lclass[[ii]] <- vector(cclass[ii], 0)
         }
@@ -198,7 +204,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         dfbuffer <- as.data.frame(dfbuffer,
                                   row.names = NULL, stringAsFactors = FALSE)
 
-        ## Write data ...............................
+        ## Additional conversions ...............................
         if (!is.null(constant_values)) {
             dfbuffer <- cbind(dfbuffer, constant_values)
             names(dfbuffer) <- cnames1
@@ -206,11 +212,28 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             names(dfbuffer) <- cnames
         }
 
+        idx <- which(cclass %in% c("numeric_grouped","double_grouped"))
+        dfbuffer[, idx] <-
+            as.data.frame(apply(X = dfbuffer[, idx], MARGIN = 2,
+                                FUN = convert_grouped_digits,
+                                to = "numeric", dec = dec, grp = grp )
+                          )
+        
+        idx <- which(cclass %in% c("integer_grouped"))
+        dfbuffer[, idx] <-
+            as.data.frame(apply(X = dfbuffer[, idx], MARGIN = 2,
+                                FUN = convert_grouped_digits,
+                                to = "integer", dec = dec, grp = grp )
+                          )
+        
         dfbuffer[, which(cclass == "Date")] <-
-            as.data.frame(apply(dfbuffer[, which(cclass == "Date")], 2,
-                                function(x) format(x,format = "%Y-%m-%d"))
+            as.data.frame(apply(X = dfbuffer[, which(cclass == "Date")],
+                                MARGIN = 2, FUN = function(x)
+                                    format(x, format = "%Y-%m-%d")
+                                )
                           )
 
+        ## Write data ...............................
         if (autoPK) {
             dfbuffer <- cbind(dfbuffer, NA)
             names(dfbuffer) <- cnames2
@@ -244,6 +267,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         ))
     }
 
-    dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ", table_name, sep=""))
+    dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ",
+                                  table_name, sep=""))
     dr[1,1]
 }

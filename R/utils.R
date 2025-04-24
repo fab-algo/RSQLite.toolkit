@@ -47,12 +47,43 @@ R2SQL_types <- function(x) {
                     "integer"  = "INTEGER",
                     "logical"  = "INTEGER",
                     "numeric"  = "REAL",
-                    "Date"     = "DATE")
+                    "Date"     = "DATE",
+                    "double_grouped"   = "REAL",
+                    "integer_grouped"  = "INTEGER",
+                    "numeric_grouped"  = "REAL")
     
     y <- r2sql_dict[x]
     y[which(is.na(y))] <- "TEXT"
 
     y    
+}
+
+convert_grouped_digits <- function(x, to, dec, grp) {
+
+    check1 <-  grep(pattern="[.\\|()[{^$*+?]", x=grp)
+    if (length(check1) > 0) {
+        pg <- paste0("\\", grp)
+    } else {
+        pg <- grp
+    }
+    
+    check2 <-  grep(pattern="[.\\|()[{^$*+?]", x=dec)
+    if (length(check1) > 0) {
+        pd <- paste0("\\", dec)
+    } else {
+        pd <- dec
+    }
+    
+    y <- gsub(pattern = pd, replacement = ".", 
+              x=gsub(pattern = pg, replacement = "", x = x)
+              )
+    if (to %in% c("numeric", "double")) {
+        y <- as.numeric(y)
+    } else if (to == "integer") {
+        y <- as.integer(y)
+    }
+
+    y
 }
 
 

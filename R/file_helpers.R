@@ -70,6 +70,8 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    in the input file. Defaults to ",".
 #' @param dec character, decimal separator (e.g., "." or "," depending on locale)
 #'    in the input file. Defaults to ".".
+#' @param grp character, character used for digit grouping. It defaults
+#'    to `""` (i.e. no grouping).
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
@@ -97,12 +99,20 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #' file_schema_dsv("euro.csv", sep=";", dec=",", header=FALSE)
 #' }
 file_schema_dsv <- function(input_file,
-                            header = TRUE, sep = ",", dec = ".",
+                            header = TRUE, sep = ",", dec = ".", grp = "",
                             id_quote_method = "DB_NAMES",
-                            max_lines = 100,
+                            max_lines = 100, 
                             comment.char = "", ...) {
+
     if (!file.exists(input_file)) {
         stop("file_schema_dsv: File does not exist: ", input_file)
+    }
+
+    if (any(is.na(grp)) || is.null(grp) ||
+        !("character" %in% class(grp)) || length(grp) == 0 ||
+        length(grp) > 1 || nchar(grp[1]) > 1) {
+        stop("file_schema_dsv: error in 'grouping_char' parameter: ",
+             paste(paste("\"",grp,"\"",sep=""), collapse=", "))
     }
 
     if (is.na(comment.char)) {
@@ -128,6 +138,7 @@ file_schema_dsv <- function(input_file,
                      nrows = max_lines,
                      stringsAsFactors = FALSE,
                      comment.char = comment.char,
+                     colClasses = c("character"),
                      ... # allow custom options like quote, colClasses, etc.
                  )
 
@@ -142,6 +153,56 @@ file_schema_dsv <- function(input_file,
 
     
     col_types <- vapply(df, function(col) class(col)[1], character(1))
+
+    date_format <- c("%Y-%m-%d")
+    if (length(df) > 0) {
+        for (ii in 1:length(df)) {
+            test <- df[,ii]
+
+            test <- gsub("^\\s+|\\s+$", "", test)
+            
+            id1 <- which(is.na(test))
+            id2 <- which(test == "")
+            test <- test[-c(id1,id2)]
+
+            if (length(test) > 0) {
+
+                if (grp == "") {
+                    test1 <- test
+                    grp_suffix <- ""
+                } else {
+                    check1 <-  grep(pattern="[.\\|()[{^$*+?]", x=grp)
+                    if (length(check1) > 0) {
+                        pg <- paste0("\\", grp)
+                    } else {
+                        pg <- grp
+                    }
+                    
+                    check2 <-  grep(pattern="[.\\|()[{^$*+?]", x=dec)
+                    if (length(check1) > 0) {
+                        pd <- paste0("\\", dec)
+                    } else {
+                        pd <- dec
+                    }
+                    
+                    test1 <- gsub(pattern = pd, replacement = ".", 
+                                  x=gsub(pattern = pg, replacement = "", x = test)
+                                  )
+                    grp_suffix <- "_grouped"
+                }
+                
+                if (!any(is.na(suppressWarnings(as.integer(test1))))) {
+                    col_types[ii] <- paste0("integer", grp_suffix)
+                } else if (!any(is.na(suppressWarnings(as.numeric(test1))))) {
+                    col_types[ii] <- paste0("numeric", grp_suffix)
+                } else if (!any(is.na(suppressWarnings(
+                                as.Date(dd$a, optional=TRUE, format = date_format)
+                            )))) {
+                    col_types[ii] <- "Date"
+                }
+            }
+        }
+    }
     
     data.frame(
         col_names, col_types,
