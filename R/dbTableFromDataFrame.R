@@ -9,7 +9,7 @@
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
 #' @param col_names character vector, names of the columuns to be imported.
 #'    Used to override the field names derived from the data frame (using the
 #'    quote method selected by `id_quote_method`). Must be of the same length
@@ -50,7 +50,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
     ## read schema ................................
     src_names <- names(df)
 
-    cnames <- format_field_names(src_names, quote_method=id_quote_method)
+    cnames <- format_column_names(src_names, quote_method=id_quote_method)
     cclass <- vapply(df, function(col) class(col)[1], character(1))
     fields <- R2SQL_types(cclass)
 

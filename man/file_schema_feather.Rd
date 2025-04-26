@@ -12,7 +12,7 @@ file_schema_feather(input_file, id_quote_method = "DB_NAMES")
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
+the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
 }
 \value{
 a data frame with these columns:

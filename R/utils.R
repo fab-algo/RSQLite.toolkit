@@ -87,7 +87,7 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 }
 
 
-#' format_field_names format a vector of strings to be
+#' format_column_names format a vector of strings to be
 #'   used as columns' names for a table in a SQLite database
 #'
 #' @param x character vector with the identifiers' names to be quoted.
@@ -114,7 +114,7 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #' 
 #' @importFrom DBI .SQL92Keywords
 #' @export
-format_field_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
+format_column_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
     allowed_methods <- c("DB_NAMES",
                          "SINGLE_QUOTES", "DOUBLE_QUOTES",
                          "SQL_SERVER",    "MYSQL")

@@ -23,7 +23,7 @@
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
 #' @param col_names character vector, names of the columuns to be imported.
 #'    Used to override the field names derived from the input file (using the
 #'    quote method selected by `id_quote_method`). Must be of the same length
@@ -130,8 +130,8 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
 
     if (!is.null(constant_values)) {
         src_names <- names(constant_values)
-        cv_names <- format_field_names(x=src_names, quote_method=id_quote_method,
-                                       unique_names=TRUE)
+        cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                        unique_names=TRUE)
         cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
         
         sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")

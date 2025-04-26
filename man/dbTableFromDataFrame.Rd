@@ -29,7 +29,7 @@ dbTableFromDataFrame(
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
+the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{col_names}{character vector, names of the columuns to be imported.
 Used to override the field names derived from the data frame (using the

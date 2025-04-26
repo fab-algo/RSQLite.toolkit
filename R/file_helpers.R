@@ -10,7 +10,7 @@
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
 #' 
 #' @returns a data frame with these columns:
 #'    - `col_names`: columns' names, after applying the selected quote method;
@@ -37,8 +37,8 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 
     src_names <- ft$column_names
 
-    col_names <- format_field_names(x=src_names, quote_method=id_quote_method,
-                                    unique_names=TRUE)
+    col_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                     unique_names=TRUE)
     
     ss <- lapply(ft$schema$fields, FUN=function(x) `$`(x, "type"))
     src_types <- sapply(ss, FUN=function(x) `$`(x, "name"))
@@ -75,9 +75,12 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
 #'    read to infer columns' data types. Defaults to 2000.
+#' @param null_columns logical, if `TRUE` the col_type of columuns consisting only
+#'    of NAs or zero-length strings will be marked as `NA`, otherwise they will
+#'    be marked as `character`. Defaults to `FALSE`
 #' @param comment.char character, dafaults to `""` (i.e. interpretation of
 #'    comments is turned off). Used to alig this parameter value between
 #'    `scan` and `read.table` that assume different default values for it. 
@@ -101,7 +104,8 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 file_schema_dsv <- function(input_file,
                             header = TRUE, sep = ",", dec = ".", grp = "",
                             id_quote_method = "DB_NAMES",
-                            max_lines = 2000, 
+                            max_lines = 2000,
+                            null_columns = FALSE,
                             comment.char = "", ...) {
 
     if (!file.exists(input_file)) {
@@ -149,8 +153,8 @@ file_schema_dsv <- function(input_file,
         src_names <- names(df)
     }
     
-    col_names <- format_field_names(x=src_names, quote_method=id_quote_method,
-                                    unique_names=TRUE)
+    col_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                     unique_names=TRUE)
 
     
     col_types <- vapply(df, function(col) class(col)[1], character(1))
@@ -164,7 +168,7 @@ file_schema_dsv <- function(input_file,
             
             id1 <- which(is.na(test))
             id2 <- which(test == "")
-            if (length(-c(id1,id2)) > 0) {
+            if (length(c(id1,id2)) > 0) {
                 test <- test[-c(id1,id2)]
             }
 
@@ -194,7 +198,7 @@ file_schema_dsv <- function(input_file,
                     grp_suffix <- "_grouped"
                 }
                 
-                if (all(grepl(pattern="^[\\+\\-]?[0-9]+($|\\.[0]+)", x=test1))) {
+                if (all(grepl(pattern="^[\\+\\-]?[0-9]$", x=test1))) {
                     col_types[ii] <- paste0("integer", grp_suffix)
                 } else if (!any(is.na(suppressWarnings(as.numeric(test1))))) {
                     col_types[ii] <- paste0("numeric", grp_suffix)
@@ -203,6 +207,10 @@ file_schema_dsv <- function(input_file,
                                         format = date_format)
                             )))) {
                     col_types[ii] <- "Date"
+                }
+            } else {
+                if (null_columns == TRUE) {
+                    col_types[ii] <- NA
                 }
             }
         }
@@ -239,9 +247,12 @@ file_schema_dsv <- function(input_file,
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_field_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
 #'    read to infer columns' data types. Defaults to 100.
+#' @param null_columns logical, if `TRUE` the col_type of columuns consisting only
+#'    of NAs or zero-length strings will be marked as `NA`, otherwise they will
+#'    be marked as `character`. Defaults to `FALSE`
 #' @param ...  parameters passed to [openxlsx2::wb_to_df()] function.
 #' 
 #' @returns a data frame with these columns:
@@ -257,7 +268,9 @@ file_schema_dsv <- function(input_file,
 file_schema_xlsx <- function(input_file,
                              sheet_name, first_row, cols_range, header = TRUE,
                              id_quote_method="DB_NAMES",
-                             max_lines = 100, ...) {
+                             max_lines = 100,
+                             null_columns = FALSE,
+                             ...) {
 
     if (!file.exists(input_file)) {
         stop("file_schema_xlsx: File does not exist: ", input_file)
@@ -280,8 +293,24 @@ file_schema_xlsx <- function(input_file,
     src_names <- names(df)
     col_types <- vapply(df, function(col) class(col)[1], character(1))
     
-    col_names <- format_field_names(x=src_names, quote_method=id_quote_method,
-                                    unique_names=TRUE)
+    col_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                     unique_names=TRUE)
+    
+    if (length(df) > 0) {
+        for (ii in 1:length(df)) {
+            test <- df[,ii]
+
+            id1 <- which(is.na(test))
+            id2 <- which(test == "")
+            if (length(c(id1,id2)) > 0) {
+                test <- test[-c(id1,id2)]
+            }
+
+            if (length(test) == 0 && null_columns == TRUE) {
+                col_types[ii] <- NA
+            }            
+        }
+    }
     
     data.frame(
         col_names,

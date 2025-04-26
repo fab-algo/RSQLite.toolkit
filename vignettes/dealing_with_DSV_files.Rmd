@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 "Delimiter-separated values" (DSV) files are (unfortunately) still a very common way
 to serialize tabular data and are widely used as a data exchange format.
 Since there isn't a strict technical standard that specifies how different data types
-should be represented in plain text, but a lot of possible customizations are left to
+should be represented in plain text, and a lot of possible customizations are left to
 the final users, it is very common to incurr in issues when data is imported from this
 kind of files. 
 The purpose of this article is to show some problems you can encounter 
@@ -45,35 +45,15 @@ First we download the data from the repo:
 library("piggyback", quietly=TRUE)
 pb_download(file="14536105.zip", dest=tempdir(),
             repo="fab-algo/RSQLite.toolkit-tests", tag="latest")
+
 unzip(zipfile=file.path(tempdir(), "14536105.zip"), exdir=tempdir())
 dir(tempdir())
+
+data_file <- file.path(tempdir(), "DOSE_V2.10.csv")
 ```
 
 After unzipping the downloaded file, we get the `DOSE_V2.10.csv` file that
 contains the dataset we are interested in.
-
-We can check the structure of the dataset using the `file_schema_dsv()` function,
-that uses the same euristic algorithm[^2] used by `dbTableFromDSV()` to
-determine the column names and data types from the input file. Since the file
-is formatted as expected by the default values of the DSV file format parameters
-(i.e. `header = TRUE, sep = ",", dec = ".", grp = ""`), we can call that function
-using the `input_file` parameter alone.
-
-
-```{r inspect_file1}
-data_file <- file.path(tempdir(), "DOSE_V2.10.csv")
-schema <- file_schema_dsv(input_file=data_file,
-                          quote = "\"", na.strings = "",
-                          comment.char = "", fileEncoding = "UTF-8")
-head(schema,5)
-tail(schema,5)
-```
-
-The table in the `DOS_V2.10.csv` file consists of 35 fields. The schema shows
-the input data type (`src_types`), the intermediate data type used for the 
-data frame in R (`col_types`) and the target data type for the SQLite table 
-(`sql_type`).
-
 We can now check the number of rows in the input file:
 
 ```{r inspect_file2}
@@ -82,28 +62,21 @@ n_rows
 ```
 
 So we expect to have `r format(n_rows-1, nsmall=0)` records in the SQLite table.
-Now we connect to a sample database (i.e. `tests.sqlite`) and move the
-dataset in a table there, calling the `dbTableFromDSV()` function specifying 
-the connection to the database (i.e.  `dbcon` parameter) and the table name 
-(i.e. `table_name` parameter). Again we don't need to specify the parameters
-for the CSV file strucuture since the default values will be fine.
+Now we connect to a sample database (i.e. `tests.sqlite`): 
 
-```{r loaddata1}
+```{r dbcon}
 dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"tests.sqlite"))
+```
+and move thedataset in a table there, calling the `dbTableFromDSV()` function 
+specifying the connection to the database (i.e.  `dbcon` parameter) and the 
+table name (i.e. `table_name` parameter). We don't need to specify the parameters
+for the CSV file strucuture (i.e. `header = TRUE`, `sep = ","`, `dec = "."`, 
+`grp = ""`) since the default values will be fine.
+
+```{r, label=loaddata1, error=TRUE}
+## do not run: error
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
-
-The warning message tells us that something probably went wrong. If we check the 
-table in the database:
-
-```{r checks1}
-dbListFields(dbcon, "DOSE")
-dbGetQuery(dbcon, "select count(*) from DOSE")
-```
-
-we see that all the fields in the input file have been read, but the number
-of records is not the expected one: at some point the reading of the input file
-was interrupted due to a "EOF character".
 
 To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
 function uses the `read.table` function (from the `utils` package) to guess the
@@ -157,14 +130,15 @@ creating the file we can follow those guidelines, otherwise we have to inspect t
 file and determine them by direct guess.
 
 To explore a DSV file (especially big files) it is better to use log file explorers
-and avoid general purpose text editors. As an example, we can use [klogg](https://klogg.filimonov.dev/) that is available for all major operating systems.
+and avoid general purpose text editors. As an example, we can use [klogg](https://klogg.filimonov.dev/) 
+that is available for all major operating systems.
 
 If we open the file and inspect some records we understand that:
 
 - there are strings with comma and single quote inside, surrounded by 
   double quotes, so the file is using a specific quoting convention;
 - missing data is represented by a "zero-lenght" string;
-- many strings are using special characters that need a specific enconding 
+- many strings use special characters that need a specific enconding 
   system; in this file the UTF-8 enconding is used.
 
 For the input file used in this example we need:
@@ -175,8 +149,11 @@ For the input file used in this example we need:
 - to tell to the `base::scan()` function that the input file is encoded in UTF-8: 
   `fileEncoding = "UTF-8"`.
 
-We also need to delete the data from the first import attempt and load it from 
-scratch: `drop_table = TRUE`.
+```{r schema}
+schema <- file_schema_dsv(input_file = data_file,
+                          quote = "\"", na.strings = "",
+                          comment.char = "", fileEncoding = "UTF-8")
+```
 
 ```{r loaddata2}
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",

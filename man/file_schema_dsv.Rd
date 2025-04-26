@@ -12,6 +12,7 @@ file_schema_dsv(
   grp = "",
   id_quote_method = "DB_NAMES",
   max_lines = 2000,
+  null_columns = FALSE,
   comment.char = "",
   ...
 )
@@ -35,10 +36,14 @@ to \code{""} (i.e. no grouping).}
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_field_names]{format_field_names()}} function. Defautls to \code{DB_NAMES}.}
+the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
 
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 2000.}
+
+\item{null_columns}{logical, if \code{TRUE} the col_type of columuns consisting only
+of NAs or zero-length strings will be marked as \code{NA}, otherwise they will
+be marked as \code{character}. Defaults to \code{FALSE}}
 
 \item{comment.char}{character, dafaults to \code{""} (i.e. interpretation of
 comments is turned off). Used to alig this parameter value between
