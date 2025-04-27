@@ -60,7 +60,9 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
                                drop_table=FALSE,
                                auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL,
                                constant_values=NULL) {
-
+    ## local vars .................................
+    fun_name <- match.call()[[1]]
+    
     ## formal checks on parameters ................
     if (!("data.frame" %in% class(constant_values)) && !is.null(constant_values)) {
         stop("dbTableFromFeather: 'constant_values' must be a data frame.")
@@ -75,125 +77,169 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- file_schema_feather(input_file, id_quote_method=id_quote_method)
+    tryCatch({
+        df.scm <- file_schema_feather(input_file, id_quote_method=id_quote_method)
 
-    cnames <- df.scm$col_names
-    cclass <- df.scm$col_types
-    fields <- df.scm$sql_types
+        cnames <- df.scm$col_names
+        cclass <- df.scm$col_types
+        fields <- df.scm$sql_types
 
-    if (!is.null(col_names)) {
-        if (length(col_names)!=length(cnames)) {
-            stop("dbTableFromFeather: wrong 'col_names' length, must be ",
-                 length(cnames), " elements but found ", length(col_names))
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 131
+        stop(error_handler(err, fun_name, step), .call = FALSE)
+    })
+
+
+    tryCatch({
+        if (!is.null(col_names)) {
+            if (length(col_names)!=length(cnames)) {
+                stop("dbTableFromFeather: wrong 'col_names' length, must be ",
+                     length(cnames), " elements but found ", length(col_names))
+            }
+            cnames <- col_names
         }
-        cnames <- col_names
-    }
 
-    if (!is.null(col_types)) {
-        if (length(col_types)!=length(cclass)) {
-            stop("dbTableFromFeather: wrong 'col_types' length, must be ",
-                 length(cclass), " elements but found ", length(col_types))
+        if (!is.null(col_types)) {
+            if (length(col_types)!=length(cclass)) {
+                stop("dbTableFromFeather: wrong 'col_types' length, must be ",
+                     length(cclass), " elements but found ", length(col_types))
+            }
+            cclass <- col_types
+            fields <- R2SQL_types(col_types)
         }
-        cclass <- col_types
-        fields <- R2SQL_types(col_types)
-    }
-    
+        
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 102
+        stop(error_handler(err, fun_name, step), .call = FALSE)
+    })
+
+
+
     ## create empty table .........................
-	if (drop_table) {
-        sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+    tryCatch({
+        if (drop_table) {
+            sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+            dbExecute(dbcon, sql.def)
+        }
+
+        sql.head <-
+            paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
+        sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
+
+        cv_names <- c()
+        cv_types <- c()
+
+        if (!is.null(constant_values)) {
+            src_names <- names(constant_values)
+            cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                            unique_names=TRUE)
+            cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
+            
+            sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
+            sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
+            
+            names(constant_values) <- cv_names
+            
+            cnames1 <- c(cnames, cv_names)
+        } else {
+            cnames1 <- cnames
+        }
+
+        autoPK <- FALSE
+        if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
+
+        if (autoPK) {
+            sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
+            cnames2 <- c(cnames1, "SEQ")
+        } else {
+            cnames2 <- cnames1
+        }
+
+        sql.tail <- ");"
+        sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
+
         dbExecute(dbcon, sql.def)
-    }
-
-    sql.head <-
-        paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
-    sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
-
-    cv_names <- c()
-    cv_types <- c()
-
-    if (!is.null(constant_values)) {
-        src_names <- names(constant_values)
-        cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
-                                        unique_names=TRUE)
-        cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
         
-        sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
-        sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
-        
-        names(constant_values) <- cv_names
-        
-        cnames1 <- c(cnames, cv_names)
-    } else {
-        cnames1 <- cnames
-    }
-
-    autoPK <- FALSE
-    if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
-
-    if (autoPK) {
-        sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-        cnames2 <- c(cnames1, "SEQ")
-    } else {
-        cnames2 <- cnames1
-    }
-
-    sql.tail <- ");"
-    sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
-
-    dbExecute(dbcon, sql.def)
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 103
+        stop(error_handler(err, fun_name, step), .call = FALSE)
+    })
 
 
     ## read data ..................................
-    df <- arrow::read_feather(
-        file = input_file,
-        col_select  = NULL,
-        as_data_frame = TRUE,
-        mmap = TRUE
-    )
-    df <- as.data.frame(df)
+    tryCatch({
+        df <- arrow::read_feather(
+                         file = input_file,
+                         col_select  = NULL,
+                         as_data_frame = TRUE,
+                         mmap = TRUE
+                     )
+        df <- as.data.frame(df)
+        
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 104
+        stop(error_handler(err, fun_name, step), .call = FALSE)
+    })
 
-    ## Write data ................................
-    if (!is.null(constant_values)) {
-        df <- cbind(df, constant_values)
-        names(df) <- cnames1
-    } else {
-        names(df) <- cnames
-    }
+    ## Write data ...............................
+    tryCatch({
+        if (!is.null(constant_values)) {
+            df <- cbind(df, constant_values)
+            names(df) <- cnames1
+        } else {
+            names(df) <- cnames
+        }
 
-    df[, which(cclass == "Date")] <-
-        as.data.frame(apply(df[, which(cclass == "Date")], 2,
-                            function(x) format(x,format = "%Y-%m-%d"))
-                      )
+        df[, which(cclass == "Date")] <-
+            as.data.frame(apply(df[, which(cclass == "Date")], 2,
+                                function(x) format(x,format = "%Y-%m-%d"))
+                          )
 
-    if (autoPK) {
-        df <- cbind(df, NA)
-        names(df) <- cnames2
-    }
+        if (autoPK) {
+            df <- cbind(df, NA)
+            names(df) <- cnames2
+        }
 
-    dbWriteTable(dbcon, table_name, as.data.frame(df),
-                 row.names = FALSE, append = TRUE)
+        dbWriteTable(dbcon, table_name, as.data.frame(df),
+                     row.names = FALSE, append = TRUE)
 
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 105
+        stop(error_handler(err, fun_name, step), .call = FALSE)
+    })
 
     ## Indexing -------------------------------
-    if (!is.null(pk_fields) && build_pk) {
+    tryCatch({
+        if (!is.null(pk_fields) && build_pk) {
+            
+            if (!is.character(pk_fields)) {
+                stop("dbTableFromFeather: 'pk_fields' must be a character vector.")
+            }
+
+            check_fields <- setdiff(pk_fields, cnames1)
+            if (length(check_fields) > 0) {
+                stop("dbTableFromFeather: 'pk_fields' contains unknown field names: ",
+                     check_fields)
+            }
+
+            dbExecute(dbcon, paste(
+                                 "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
+                                 "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
+                                 ");",
+                                 sep = " "
+                             ))
+        }
         
-        if (!is.character(pk_fields)) {
-            stop("dbTableFromFeather: 'pk_fields' must be a character vector.")
-        }
-
-        check_fields <- setdiff(pk_fields, cnames1)
-        if (length(check_fields) > 0) {
-            stop("dbTableFromFeather: 'pk_fields' contains unknown field names: ",
-                 check_fields)
-        }
-
-        dbExecute(dbcon, paste(
-            "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-            "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
-            ");",
-            sep = " "
-        ))
-    }
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 106
+        stop(error_handler(err, fun_name, step), .call = FALSE)
+    })
     
     dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ", table_name, sep=""))
     dr[1,1]

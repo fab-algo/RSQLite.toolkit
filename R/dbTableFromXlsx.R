@@ -73,6 +73,8 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
                             drop_table=FALSE,
                             auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL,
                             constant_values=NULL, ...) {
+    ## local vars .................................
+    fun_name <- match.call()[[1]]
 
     ## formal checks on parameters ................
     if (!("data.frame" %in% class(constant_values)) && !is.null(constant_values)) {
@@ -88,135 +90,177 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- file_schema_xlsx(input_file, sheet_name=sheet_name,
-                               first_row=first_row, cols_range=cols_range,
-                               header=header, 
-                               id_quote_method=id_quote_method)
+    tryCatch({
+        df.scm <- file_schema_xlsx(input_file, sheet_name=sheet_name,
+                                   first_row=first_row, cols_range=cols_range,
+                                   header=header, 
+                                   id_quote_method=id_quote_method)
 
-    cnames <- df.scm$col_names
-    cclass <- df.scm$col_types
-    fields <- df.scm$sql_types
+        cnames <- df.scm$col_names
+        cclass <- df.scm$col_types
+        fields <- df.scm$sql_types
 
-    if (!is.null(col_names)) {
-        if (length(col_names)!=length(cnames)) {
-            stop("dbTableFromXlsx: wrong 'col_names' length, must be ",
-                 length(cnames), " elements but found ", length(col_names))
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 121
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
+
+
+    tryCatch({
+        if (!is.null(col_names)) {
+            if (length(col_names)!=length(cnames)) {
+                stop("dbTableFromXlsx: wrong 'col_names' length, must be ",
+                     length(cnames), " elements but found ", length(col_names))
+            }
+            cnames <- col_names
         }
-        cnames <- col_names
-    }
 
-    if (!is.null(col_types)) {
-        if (length(col_types)!=length(cclass)) {
-            stop("dbTableFromXlsx: wrong 'col_types' length, must be ",
-                 length(cclass), " elements but found ", length(col_types))
+        if (!is.null(col_types)) {
+            if (length(col_types)!=length(cclass)) {
+                stop("dbTableFromXlsx: wrong 'col_types' length, must be ",
+                     length(cclass), " elements but found ", length(col_types))
+            }
+            cclass <- col_types
+            fields <- R2SQL_types(col_types)
         }
-        cclass <- col_types
-        fields <- R2SQL_types(col_types)
-    }
-    
+        
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 102
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 	
     ## create empty table .........................
-	if (drop_table) {
-        sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+    tryCatch({
+        if (drop_table) {
+            sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+            dbExecute(dbcon, sql.def)
+        }
+
+        sql.head <-
+            paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
+        sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
+
+        cv_names <- c()
+        cv_types <- c()
+
+        if (!is.null(constant_values)) {
+            src_names <- names(constant_values)
+            cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                            unique_names=TRUE)
+            cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
+            
+            sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
+            sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
+
+            names(constant_values) <- cv_names
+            
+            cnames1 <- c(cnames, cv_names)
+        } else {
+            cnames1 <- cnames
+        }
+
+        autoPK <- FALSE
+        if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
+
+        if (autoPK) {
+            sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
+            cnames2 <- c(cnames1, "SEQ")
+        } else {
+            cnames2 <- cnames1
+        }
+
+        sql.tail <- ");"
+        sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
+
         dbExecute(dbcon, sql.def)
-    }
 
-    sql.head <-
-        paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
-    sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
-
-    cv_names <- c()
-    cv_types <- c()
-
-    if (!is.null(constant_values)) {
-        src_names <- names(constant_values)
-        cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
-                                        unique_names=TRUE)
-        cv_types <- vapply(constant_values, function(col) class(col)[1], character(1))
-        
-        sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
-        sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
-
-        names(constant_values) <- cv_names
-        
-        cnames1 <- c(cnames, cv_names)
-    } else {
-        cnames1 <- cnames
-    }
-
-    autoPK <- FALSE
-    if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
-
-    if (autoPK) {
-        sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-        cnames2 <- c(cnames1, "SEQ")
-    } else {
-        cnames2 <- cnames1
-    }
-
-    sql.tail <- ");"
-    sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
-
-    dbExecute(dbcon, sql.def)
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 103
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 
     
     ## read data ..................................
-    df <- openxlsx2::wb_to_df(
-        file = input_file,
-        sheet = sheet_name,
-        start_row = first_row,
-        col_names = header,
-        cols = cols_range,
-        skip_empty_rows = FALSE,
-        skip_empty_cols = FALSE,
-        check_names = TRUE,
-        ...
-        )
+    tryCatch({
+        df <- openxlsx2::wb_to_df(
+                             file = input_file,
+                             sheet = sheet_name,
+                             start_row = first_row,
+                             col_names = header,
+                             cols = cols_range,
+                             skip_empty_rows = FALSE,
+                             skip_empty_cols = FALSE,
+                             check_names = TRUE,
+                             ...
+                         )
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 104
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 
     
-    # Write data ................................
-    if (!is.null(constant_values)) {
-        df <- cbind(df, constant_values)
-        names(df) <- cnames1
-    } else {
-        names(df) <- cnames
-    }
+    ## Write data ................................
+    tryCatch({
+        if (!is.null(constant_values)) {
+            df <- cbind(df, constant_values)
+            names(df) <- cnames1
+        } else {
+            names(df) <- cnames
+        }
 
-    df[, which(cclass == "Date")] <-
-        as.data.frame(apply(df[, which(cclass == "Date")], 2,
-                            function(x) format(x,format = "%Y-%m-%d"))
-                      )
+        df[, which(cclass == "Date")] <-
+            as.data.frame(apply(df[, which(cclass == "Date")], 2,
+                                function(x) format(x,format = "%Y-%m-%d"))
+                          )
 
-    if (autoPK) {
-        df <- cbind(df, NA)
-        names(df) <- cnames2
-    }
+        if (autoPK) {
+            df <- cbind(df, NA)
+            names(df) <- cnames2
+        }
 
-    dbWriteTable(dbcon, table_name, as.data.frame(df),
-                 row.names = FALSE, append = TRUE)
+        dbWriteTable(dbcon, table_name, as.data.frame(df),
+                     row.names = FALSE, append = TRUE)
 
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 105
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 
+    
     ## Indexing -------------------------------
-    if (!is.null(pk_fields) && build_pk) {
+    tryCatch({
+        if (!is.null(pk_fields) && build_pk) {
+            
+            if (!is.character(pk_fields)) {
+                stop("dbTableFromXlsx: 'pk_fields' must be a character vector.")
+            }
+
+            check_fields <- setdiff(pk_fields, cnames1)
+            if (length(check_fields) > 0) {
+                stop("dbTableFromXlsx: 'pk_fields' contains unknown field names: ",
+                     check_fields)
+            }
+
+            dbExecute(dbcon, paste(
+                                 "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
+                                 "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
+                                 ");",
+                                 sep = " "
+                             ))
+        }
         
-        if (!is.character(pk_fields)) {
-            stop("dbTableFromXlsx: 'pk_fields' must be a character vector.")
-        }
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 106
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 
-        check_fields <- setdiff(pk_fields, cnames1)
-        if (length(check_fields) > 0) {
-            stop("dbTableFromXlsx: 'pk_fields' contains unknown field names: ",
-                 check_fields)
-        }
 
-        dbExecute(dbcon, paste(
-            "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-            "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
-            ");",
-            sep = " "
-        ))
-    }
-    
     dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ", table_name, sep=""))
     dr[1,1]
 }

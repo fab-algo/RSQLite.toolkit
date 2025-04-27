@@ -179,5 +179,4 @@ To handle in a safer way DSV files (and avoid some unexpected results)
 
 
 [^1]: The original source of each dataset is described in the README page of the GitHub repo.
-[^2]: the euristic is based on the `utils::read.table()` function, with the exception that if a colum hasa all NULL values, the default data type will be `character`.
 

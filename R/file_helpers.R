@@ -198,7 +198,7 @@ file_schema_dsv <- function(input_file,
                     grp_suffix <- "_grouped"
                 }
                 
-                if (all(grepl(pattern="^[\\+\\-]?[0-9]$", x=test1))) {
+                if (all(grepl(pattern="^[\\+\\-]{0,1}[0-9]+$", x=test1))) {
                     col_types[ii] <- paste0("integer", grp_suffix)
                 } else if (!any(is.na(suppressWarnings(as.numeric(test1))))) {
                     col_types[ii] <- paste0("numeric", grp_suffix)

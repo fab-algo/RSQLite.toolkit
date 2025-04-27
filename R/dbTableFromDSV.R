@@ -79,7 +79,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                            drop_table = FALSE,
                            auto_pk = FALSE, build_pk = FALSE, pk_fields = NULL,
                            constant_values = NULL, chunk_size = 0, ...) {
-
+    ## local vars .................................
+    fun_name <- match.call()[[1]]
+    
     ## formal checks on parameters ................
     if (!("data.frame" %in% class(constant_values)) && !is.null(constant_values)) {
         stop("dbTableFromDSV: 'constant_values' must be a data frame.")
@@ -94,77 +96,100 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     }
 
     ## read schema ................................
-    df.scm <- file_schema_dsv(input_file, 
-                              header = header, sep = sep, dec = dec, grp = grp,
-                              id_quote_method = id_quote_method,
-                              max_lines = 2000, ...)
+    tryCatch({
+        df.scm <- file_schema_dsv(input_file, 
+                                  header = header, sep = sep, dec = dec, grp = grp,
+                                  id_quote_method = id_quote_method,
+                                  max_lines = 2000, ...)
 
-    cnames <- df.scm$col_names
-    cclass <- df.scm$col_types
-    fields <- df.scm$sql_types
+        cnames <- df.scm$col_names
+        cclass <- df.scm$col_types
+        fields <- df.scm$sql_types
 
-    if (!is.null(col_names)) {
-        if (length(col_names)!=length(cnames)) {
-            stop("dbTableFromDSV: wrong 'col_names' length, must be ",
-                 length(cnames), " elements but found ", length(col_names))
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 101
+        stop(error_handler(err, fun_name, step), call. = FALSE)
+    })
+
+
+    ## handle col_ ................................
+    tryCatch({    
+        if (!is.null(col_names)) {
+            if (length(col_names)!=length(cnames)) {
+                stop("dbTableFromDSV: wrong 'col_names' length, must be ",
+                     length(cnames), " elements but found ", length(col_names))
+            }
+            cnames <- col_names
         }
-        cnames <- col_names
-    }
 
-    if (!is.null(col_types)) {
-        if (length(col_types)!=length(cclass)) {
-            stop("dbTableFromDSV: wrong 'col_types' length, must be ",
-                 length(cclass), " elements but found ", length(col_types))
+        if (!is.null(col_types)) {
+            if (length(col_types)!=length(cclass)) {
+                stop("dbTableFromDSV: wrong 'col_types' length, must be ",
+                     length(cclass), " elements but found ", length(col_types))
+            }
+            cclass <- col_types
+            fields <- R2SQL_types(col_types)
         }
-        cclass <- col_types
-        fields <- R2SQL_types(col_types)
-    }
+
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 102
+        stop(error_handler(err, fun_name, step), call. = FALSE)
+    })
 
     
     ## create empty table .........................
-    if (drop_table) {
-        sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+    tryCatch({
+        if (drop_table) {
+            sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+            dbExecute(dbcon, sql.def)
+        }
+
+        sql.head <- 
+            paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
+        sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
+
+        cv_names <- c()
+        cv_types <- c()
+
+        if (!is.null(constant_values)) {
+            src_names <- names(constant_values)
+            cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
+                                            unique_names=TRUE)
+            cv_types <- vapply(constant_values,
+                               function(col) class(col)[1], character(1))
+            
+            sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
+            sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
+
+            names(constant_values) <- cv_names
+            
+            cnames1 <- c(cnames, cv_names)
+        } else {
+            cnames1 <- cnames
+        }
+
+        autoPK <- FALSE
+        if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
+
+        if (autoPK) {
+            sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
+            cnames2 <- c(cnames1, "SEQ")
+        } else {
+            cnames2 <- cnames1
+        }
+
+        sql.tail <- ");"
+        sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
+
         dbExecute(dbcon, sql.def)
-    }
 
-    sql.head <- 
-        paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
-    sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
-
-    cv_names <- c()
-    cv_types <- c()
-
-    if (!is.null(constant_values)) {
-        src_names <- names(constant_values)
-        cv_names <- format_column_names(x=src_names, quote_method=id_quote_method,
-                                        unique_names=TRUE)
-        cv_types <- vapply(constant_values,
-                           function(col) class(col)[1], character(1))
-        
-        sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
-        sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
-
-        names(constant_values) <- cv_names
-        
-        cnames1 <- c(cnames, cv_names)
-    } else {
-        cnames1 <- cnames
-    }
-
-    autoPK <- FALSE
-    if (length(pk_fields) == 0 && auto_pk) autoPK <- TRUE
-
-    if (autoPK) {
-        sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-        cnames2 <- c(cnames1, "SEQ")
-    } else {
-        cnames2 <- cnames1
-    }
-
-    sql.tail <- ");"
-    sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
-
-    dbExecute(dbcon, sql.def)
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 103
+        stop(error_handler(err, fun_name, step), call. = FALSE)
+    })
 
 
     ## read & write data ..................................
@@ -179,100 +204,139 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             lclass[[ii]] <- vector(cclass[ii], 0)
         }
     }
-	
-    fcon <- file(input_file, "r", blocking = FALSE)
 
-    if (header) {
-        scan(file = fcon, what = character(),
-             nlines = 1, quiet = TRUE, ...)
-    }
+	tryCatch({
+        fcon <- file(input_file, "r", blocking = FALSE)
+
+        if (header) {
+            scan(file = fcon, what = character(),
+                 nlines = 1, quiet = TRUE, ...)
+        }
+        
+    }, error = function(e) {
+        close(fcon)
+        
+        err <- conditionMessage(e)
+        step <- 104
+        stop(error_handler(err, fun_name, step), call. = FALSE)
+    })
+
 
     nread <- 0
     repeat {
-        dfbuffer <- scan(
-            file = fcon, sep = sep, dec = dec,
-            what = lclass,
-            nlines = chunk_size,
-            flush = TRUE,
-            fill = TRUE,
-            multi.line = FALSE,
-            quiet = TRUE,
-            ...
-        )
+        tryCatch({
+            dfbuffer <- scan(
+                file = fcon, sep = sep, dec = dec,
+                what = lclass,
+                nlines = chunk_size,
+                flush = TRUE,
+                fill = TRUE,
+                multi.line = FALSE,
+                quiet = TRUE,
+                ...
+            )
 
-        if (length(dfbuffer[[1]]) == 0) break
+            if (length(dfbuffer[[1]]) == 0) break
 
-        dfbuffer <- as.data.frame(dfbuffer,
-                                  row.names = NULL, stringAsFactors = FALSE)
+            dfbuffer <- as.data.frame(dfbuffer,
+                                      row.names = NULL, stringAsFactors = FALSE)
 
-        ## Additional conversions ...............................
-        if (!is.null(constant_values)) {
-            dfbuffer <- cbind(dfbuffer, constant_values)
-            names(dfbuffer) <- cnames1
-        } else {
-            names(dfbuffer) <- cnames
-        }
+            ## Additional conversions ...............................
+            if (!is.null(constant_values)) {
+                dfbuffer <- cbind(dfbuffer, constant_values)
+                names(dfbuffer) <- cnames1
+            } else {
+                names(dfbuffer) <- cnames
+            }
 
-        idx1 <- which(cclass %in% c("numeric_grouped","double_grouped"))
-        if (length(idx1)>0) {
-            dfbuffer[, idx1] <-
-                as.data.frame(apply(X = dfbuffer[, idx1], MARGIN = 2,
-                                    FUN = convert_grouped_digits,
-                                    to = "numeric", dec = dec, grp = grp )
-                              )
-        }
-        
-        idx2 <- which(cclass %in% c("integer_grouped"))
-        if (length(idx2)>0) {
-            dfbuffer[, idx2] <-
-                as.data.frame(apply(X = dfbuffer[, idx2], MARGIN = 2,
-                                    FUN = convert_grouped_digits,
-                                    to = "integer", dec = dec, grp = grp )
-                              )
-        }
-        
-        idx3 <- which(cclass == "Date")
-        if (length(idx3)>0) {
-            dfbuffer[, idx3] <-
-                as.data.frame(apply(X = dfbuffer[, idx3], MARGIN = 2,
-                                    FUN = function(x)
-                                        format(x, format = "%Y-%m-%d") )
-                              )
-        }
+            idx1 <- which(cclass %in% c("numeric_grouped","double_grouped"))
+            if (length(idx1)>0) {
+                dfbuffer[, idx1] <-
+                    as.data.frame(apply(X = dfbuffer[, idx1], MARGIN = 2,
+                                        FUN = convert_grouped_digits,
+                                        to = "numeric", dec = dec, grp = grp )
+                                  )
+            }
+            
+            idx2 <- which(cclass %in% c("integer_grouped"))
+            if (length(idx2)>0) {
+                dfbuffer[, idx2] <-
+                    as.data.frame(apply(X = dfbuffer[, idx2], MARGIN = 2,
+                                        FUN = convert_grouped_digits,
+                                        to = "integer", dec = dec, grp = grp )
+                                  )
+            }
+            
+            idx3 <- which(cclass == "Date")
+            if (length(idx3)>0) {
+                dfbuffer[, idx3] <-
+                    as.data.frame(apply(X = dfbuffer[, idx3], MARGIN = 2,
+                                        FUN = function(x)
+                                            format(x, format = "%Y-%m-%d") )
+                                  )
+            }
+            
+        }, error = function(e) {
+            close(fcon)
+            
+            err <- conditionMessage(e)
+            step <- 104
+            stop(error_handler(err, fun_name, step), call. = FALSE)
+        })
+
 
         ## Write data ...............................
-        if (autoPK) {
-            dfbuffer <- cbind(dfbuffer, NA)
-            names(dfbuffer) <- cnames2
-        }
+        tryCatch({
+            if (autoPK) {
+                dfbuffer <- cbind(dfbuffer, NA)
+                names(dfbuffer) <- cnames2
+            }
 
-        dbWriteTable(dbcon, table_name , as.data.frame(dfbuffer),
-                     row.names = FALSE, append = TRUE)
-        nread <- nread + chunk_size
+            dbWriteTable(dbcon, table_name , as.data.frame(dfbuffer),
+                         row.names = FALSE, append = TRUE)
+            nread <- nread + chunk_size
+
+        }, error = function(e) {
+            close(fcon)
+            
+            err <- conditionMessage(e)
+            step <- 105
+            stop(error_handler(err, fun_name, step), call. = FALSE)
+        })
     }
 
     close(fcon)
 
     ## Indexing -------------------------------
-    if (!is.null(pk_fields) && build_pk) {
-        
-        if (!is.character(pk_fields)) {
-            stop("dbTableFromDSV: 'pk_fields' must be a character vector.")
-        }
+    tryCatch({
+        if (!is.null(pk_fields) && build_pk) {
+            
+            if (!is.character(pk_fields)) {
+                stop("dbTableFromDSV: 'pk_fields' must be a character vector.")
+            }
 
-        check_fields <- setdiff(pk_fields, cnames1)
-        if (length(check_fields) > 0) {
-            stop("dbTableFromDSV: 'pk_fields' contains unknown field names: ",
-                 check_fields)
+            check_fields <- setdiff(pk_fields, cnames1)
+            if (length(check_fields) > 0) {
+                stop("dbTableFromDSV: 'pk_fields' contains unknown field names: ",
+                     check_fields)
+            }
+            
+            dbExecute(dbcon, paste(
+                                 "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
+                                 "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
+                                 ");",
+                                 sep = " "
+                             ))
         }
         
-        dbExecute(dbcon, paste(
-            "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-            "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
-            ");",
-            sep = " "
-        ))
-    }
+    }, error = function(e) {
+        close(fcon)
+        
+        err <- conditionMessage(e)
+        step <- 106
+        stop(error_handler(err, fun_name, step), call. = FALSE)
+    })
+    
 
     dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ",
                                   table_name, sep=""))

@@ -23,43 +23,59 @@
 dbTableFromView <- function(view_name, dbcon, table_name, 
                             drop_table = FALSE,
                             build_pk = FALSE, pk_fields = NULL) {
+    ## local vars .................................
+    fun_name <- match.call()[[1]]
 
-    if (drop_table) {
-        sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+    tryCatch({
+        if (drop_table) {
+            sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+            dbExecute(dbcon, sql.def)
+        }
+        
+        sql.def <- paste("CREATE TABLE ", table_name,
+                         " AS ",
+                         "SELECT * FROM ", view_name,
+                         ";",
+                         sep = ""
+                         )
         dbExecute(dbcon, sql.def)
-    }
-    
-    sql.def <- paste("CREATE TABLE ", table_name,
-        " AS ",
-        "SELECT * FROM ", view_name,
-        ";",
-        sep = ""
-    )
-    dbExecute(dbcon, sql.def)
-
-    cnames1 <- dbListFields(dbcon, table_name)
+        
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 105
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 
     ## Indexing -------------------------------
-    if (!is.null(pk_fields) && build_pk) {
+    tryCatch({
+        cnames1 <- dbListFields(dbcon, table_name)
         
-        if (!is.character(pk_fields)) {
-            stop("dbTableFromView: 'pk_fields' must be a character vector.")
-        }
+        if (!is.null(pk_fields) && build_pk) {
+            
+            if (!is.character(pk_fields)) {
+                stop("dbTableFromView: 'pk_fields' must be a character vector.")
+            }
 
-        check_fields <- setdiff(pk_fields, cnames1)
-        if (length(check_fields) > 0) {
-            stop("dbTableFromView: 'pk_fields' contains unknown field names: ",
-                 check_fields)
-        }
+            check_fields <- setdiff(pk_fields, cnames1)
+            if (length(check_fields) > 0) {
+                stop("dbTableFromView: 'pk_fields' contains unknown field names: ",
+                     check_fields)
+            }
 
-        dbExecute(dbcon, paste(
-            "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-            "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
-            ");",
-            sep = " "
-        ))
-    }
-    
+            dbExecute(dbcon, paste(
+                                 "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
+                                 "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
+                                 ");",
+                                 sep = " "
+                             ))
+        }
+        
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 106
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
+
     dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ",
                                   table_name, sep=""))
     dr[1,1]

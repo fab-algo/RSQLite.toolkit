@@ -1,3 +1,64 @@
+#' error_handler manage error messages for package
+#'
+#' @param err character, error message
+#' @param fun character, function name where error happened
+#' @param step integer, code identifying the step in the function
+#'   where error happened.
+#'   For dbTableFrom... functions steps are:
+#'   - 101,121: read file schema (DSV, Xlsx)
+#'   - 102: handle col_names and col_types
+#'   - 103: create empty table
+#'   - 104: read data
+#'   - 105: write data
+#'   - 106: indexing
+#'
+#' @returns nothing
+#' 
+#'
+error_handler <- function(err, fun, step) {
+
+    if (step == 101) {
+        step_msg <- paste0("reading file schema: \n",
+                           "please check 'sep', 'dec', 'grp' ",
+                           "params and those used by 'scan' ",
+                           "and 'read.table' for quoting, ",
+                           "encoding, ...")
+        
+    } else if (step == 121) {
+        step_msg <- paste0("reading file schema: \n",
+                           "please check file name and ",
+                           "'sheet_name', 'first_row', ",
+                           "'cols_range' params.")
+        
+    } else if (step == 131) {
+        step_msg <- paste0("reading file schema: \n",
+                           "please check file name and ",
+                           "file format.")
+        
+    } else if (step == 102) {
+        step_msg <- paste0("handling 'col_names' and ",
+                           "'col_types' parameters.")
+        
+    } else if (step == 103) {
+        step_msg <- paste0("creating empty table in db.")
+        
+    } else if (step == 104) {
+        step_msg <- paste0("reading data from input file.")
+        
+    } else if (step == 105) {
+        step_msg <- paste0("writing data to db table.")
+        
+    } else if (step == 106) {
+        step_msg <- paste0("indexing db table.")
+    }
+
+    msg <- paste0("Blocking error in ", fun, " while ", step_msg,
+                  "\n", "Original error msg: ", err)
+    msg
+}
+
+
+
 Arrow2R_types <- function(x) {
     arrow2r_dict <- c(
         "boolean"   ="logical",
@@ -34,7 +95,7 @@ Arrow2R_types <- function(x) {
         "map"       =NA,
         "union"     =NA
     )
-    
+
     y <- arrow2r_dict[x]
 
     y
@@ -114,6 +175,7 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #' 
 #' @importFrom DBI .SQL92Keywords
 #' @export
+#' 
 format_column_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
     allowed_methods <- c("DB_NAMES",
                          "SINGLE_QUOTES", "DOUBLE_QUOTES",
@@ -147,9 +209,9 @@ format_column_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
         x1 <- gsub(pattern="'", replacement="\"", x=x1)
         x1 <- paste0("'", x1, "'")
         
-    ## } else if (quote_method=="DOUBLE_QUOTES") {
-    ##     x1 <- gsub(pattern="\"", replacement="'", x=x1)
-    ##     x1 <- paste0("\"", x1, "\"")
+        ## } else if (quote_method=="DOUBLE_QUOTES") {
+        ##     x1 <- gsub(pattern="\"", replacement="'", x=x1)
+        ##     x1 <- paste0("\"", x1, "\"")
         
     } else if (quote_method=="SQL_SERVER") {
         x1 <- gsub(pattern="[\\[\\]]", replacement="_", x=x1)

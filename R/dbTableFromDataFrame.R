@@ -45,90 +45,120 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
                                  col_names=NULL, col_types=NULL,
                                  drop_table=FALSE,
                                  auto_pk=FALSE, build_pk=FALSE, pk_fields=NULL) {
-
+    ## local vars .................................
+    fun_name <- match.call()[[1]]
 
     ## read schema ................................
-    src_names <- names(df)
+    tryCatch({
+        src_names <- names(df)
 
-    cnames <- format_column_names(src_names, quote_method=id_quote_method)
-    cclass <- vapply(df, function(col) class(col)[1], character(1))
-    fields <- R2SQL_types(cclass)
+        cnames <- format_column_names(src_names, quote_method=id_quote_method)
+        cclass <- vapply(df, function(col) class(col)[1], character(1))
+        fields <- R2SQL_types(cclass)
 
-    if (!is.null(col_names)) {
-        if (length(col_names)!=length(cnames)) {
-            stop("dbTableFromFeather: wrong 'col_names' length, must be ",
-                 length(cnames), " elements but found ", length(col_names))
+        if (!is.null(col_names)) {
+            if (length(col_names)!=length(cnames)) {
+                stop("dbTableFromFeather: wrong 'col_names' length, must be ",
+                     length(cnames), " elements but found ", length(col_names))
+            }
+            cnames <- col_names
         }
-        cnames <- col_names
-    }
 
-    if (!is.null(col_types)) {
-        if (length(col_types)!=length(cclass)) {
-            stop("dbTableFromFeather: wrong 'col_types' length, must be ",
-                 length(cclass), " elements but found ", length(col_types))
+        if (!is.null(col_types)) {
+            if (length(col_types)!=length(cclass)) {
+                stop("dbTableFromFeather: wrong 'col_types' length, must be ",
+                     length(cclass), " elements but found ", length(col_types))
+            }
+            cclass <- col_types
+            fields <- R2SQL_types(col_types)
         }
-        cclass <- col_types
-        fields <- R2SQL_types(col_types)
-    }
 
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 102
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
+
+    
     ## create empty table .........................
-	if (drop_table) {
-        sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+    tryCatch({
+        if (drop_table) {
+            sql.def <- paste("DROP TABLE IF EXISTS ", table_name, ";", sep = "")
+            dbExecute(dbcon, sql.def)
+        }
+
+        autoPK <- FALSE
+        if (is.null(pk_fields) && auto_pk) autoPK <- TRUE
+
+        sql.head <-
+            paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
+        sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
+
+        if (autoPK) {
+            sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
+            cnames2 <- c(cnames, "SEQ")
+        } else {
+            cnames2 <- cnames
+        }
+
+        sql.tail <- ");"
+        sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
+
         dbExecute(dbcon, sql.def)
-    }
 
-    autoPK <- FALSE
-    if (is.null(pk_fields) && auto_pk) autoPK <- TRUE
-
-    sql.head <-
-        paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
-    sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
-
-    if (autoPK) {
-        sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-        cnames2 <- c(cnames, "SEQ")
-    } else {
-        cnames2 <- cnames
-    }
-
-    sql.tail <- ");"
-    sql.def <- paste(sql.head, sql.body, sql.tail, sep = " ")
-
-    dbExecute(dbcon, sql.def)
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 103
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
 
     
     ## Write data -------------------------------
-    names(df) <- cnames
+    tryCatch({
+        names(df) <- cnames
 
-    if (autoPK) {
-        df <- cbind(df, NA)
-        names(df) <- cnames2
-    }
-    
-    dbWriteTable(dbcon, table_name, as.data.frame(df),
-                 row.names = FALSE, append = TRUE)
-
-
-    ## Indexing -------------------------------
-    if (!is.null(pk_fields) && build_pk) {
+        if (autoPK) {
+            df <- cbind(df, NA)
+            names(df) <- cnames2
+        }
         
-        if (!is.character(pk_fields)) {
-            stop("dbCreateTableFromDF: 'pk_fields' must be a character vector.")
+        dbWriteTable(dbcon, table_name, as.data.frame(df),
+                     row.names = FALSE, append = TRUE)
+
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 105
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
+
+    
+    ## Indexing -------------------------------
+    tryCatch({
+        if (!is.null(pk_fields) && build_pk) {
+            
+            if (!is.character(pk_fields)) {
+                stop("dbCreateTableFromDF: 'pk_fields' must be a character vector.")
+            }
+
+            check_fields <- setdiff(pk_fields, cnames)
+            if (length(check_fields) > 0) {
+                stop("dbCreateTableFromDF: 'pk_fields' contains unknown field names: ",
+                     check_fields)
+            }
+
+            dbExecute(dbcon, paste(
+                                 "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
+                                 "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
+                                 ");",
+                                 sep = " "
+                             ))
         }
 
-        check_fields <- setdiff(pk_fields, cnames)
-        if (length(check_fields) > 0) {
-            stop("dbCreateTableFromDF: 'pk_fields' contains unknown field names: ",
-                 check_fields)
-        }
-
-        dbExecute(dbcon, paste(
-            "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-            "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
-            ");",
-            sep = " "
-        ))
-    }
+    }, error = function(e) {
+        err <- conditionMessage(e)
+        step <- 106
+        stop(error_handler(err, fun_name, step), .call = TRUE)
+    })
     
     dr <- dbGetQuery(dbcon, paste("select count(*) as nrows from ",
                                   table_name, sep=""))
