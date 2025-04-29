@@ -29,27 +29,28 @@ loading data in a SQLite database from DSV files and how to deal with them.
 library(RSQLite.toolkit)
 ```
 
-Let's start with a simple example using real world data. To retrieve the data
-we need, we can use the package `package?piggyback` to download some public datasets 
-that has been stored in the [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests) GitHub repository[^1].
+Let's start with a simple example using real world data. To retrieve the examples
+data, we can use the package `package?piggyback` to download some public datasets 
+that has been stored in the [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
+GitHub repository[^1].
 
 This example will deal with a table contained in a "standard" CSV file
 (i.e. a text file with the first line containing column names, using the
-comma to separate fields' values and the dot as a decimal separator),
-using the `dbTableFromDSV()` function the data will be transfered in a new
-table inside a SQLite database.
+comma to separate fields' values and the dot as a decimal separator for 
+numbers); we will load  the data in a new table inside a SQLite database
+using the `dbTableFromDSV()` function.
 
 First we download the data from the repo:
 
 ```{r getdata}
 library("piggyback", quietly=TRUE)
-pb_download(file="14536105.zip", dest=tempdir(),
+pb_download(file="DOSE_V2.10.zip", dest=tempdir(),
             repo="fab-algo/RSQLite.toolkit-tests", tag="latest")
 
-unzip(zipfile=file.path(tempdir(), "14536105.zip"), exdir=tempdir())
-dir(tempdir())
+unzip(zipfile=file.path(tempdir(), "DOSE_V2.10.zip"), exdir=tempdir())
+dir(file.path(tempdir(), "DOSE_V2.10"))
 
-data_file <- file.path(tempdir(), "DOSE_V2.10.csv")
+data_file <- file.path(tempdir(), "DOSE_V2.10/DOSE_V2.10.csv")
 ```
 
 After unzipping the downloaded file, we get the `DOSE_V2.10.csv` file that
@@ -67,7 +68,7 @@ Now we connect to a sample database (i.e. `tests.sqlite`):
 ```{r dbcon}
 dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"tests.sqlite"))
 ```
-and move thedataset in a table there, calling the `dbTableFromDSV()` function 
+and move the dataset in a table there, calling the `dbTableFromDSV()` function 
 specifying the connection to the database (i.e.  `dbcon` parameter) and the 
 table name (i.e. `table_name` parameter). We don't need to specify the parameters
 for the CSV file strucuture (i.e. `header = TRUE`, `sep = ","`, `dec = "."`, 
@@ -77,7 +78,7 @@ for the CSV file strucuture (i.e. `header = TRUE`, `sep = ","`, `dec = "."`,
 ## do not run: error
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
-
+The function call relying on the default values of the optional parameters
 To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
 function uses the `read.table` function (from the `utils` package) to guess the
 table structure stored in the DSV file, and the `scan` function to actually

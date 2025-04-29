@@ -16,6 +16,7 @@ dbTableFromDSV(
   id_quote_method = "DB_NAMES",
   col_names = NULL,
   col_types = NULL,
+  col_import = NULL,
   drop_table = FALSE,
   auto_pk = FALSE,
   build_pk = FALSE,
@@ -50,17 +51,29 @@ columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
 the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
 
-\item{col_names}{character vector, names of the columuns to be imported.
+\item{col_names}{character vector, names of the columuns in the input file.
 Used to override the field names derived from the input file (using the
 quote method selected by \code{id_quote_method}). Must be of the same length
 of the number of columns in the input file. If \code{NULL} the column names
-coming from the input file (after quoting) will be used. Defaults to \code{NULL}.}
+coming from the input file (after quoting) will be used.
+Defaults to \code{NULL}.}
 
-\item{col_types}{character vector of classes to be assumed for the columns.
-If not null, it will override the data types inferred from the input file.
-Must be of the same length of the number of columns in the input file.
+\item{col_types}{character vector of classes to be assumed for the columns
+of the input file. Must be of the same length of the number of columns
+in the input file. If not null, it will override the data types guessed
+from the input file.
 If \code{NULL} the data type inferred from the input files will be used.
 Defaults to \code{NULL}.}
+
+\item{col_import}{can be either:
+\itemize{
+\item a numeric vector (coherced to integers) with the columns' positions
+in the input file that will be imported in the SQLite table;
+\item a character vector with the columns' names to be imported. The names
+are those in the input file (after quoting with \code{id_quote_method}),
+if \code{col_names} is NULL, or those expressed in \code{col_names} vector.
+Defaults to NULL, i.e. all columns will be imported.
+}}
 
 \item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
 and recreated before importing the data.  if \code{FALSE}, data from input

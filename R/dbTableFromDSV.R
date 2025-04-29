@@ -23,16 +23,27 @@
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
 #'    the [format_column_names()] function. Defautls to `DB_NAMES`.
-#' @param col_names character vector, names of the columuns to be imported.
+#' 
+#' @param col_names character vector, names of the columuns in the input file.
 #'    Used to override the field names derived from the input file (using the
 #'    quote method selected by `id_quote_method`). Must be of the same length
 #'    of the number of columns in the input file. If `NULL` the column names
-#'    coming from the input file (after quoting) will be used. Defaults to `NULL`.
-#' @param col_types character vector of classes to be assumed for the columns.
-#'    If not null, it will override the data types inferred from the input file.
-#'    Must be of the same length of the number of columns in the input file.
+#'    coming from the input file (after quoting) will be used.
+#'    Defaults to `NULL`.
+#' @param col_types character vector of classes to be assumed for the columns
+#'    of the input file. Must be of the same length of the number of columns
+#'    in the input file. If not null, it will override the data types guessed
+#'    from the input file. 
 #'    If `NULL` the data type inferred from the input files will be used.
 #'    Defaults to `NULL`.
+#'
+#' @param col_import can be either:
+#'    - a numeric vector (coherced to integers) with the columns' positions
+#'      in the input file that will be imported in the SQLite table;
+#'    - a character vector with the columns' names to be imported. The names
+#'      are those in the input file (after quoting with `id_quote_method`),
+#'      if `col_names` is NULL, or those expressed in `col_names` vector.
+#'    Defaults to NULL, i.e. all columns will be imported.
 #' 
 #' @param drop_table logical, if `TRUE` the target table will be dropped (if exists)
 #'    and recreated before importing the data.  if `FALSE`, data from input
@@ -62,6 +73,7 @@
 #'    avoiding to read all the data in memory at once. It can be useful
 #'    for very large size files. If set to zero, it will process the whole
 #'    text file in one pass. Default to zero.
+#' 
 #' @param ... additional arguments passed to [base::scan()] function used
 #'    to read input data.
 #'
@@ -75,7 +87,7 @@
 dbTableFromDSV <- function(input_file, dbcon, table_name,
                            header = TRUE, sep = ",", dec = ".", grp = "",
                            id_quote_method = "DB_NAMES",
-                           col_names = NULL, col_types = NULL,
+                           col_names = NULL, col_types = NULL, col_import = NULL,
                            drop_table = FALSE,
                            auto_pk = FALSE, build_pk = FALSE, pk_fields = NULL,
                            constant_values = NULL, chunk_size = 0, ...) {
@@ -131,7 +143,27 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             cclass <- col_types
             fields <- R2SQL_types(col_types)
         }
+        
+        if (!is.null(col_import)) {
 
+            if ("numeric" %in% class(col_import) || "integer" %in% class(col_import)) {
+                if (!all(col_import %in% c(1:length(cnames)))) {
+                    stop("dbTableFromDSV: wrong 'col_import' specification, columns ",
+                         "numbers must be between 1 and ", length(cnames))
+                }
+                idx_import <- which(c(1:length(cnames)) %in% col_import)
+
+            } else {
+                if (!all(col_import %in% cnames)) {
+                    stop("dbTableFromDSV: wrong 'col_import' specification, columns ",
+                         "names must be either quoted names in import file or in 'col_names'.")
+                }
+                idx_import <- which(cnames %in% col_import)
+            }
+        } else {
+            idx_import <- c(1:length(cnames))
+        }
+        
     }, error = function(e) {
         err <- conditionMessage(e)
         step <- 102
@@ -148,7 +180,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
         sql.head <- 
             paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
-        sql.body <- paste(cnames, fields, sep = " ", collapse = ", ")
+        sql.body <- paste(cnames[idx_import], fields[idx_import], sep = " ", collapse = ", ")
 
         cv_names <- c()
         cv_types <- c()
@@ -159,15 +191,18 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                                             unique_names=TRUE)
             cv_types <- vapply(constant_values,
                                function(col) class(col)[1], character(1))
+            cv_sql <- R2SQL_types(cv_types)
             
-            sql.ext <- paste(cv_names, cv_types, sep = " ", collapse = ", ")
+            sql.ext <- paste(cv_names, cv_sql, sep = " ", collapse = ", ")
             sql.body <- paste(sql.body, ", ", sql.ext, sep = "")
 
             names(constant_values) <- cv_names
             
             cnames1 <- c(cnames, cv_names)
+            idx_import1 <- c(idx_import, length(cnames)+c(1:length(cv_names)))
         } else {
             cnames1 <- cnames
+            idx_import1 <- idx_import
         }
 
         autoPK <- FALSE
@@ -176,8 +211,10 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         if (autoPK) {
             sql.body <- paste(sql.body, ", SEQ INTEGER PRIMARY KEY", sep = "")
             cnames2 <- c(cnames1, "SEQ")
+            idx_import2 <- c(idx_import1, length(cnames1)+1)
         } else {
             cnames2 <- cnames1
+            idx_import2 <- idx_import1
         }
 
         sql.tail <- ");"
@@ -241,14 +278,13 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             dfbuffer <- as.data.frame(dfbuffer,
                                       row.names = NULL, stringAsFactors = FALSE)
 
-            ## Additional conversions ...............................
+            ## Constant values ......................................
             if (!is.null(constant_values)) {
                 dfbuffer <- cbind(dfbuffer, constant_values)
-                names(dfbuffer) <- cnames1
-            } else {
-                names(dfbuffer) <- cnames
             }
 
+            
+            ## Additional conversions ...............................
             idx1 <- which(cclass %in% c("numeric_grouped","double_grouped"))
             if (length(idx1)>0) {
                 dfbuffer[, idx1] <-
@@ -289,9 +325,11 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         tryCatch({
             if (autoPK) {
                 dfbuffer <- cbind(dfbuffer, NA)
-                names(dfbuffer) <- cnames2
             }
-
+            
+            names(dfbuffer) <- cnames2
+            dfbuffer <- dfbuffer[, idx_import2]
+            
             dbWriteTable(dbcon, table_name , as.data.frame(dfbuffer),
                          row.names = FALSE, append = TRUE)
             nread <- nread + chunk_size
