@@ -5,7 +5,12 @@
 \title{format_column_names format a vector of strings to be
 used as columns' names for a table in a SQLite database}
 \usage{
-format_column_names(x, quote_method = "DB_NAMES", unique_names = TRUE)
+format_column_names(
+  x,
+  quote_method = "DB_NAMES",
+  unique_names = TRUE,
+  encoding = ""
+)
 }
 \arguments{
 \item{x}{character vector with the identifiers' names to be quoted.}
@@ -30,7 +35,11 @@ Defaults to \code{DB_NAMES}.}
 \item{unique_names}{logical, checks for any duplicate name after
 applying the selected quote methods. If duplicates exist, they
 will be made unique by adding a postfix \verb{_[n]}, where \code{n} is
-a progressive integer. Defaults to \code{TRUE}.}
+a progressive integer. Defaults to \code{TRUE}.
+@param encoding character, encoding to be assumed for input strings.
+It is used to re-encode the input in UTF-8 in order to process it
+to build column identifiers. Defaults to ‘""’ (for the encoding of
+the current locale)}
 }
 \value{
 A character vector containing the columns' identifiers

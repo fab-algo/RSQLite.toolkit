@@ -92,10 +92,11 @@ following table along with their default values.
 |--------------|---------|------------|
 | quote        | `"'\""` | `"\"'"`    |
 | allowEscapes | `FALSE` | `FALSE`    |
-| na.strings   | `"NA"`  | `"NA"`     |
 | skipNul      | `FALSE` | `FALSE`    |
 | strip.white  | `FALSE` | `FALSE`    |
 | comment.char | `""`    | `"#"`      |
+| na.strings   | `"NA"`  | `"NA"`     |
+| fill         | `FALSE` | `FALSE`    |
 | fileEncoding | `""`    | `""`       |
 
 :`scan` and `read.table` parameters to handle data interpretation.
@@ -109,14 +110,16 @@ from the file:
 - *escaping*: rule used to represent characters that would otherwise be interpreted 
    as delimiters or special commands.
    Parameter: `allowEscapes`
-- *missing data*: how missing data is represented in the file.
-   Parameters: `na.strings` and `skipNul`
 - *whitespace stripping*: if unwanted spaces from the beginning, end, or middle of a 
    string should be removed. 
    Parameter: `strip.white`
 - *commenting*: character used to identify that one line (or the rest of a line after
    the "comment" identifier) does not contain data and should be ignored.
    Parameter: `comment.char`
+- *missing data*: how missing data is represented in the file.
+   Parameters: `na.strings` and `skipNul`
+- *missing fields*: how to manage rows with less fields then expected.
+   Parameter: `fill`
 - *encoding*: the technical standard used to represent characters in binary form, as
    for example ASCII, UTF-8, EBCDIC.
    Parameter: `fileEncoding`

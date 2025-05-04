@@ -170,13 +170,18 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #'    applying the selected quote methods. If duplicates exist, they
 #'    will be made unique by adding a postfix `_[n]`, where `n` is
 #'    a progressive integer. Defaults to `TRUE`.
+#'  @param encoding character, encoding to be assumed for input strings.
+#'    It is used to re-encode the input in UTF-8 in order to process it
+#'    to build column identifiers. Defaults to ‘""’ (for the encoding of
+#'    the current locale)
 #'
 #' @returns A character vector containing the columns' identifiers
 #' 
 #' @importFrom DBI .SQL92Keywords
 #' @export
 #' 
-format_column_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
+format_column_names <- function(x, quote_method = "DB_NAMES",
+                                unique_names = TRUE, encoding = "") {
     allowed_methods <- c("DB_NAMES",
                          "SINGLE_QUOTES", "DOUBLE_QUOTES",
                          "SQL_SERVER",    "MYSQL")
@@ -188,12 +193,17 @@ format_column_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
     x1 <- x
     
     if (quote_method=="DB_NAMES") {
+
+        x1 <- iconv(x1, from = encoding, to = "UTF-8")
+        
+        x1 <- gsub("^\\s+|\\s+$", "", x1)
+
         reg1 <- "([^[:alpha:]0-9_]+)"
         x1 <- gsub(pattern=reg1, replacement="_", x=x1)
 
         reg2 <- "(^[0-9])"
         idx <- grep(pattern=reg2, x=x1)
-        if (length(idx)>0) {
+        if (length(idx) > 0) {
             x1[idx] <- paste0("N_", x1[idx])
         }
         
@@ -201,8 +211,13 @@ format_column_names <- function(x, quote_method="DB_NAMES", unique_names=TRUE) {
         x1 <- gsub(pattern=reg3, replacement="", x=x1)
 
         idx <- which(x1 %in% DBI::.SQL92Keywords)
-        if (length(idx)>0) {
+        if (length(idx) > 0) {
             x1[idx] <- paste0("F_", x1[idx])
+        }
+
+        idx <- which(x1 == "")
+        if (length(idx) > 0) {
+            x1[idx] <- paste0("X_", idx)
         }
         
     } else if (quote_method=="SINGLE_QUOTES") {
