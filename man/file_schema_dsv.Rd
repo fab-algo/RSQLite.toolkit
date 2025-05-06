@@ -15,7 +15,6 @@ file_schema_dsv(
   null_columns = FALSE,
   comment.char = "",
   skip = 0,
-  fileEncoding = "",
   ...
 )
 }
@@ -54,19 +53,31 @@ comments is turned off). Used to align this parameter value between
 \item{skip}{integer, number of lines to skip before starting to read
 data. Defaults to 0.}
 
+\item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
+
 \item{fileEncoding}{character, declares the encoding used on the input file.
 Defaults to \code{""} for the current locale.}
-
-\item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
 }
 \value{
-a data frame with these columns:
+a list with the following named elements:
+\itemize{
+\item \code{schema}, a data frame with these columns:
 \itemize{
 \item \code{col_names}: columns' names, after applying the selected quote method;
 \item \code{col_types}: columns' R data types;
 \item \code{sql_types}: columns' SQLite data types;
 \item \code{src_names}: columns' names as they appear in the input file.
 \item \code{src_types}: dafults to \code{text} for all columns.
+}
+\item \code{col_counts}, a data frame with these columns:
+\itemize{
+\item \code{col_lines}: number of columns,
+\item \code{Freq}: number of rows (within \code{max_lines}) that have the number
+of colums shown in \code{col_lines}.
+}
+\item \code{n_cols}, integer, the number of columns selected for the file.
+\item \code{col_lines}, a vector of integers of length \code{max_lines} with the
+number of detected columns in each row tested.
 }
 }
 \description{

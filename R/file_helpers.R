@@ -90,12 +90,20 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    Defaults to `""` for the current locale.
 #' @param ... Additional arguments passed to [utils::read.table()].
 #'
-#' @returns a data frame with these columns:
-#'    - `col_names`: columns' names, after applying the selected quote method;
-#'    - `col_types`: columns' R data types;
-#'    - `sql_types`: columns' SQLite data types;
-#'    - `src_names`: columns' names as they appear in the input file.
-#'    - `src_types`: dafults to `text` for all columns.
+#' @returns a list with the following named elements:
+#'    - `schema`, a data frame with these columns:
+#'      - `col_names`: columns' names, after applying the selected quote method;
+#'      - `col_types`: columns' R data types;
+#'      - `sql_types`: columns' SQLite data types;
+#'      - `src_names`: columns' names as they appear in the input file.
+#'      - `src_types`: dafults to `text` for all columns.
+#'    - `col_counts`, a data frame with these columns:
+#'      - `col_lines`: number of columns,
+#'      - `Freq`: number of rows (within `max_lines`) that have the number
+#'         of colums shown in `col_lines`.
+#'    - `n_cols`, integer, the number of columns selected for the file.
+#'    - `col_lines`, a vector of integers of length `max_lines` with the
+#'      number of detected columns in each row tested.
 #'
 #' @importFrom utils read.table
 #' @export
@@ -112,7 +120,6 @@ file_schema_dsv <- function(input_file,
                             null_columns = FALSE,
                             comment.char = "",
                             skip = 0,
-                            fileEncoding = "",
                             ...) {
 
     if (!file.exists(input_file)) {
@@ -131,33 +138,38 @@ file_schema_dsv <- function(input_file,
     }
 
     
-    fcon <- file(input_file, "r", blocking = FALSE)
-
-    if (skip > 0) {
-        readLines(con = fcon, n = skip)
-    }
-    
     col_lines <- integer(max_lines)
-    for (ii in 1:max_lines) {
+
+    fcon <- file(description = input_file, open = "r",
+                 blocking = FALSE)
+    
+    for (kk in 1:max_lines) {
+        if (kk == 1)
+            skip1 <- skip
+        else
+            skip1 <- 0
+        
         x <- scan(file = fcon,
+                  skip = skip1,
                   nlines = 1,
                   sep = sep,
-                  what = "character",
-                  comment.char = comment.char,
+                  what = "",
                   fill = TRUE,
                   multi.line = FALSE,
                   quiet = TRUE,
+                  comment.char = comment.char,
                   ...
                   )
         
-        if (ii == 1)
+        col_lines[kk] <- length(x)
+    
+        if (kk == 1)
             raw_names <- x
-
-        col_lines[ii] <- length(x)
+       
     }
 
     close(fcon)
-    
+
     col_counts <- as.data.frame(table(col_lines), stringsAsFactors=FALSE)
     col_counts$col_lines <- as.integer(col_counts$col_lines)
 
@@ -189,8 +201,7 @@ file_schema_dsv <- function(input_file,
 
     col_names <- format_column_names(x = src_names,
                                      quote_method = id_quote_method,
-                                     unique_names = TRUE,
-                                     encoding = fileEncoding)
+                                     unique_names = TRUE)
     names(col_classes) <- col_names
 
     df <- utils::read.table(
@@ -371,13 +382,15 @@ file_schema_xlsx <- function(input_file,
             }            
         }
     }
+
+    xt <- attr(df, "types")
     
     data.frame(
         col_names,
         col_types,
         sql_types=R2SQL_types(col_types),
         src_names,
-        src_types=attr(df, "types"),
+        src_types=paste0(xt, ": ", Xlsx2R_types(xt)),
         stringsAsFactors = FALSE,
         row.names=NULL
     )

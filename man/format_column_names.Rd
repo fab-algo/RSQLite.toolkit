@@ -37,9 +37,9 @@ applying the selected quote methods. If duplicates exist, they
 will be made unique by adding a postfix \verb{_[n]}, where \code{n} is
 a progressive integer. Defaults to \code{TRUE}.
 @param encoding character, encoding to be assumed for input strings.
-It is used to re-encode the input in UTF-8 in order to process it
+It is used to re-encode the input in order to process it
 to build column identifiers. Defaults to ‘""’ (for the encoding of
-the current locale)}
+the current locale).}
 }
 \value{
 A character vector containing the columns' identifiers

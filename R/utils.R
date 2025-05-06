@@ -102,6 +102,21 @@ Arrow2R_types <- function(x) {
 }
 
 
+Xlsx2R_types <- function(x) {
+    xlsx2r_dict <- c(
+        "0" = "character",
+        "1" = "numeric",
+        "2" = "Date",
+        "3" = "POSIXct",
+        "4" = "logical"
+    )
+
+    y <- xlsx2r_dict[as.character(x)]
+
+    y
+}
+
+
 R2SQL_types <- function(x) {
     r2sql_dict <- c("character"= "TEXT",
                     "double"   = "REAL",
@@ -171,9 +186,9 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #'    will be made unique by adding a postfix `_[n]`, where `n` is
 #'    a progressive integer. Defaults to `TRUE`.
 #'  @param encoding character, encoding to be assumed for input strings.
-#'    It is used to re-encode the input in UTF-8 in order to process it
+#'    It is used to re-encode the input in order to process it
 #'    to build column identifiers. Defaults to ‘""’ (for the encoding of
-#'    the current locale)
+#'    the current locale).
 #'
 #' @returns A character vector containing the columns' identifiers
 #' 
@@ -191,11 +206,28 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
     }
 
     x1 <- x
+
+    if (any(is.na(iconv(x1)))) {
+
+        if (!(any(is.na(iconv(x1, encoding, ""))))) {
+            x1 <- iconv(x1, encoding, "")
+            
+        } else if (!(any(is.na(iconv(x1, "latin1", ""))))) {
+            x1 <- iconv(x1, "latin1", "")
+            
+        } else if (!(any(is.na(iconv(x1, "utf8", ""))))) {
+            x1 <- iconv(x1, "utf8", "")
+            
+        } else if (!(any(is.na(iconv(x1, "latin1", "utf8"))))) {
+            x1 <- iconv(x1, "latin1", "utf8")
+            
+        } else if (!(any(is.na(iconv(x1, "utf8", "latin1"))))) {
+            x1 <- iconv(x1, "utf8", "latin1")
+        }
+    }
     
     if (quote_method=="DB_NAMES") {
 
-        x1 <- iconv(x1, from = encoding, to = "UTF-8")
-        
         x1 <- gsub("^\\s+|\\s+$", "", x1)
 
         reg1 <- "([^[:alpha:]0-9_]+)"

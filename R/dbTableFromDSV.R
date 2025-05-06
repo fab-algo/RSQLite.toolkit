@@ -112,7 +112,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         df.scm <- file_schema_dsv(input_file, 
                                   header = header, sep = sep, dec = dec, grp = grp,
                                   id_quote_method = id_quote_method,
-                                  max_lines = 2000, ...)
+                                  max_lines = 2000, ...)$schema
 
         cnames <- df.scm$col_names
         cclass <- df.scm$col_types
@@ -156,7 +156,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             } else {
                 if (!all(col_import %in% cnames)) {
                     stop("dbTableFromDSV: wrong 'col_import' specification, columns ",
-                         "names must be either quoted names in import file or in 'col_names'.")
+                         "names must be either quoted names in import file or ",
+                         "in 'col_names'.")
                 }
                 idx_import <- which(cnames %in% col_import)
             }
@@ -180,7 +181,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
         sql.head <- 
             paste("CREATE TABLE IF NOT EXISTS ", table_name, " (", sep = "")
-        sql.body <- paste(cnames[idx_import], fields[idx_import], sep = " ", collapse = ", ")
+        sql.body <- paste(cnames[idx_import], fields[idx_import], sep = " ",
+                          collapse = ", ")
 
         cv_names <- c()
         cv_types <- c()
@@ -360,8 +362,10 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
             }
             
             dbExecute(dbcon, paste(
-                                 "CREATE UNIQUE INDEX ", paste(table_name, "_PK", sep = ""),
-                                 "ON ", table_name, " (", paste(pk_fields, collapse = ", "),
+                                 "CREATE UNIQUE INDEX ",
+                                 paste(table_name, "_PK", sep = ""),
+                                 "ON ", table_name, " (",
+                                 paste(pk_fields, collapse = ", "),
                                  ");",
                                  sep = " "
                              ))
