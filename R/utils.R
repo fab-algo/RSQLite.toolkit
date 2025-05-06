@@ -185,7 +185,7 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #'    applying the selected quote methods. If duplicates exist, they
 #'    will be made unique by adding a postfix `_[n]`, where `n` is
 #'    a progressive integer. Defaults to `TRUE`.
-#'  @param encoding character, encoding to be assumed for input strings.
+#' @param encoding character, encoding to be assumed for input strings.
 #'    It is used to re-encode the input in order to process it
 #'    to build column identifiers. Defaults to ‘""’ (for the encoding of
 #'    the current locale).

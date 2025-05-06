@@ -13,8 +13,6 @@ file_schema_dsv(
   id_quote_method = "DB_NAMES",
   max_lines = 2000,
   null_columns = FALSE,
-  comment.char = "",
-  skip = 0,
   ...
 )
 }
@@ -42,21 +40,11 @@ the \code{\link[=format_column_names]{format_column_names()}} function. Defautls
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 2000.}
 
-\item{null_columns}{logical, if \code{TRUE} the col_type of columuns consisting only
-of NAs or zero-length strings will be marked as \code{"NULL"}, otherwise they will
-be marked as \code{character}. Defaults to \code{FALSE}}
-
-\item{comment.char}{character, dafaults to \code{""} (i.e. interpretation of
-comments is turned off). Used to align this parameter value between
-\code{scan} and \code{read.table} that assume different default values for it.}
-
-\item{skip}{integer, number of lines to skip before starting to read
-data. Defaults to 0.}
+\item{null_columns}{logical, if \code{TRUE} the col_type of columuns consisting
+only of NAs or zero-length strings will be marked as \code{"NULL"}, otherwise
+they will be marked as \code{character}. Defaults to \code{FALSE}}
 
 \item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
-
-\item{fileEncoding}{character, declares the encoding used on the input file.
-Defaults to \code{""} for the current locale.}
 }
 \value{
 a list with the following named elements:
