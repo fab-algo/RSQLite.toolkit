@@ -59,12 +59,12 @@ a list with the following named elements:
 }
 \item \code{col_counts}, a data frame with these columns:
 \itemize{
-\item \code{col_lines}: number of columns,
+\item \code{Num_col}: number of columns,
 \item \code{Freq}: number of rows (within \code{max_lines}) that have the number
-of colums shown in \code{col_lines}.
+of colums shown in \code{Num_col}.
 }
 \item \code{n_cols}, integer, the number of columns selected for the file.
-\item \code{col_lines}, a vector of integers of length \code{max_lines} with the
+\item \code{Num_col}, a vector of integers of length \code{max_lines} with the
 number of detected columns in each row tested.
 }
 }

@@ -91,11 +91,11 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'      - `src_names`: columns' names as they appear in the input file.
 #'      - `src_types`: dafults to `text` for all columns.
 #'    - `col_counts`, a data frame with these columns:
-#'      - `col_lines`: number of columns,
+#'      - `Num_col`: number of columns,
 #'      - `Freq`: number of rows (within `max_lines`) that have the number
-#'         of colums shown in `col_lines`.
+#'         of colums shown in `Num_col`.
 #'    - `n_cols`, integer, the number of columns selected for the file.
-#'    - `col_lines`, a vector of integers of length `max_lines` with the
+#'    - `Num_col`, a vector of integers of length `max_lines` with the
 #'      number of detected columns in each row tested.
 #'
 #' @importFrom utils read.table
@@ -113,8 +113,6 @@ file_schema_dsv <- function(input_file,
                             null_columns = FALSE,
                             ...) {
 
-    lpar <- eval(substitute(alist(...)))
-    
     if (!file.exists(input_file)) {
         stop("file_schema_dsv: File does not exist: ", input_file)
     }
@@ -127,18 +125,15 @@ file_schema_dsv <- function(input_file,
     }
 
 
-    
+    ## ---------------------------------------------
+    lpar <- eval(substitute(alist(...)))
+
     if (!("comment.char" %in% names(lpar))) {
         lpar$comment.char <- ""
-    } else {
-        comment.char <- eval(lpar$comment.char)
     }
 
     if (!("skip" %in% names(lpar))) {
         lpar$skip <- 0
-        skip <- 0
-    } else {
-        skip <- eval(lpar$skip)
     }
 
     if (!("fileEncoding" %in% names(lpar))) {
@@ -150,42 +145,40 @@ file_schema_dsv <- function(input_file,
 
 
     
-    col_lines <- integer(max_lines)
+    ## ---------------------------------------------
+    Num_col <- integer(max_lines)
 
+    allowed_par_scan <- c("quote", "na.strings", "strip.white",
+                          "blank.lines.skip", "comment.char",
+                          "allowEscapes", "fileEncoding", "encoding",
+                          "skipNul", "skip")
+    
+    lpar_scan <- lpar
+    lpar_scan <- lpar_scan[which(names(lpar_scan) %in% allowed_par_scan)]
+
+    
     fcon <- file(description = input_file, open = "r",
                  blocking = FALSE)
 
-    skip1 <- lpar$skip
-    
     for (kk in 1:max_lines) {
         if (kk > 1)
-            lpar$skip <- 0
+            lpar_scan$skip <- 0
 
-        lpar1 <- append(x = lpar,
+        lpar1 <- append(x = lpar_scan,
                         values = list(
                             file = fcon,
                             nlines = 1,
                             sep = sep,
                             what = "",
-                            fill = TRUE,
+                            flush = FALSE,
+                            fill = FALSE,
                             multi.line = FALSE,
                             quiet = TRUE
                         ),
                         after = 0)
         x <- do.call(scan, lpar1)
-        ## x <- scan(file = fcon,
-        ##           skip = skip1,
-        ##           nlines = 1,
-        ##           sep = sep,
-        ##           what = "",
-        ##           comment.char = comment.char,
-        ##           fill = TRUE,
-        ##           multi.line = FALSE,
-        ##           quiet = TRUE,
-        ##           ...
-        ##           )
         
-        col_lines[kk] <- length(x)
+        Num_col[kk] <- length(x)
     
         if (kk == 1)
             raw_names <- x
@@ -193,17 +186,17 @@ file_schema_dsv <- function(input_file,
     }
 
     close(fcon)
-    lpar$skip <- skip1
 
-    col_counts <- as.data.frame(table(col_lines), stringsAsFactors=FALSE)
-    col_counts$col_lines <- as.integer(col_counts$col_lines)
+    col_counts <- as.data.frame(table(Num_col), stringsAsFactors=FALSE)
+    names(col_counts) <- c("Num_col","Freq")
+    col_counts$Num_col <- as.integer(col_counts$Num_col)
 
     if (nrow(col_counts) == 1) {
-        n_cols <- col_counts$col_lines[1]
+        n_cols <- col_counts$Num_col[1]
 
     } else {
         idx <- which(col_counts$Freq == max(col_counts$Freq))
-        n_cols <- max(col_counts$col_lines[idx])
+        n_cols <- max(col_counts$Num_col[idx])
                       
     }
     
@@ -215,7 +208,7 @@ file_schema_dsv <- function(input_file,
             src_names <- c(src_names, add_cols)
         }
         header <- FALSE
-        lpar$skip <- skip +1
+        lpar$skip <- lpar$skip +1
         
     } else {
         src_names <- paste0("V", 1:n_cols)
@@ -230,7 +223,18 @@ file_schema_dsv <- function(input_file,
                                      encoding = fileEncoding)
     names(col_classes) <- col_names
 
-    lpar1 <- append(x = lpar,
+
+    allowed_par_read <- c("quote", "na.strings", "skip",
+                          "strip.white", "blank.lines.skip",
+                          "comment.char", "allowEscapes",
+                          "fill", "flush", "fileEncoding",
+                          "encoding", "skipNul", "numerals",
+                          "as.is", "tryLogical", "check.names")
+
+    lpar_read <- lpar
+    lpar_read <- lpar_read[which(names(lpar_read) %in% allowed_par_read)]
+    
+    lpar1 <- append(x = lpar_read,
                     values = list(
                         file = input_file,
                         header = header,
@@ -244,22 +248,6 @@ file_schema_dsv <- function(input_file,
                     ),
                     after = 0)
     df <- do.call(read.table, lpar1)
-    ## df <- utils::read.table(
-    ##                  file = input_file,
-    ##                  header = header,
-    ##                  sep = sep,
-    ##                  dec = dec,
-    ##                  skip = skip,
-    ##                  nrows = max_lines,
-    ##                  col.names  = col_names,
-    ##                  colClasses = col_classes,
-    ##                  stringsAsFactors = FALSE,
-    ##                  row.names = NULL,
-    ##                  comment.char = comment.char,
-    ##                  fileEncoding = fileEncoding,
-    ##                  ... # allow custom options like quote, na.strings, etc.
-    ##              )
-
     
     col_types <- vapply(df, function(col) class(col)[1], character(1))
 
@@ -334,7 +322,7 @@ file_schema_dsv <- function(input_file,
         schema = schema,
         col_counts = col_counts,
         n_cols = n_cols,
-        col_lines = col_lines
+        Num_col = Num_col
         )
 }
 

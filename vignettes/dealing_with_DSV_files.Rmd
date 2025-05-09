@@ -78,11 +78,12 @@ for the CSV file strucuture (i.e. `header = TRUE`, `sep = ","`, `dec = "."`,
 ## do not run: error
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
-The function call relying on the default values of the optional parameters
+
 To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
-function uses the `read.table` function (from the `utils` package) to guess the
-table structure stored in the DSV file, and the `scan` function to actually
-read the data in a data frame and then write it to the SQLite table.
+function calls `file_schema_dsv` function, that uses the *`read.table`* function 
+(from the `utils` package) to guess the table structure stored in the DSV file, 
+and than the *`scan`* function to actually read the data in a data frame and 
+write it to the SQLite table.
 
 Both these functions make some assumptions on how the data is stored in the DSV
 file as "plain text". More in detail, both functions use the parameters listed in the 
@@ -110,6 +111,9 @@ from the file:
 - *escaping*: rule used to represent characters that would otherwise be interpreted 
    as delimiters or special commands.
    Parameter: `allowEscapes`
+- *NUL characters*: how to manage ASCII nul(s) characters that could be found 
+   inside strings.
+   Parameter: `skipNul`
 - *whitespace stripping*: if unwanted spaces from the beginning, end, or middle of a 
    string should be removed. 
    Parameter: `strip.white`
@@ -117,7 +121,7 @@ from the file:
    the "comment" identifier) does not contain data and should be ignored.
    Parameter: `comment.char`
 - *missing data*: how missing data is represented in the file.
-   Parameters: `na.strings` and `skipNul`
+   Parameter: `na.strings`
 - *missing fields*: how to manage rows with less fields then expected.
    Parameter: `fill`
 - *encoding*: the technical standard used to represent characters in binary form, as

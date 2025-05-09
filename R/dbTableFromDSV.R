@@ -91,9 +91,14 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                            drop_table = FALSE,
                            auto_pk = FALSE, build_pk = FALSE, pk_fields = NULL,
                            constant_values = NULL, chunk_size = 0, ...) {
-    ## local vars .................................
+
+    ## local vars ....................................
     fun_name <- match.call()[[1]]
+
     
+    ## optional parameters passed to "scan" ..........
+    lpar <- eval(substitute(alist(...)))
+
     ## formal checks on parameters ................
     if (!("data.frame" %in% class(constant_values)) && !is.null(constant_values)) {
         stop("dbTableFromDSV: 'constant_values' must be a data frame.")
@@ -264,17 +269,27 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     nread <- 0
     repeat {
         tryCatch({
-            dfbuffer <- scan(
-                file = fcon, sep = sep, dec = dec,
-                what = lclass,
-                nlines = chunk_size,
-                flush = TRUE,
-                fill = TRUE,
-                multi.line = FALSE,
-                quiet = TRUE,
-                ...
-            )
+            allowed_par_scan <- c("quote", "comment.char", "na.strings", 
+                                  "allowEscapes", "strip.white",
+                                  "skip", "fill",  "flush", "skipNul", 
+                                  "blank.lines.skip",
+                                  "fileEncoding", "encoding")
 
+            lpar <- lpar[which(names(lpar) %in% allowed_par_scan)]
+
+            lpar1 <- append(x = lpar,
+                            values = list(
+                                file = fcon,
+                                nlines = chunk_size,
+                                sep = sep,
+                                dec = dec,
+                                what = lclass,
+                                multi.line = FALSE,
+                                quiet = TRUE
+                            ),
+                            after = 0)
+            dfbuffer <- do.call(scan, lpar1)
+            
             if (length(dfbuffer[[1]]) == 0) break
 
             dfbuffer <- as.data.frame(dfbuffer,
