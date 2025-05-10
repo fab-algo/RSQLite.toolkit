@@ -13,6 +13,7 @@ file_schema_dsv(
   id_quote_method = "DB_NAMES",
   max_lines = 2000,
   null_columns = FALSE,
+  force_num_cols = TRUE,
   ...
 )
 }
@@ -44,6 +45,14 @@ read to infer columns' data types. Defaults to 2000.}
 only of NAs or zero-length strings will be marked as \code{"NULL"}, otherwise
 they will be marked as \code{character}. Defaults to \code{FALSE}}
 
+\item{force_num_cols}{logical, if \code{TRUE} the returned schema will have
+\code{n_cols} rows (i.e. the guessed number of columns determined inspecting
+the first \code{max_lines} lines of the input file), even if there are rows
+in the input file with fewer or greater columns than \code{n_cols}.
+If \code{FALSE} and any of the tested lines has a number of columns not
+equal to \code{n_cols}, the function will return a list without the \code{schema}
+element. It defaults to \code{TRUE}.}
+
 \item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
 }
 \value{
@@ -66,6 +75,10 @@ of colums shown in \code{Num_col}.
 \item \code{n_cols}, integer, the number of columns selected for the file.
 \item \code{Num_col}, a vector of integers of length \code{max_lines} with the
 number of detected columns in each row tested.
+\item \code{col_fill}, logical, it is set to \code{TRUE} if there are lines with
+less columns than \code{n_cols}.
+\item \code{col_flush}, logical, it is set to \code{TRUE} if there are lines with
+more columns than \code{n_cols}.
 }
 }
 \description{

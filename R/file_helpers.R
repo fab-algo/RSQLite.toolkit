@@ -81,6 +81,13 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #' @param null_columns logical, if `TRUE` the col_type of columuns consisting
 #'    only of NAs or zero-length strings will be marked as `"NULL"`, otherwise
 #'    they will be marked as `character`. Defaults to `FALSE`
+#' @param force_num_cols logical, if `TRUE` the returned schema will have
+#'    `n_cols` rows (i.e. the guessed number of columns determined inspecting
+#'     the first `max_lines` lines of the input file), even if there are rows
+#'     in the input file with fewer or greater columns than `n_cols`.
+#'     If `FALSE` and any of the tested lines has a number of columns not
+#'     equal to `n_cols`, the function will return a list without the `schema`
+#'     element. It defaults to `TRUE`.
 #' @param ... Additional arguments passed to [utils::read.table()].
 #'
 #' @returns a list with the following named elements:
@@ -96,7 +103,11 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'         of colums shown in `Num_col`.
 #'    - `n_cols`, integer, the number of columns selected for the file.
 #'    - `Num_col`, a vector of integers of length `max_lines` with the
-#'      number of detected columns in each row tested.
+#'       number of detected columns in each row tested.
+#'    - `col_fill`, logical, it is set to `TRUE` if there are lines with
+#'       less columns than `n_cols`.
+#'    - `col_flush`, logical, it is set to `TRUE` if there are lines with
+#'       more columns than `n_cols`.
 #'
 #' @importFrom utils read.table
 #' @export
@@ -111,6 +122,7 @@ file_schema_dsv <- function(input_file,
                             id_quote_method = "DB_NAMES",
                             max_lines = 2000,
                             null_columns = FALSE,
+                            force_num_cols = TRUE,
                             ...) {
 
     if (!file.exists(input_file)) {
@@ -188,16 +200,37 @@ file_schema_dsv <- function(input_file,
     close(fcon)
 
     col_counts <- as.data.frame(table(Num_col), stringsAsFactors=FALSE)
-    names(col_counts) <- c("Num_col","Freq")
     col_counts$Num_col <- as.integer(col_counts$Num_col)
 
+    if (min(col_counts$Num_col) <= 0)
+        stop("file_schema_dsv: no columns found in file.")
+    
+    col_flush <- FALSE
+    col_fill <- FALSE
+    
     if (nrow(col_counts) == 1) {
         n_cols <- col_counts$Num_col[1]
-
     } else {
         idx <- which(col_counts$Freq == max(col_counts$Freq))
         n_cols <- max(col_counts$Num_col[idx])
-                      
+        max_cols <- max(col_counts$Num_col)
+        min_cols <- min(col_counts$Num_col)
+
+        if (n_cols > min_cols)
+            col_fill <- TRUE
+        if (n_cols < max_cols)
+            col_flush <- TRUE
+
+        if (force_num_cols == FALSE) {
+            return(
+                list(
+                    col_counts = col_counts,
+                    n_cols = n_cols,
+                    Num_col = Num_col,
+                    col_fill = col_fill,
+                    col_flush = col_flush)
+            )
+        }
     }
     
     if (header) {
@@ -206,7 +239,11 @@ file_schema_dsv <- function(input_file,
         if (length(src_names) < n_cols) {
             add_cols <- paste0("X_", (length(src_names)+1):n_cols)
             src_names <- c(src_names, add_cols)
+
+        } else if (length(src_names) > n_cols) {
+            src_names <- src_names[1:n_cols]
         }
+        
         header <- FALSE
         lpar$skip <- lpar$skip +1
         
@@ -227,12 +264,15 @@ file_schema_dsv <- function(input_file,
     allowed_par_read <- c("quote", "na.strings", "skip",
                           "strip.white", "blank.lines.skip",
                           "comment.char", "allowEscapes",
-                          "fill", "flush", "fileEncoding",
+                          "fileEncoding",
                           "encoding", "skipNul", "numerals",
                           "as.is", "tryLogical", "check.names")
 
     lpar_read <- lpar
     lpar_read <- lpar_read[which(names(lpar_read) %in% allowed_par_read)]
+
+    lpar_read$fill <- col_fill
+    lpar_read$flush <- col_flush
     
     lpar1 <- append(x = lpar_read,
                     values = list(
@@ -322,7 +362,9 @@ file_schema_dsv <- function(input_file,
         schema = schema,
         col_counts = col_counts,
         n_cols = n_cols,
-        Num_col = Num_col
+        Num_col = Num_col,
+        col_fill = col_fill,
+        col_flush = col_flush
         )
 }
 
