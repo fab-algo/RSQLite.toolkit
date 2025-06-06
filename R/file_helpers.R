@@ -189,6 +189,10 @@ file_schema_dsv <- function(input_file,
                         ),
                         after = 0)
         x <- do.call(scan, lpar1)
+        if (length(x) == 0) {
+            kk <- kk -1
+            break
+        }
         
         Num_col[kk] <- length(x)
     
@@ -199,6 +203,7 @@ file_schema_dsv <- function(input_file,
 
     close(fcon)
 
+    Num_col <- Num_col[1:kk]
     col_counts <- as.data.frame(table(Num_col), stringsAsFactors=FALSE)
     col_counts$Num_col <- as.integer(col_counts$Num_col)
 
