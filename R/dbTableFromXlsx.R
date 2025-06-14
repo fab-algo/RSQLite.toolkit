@@ -227,9 +227,6 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
                              start_row = first_row,
                              col_names = header,
                              cols = cols_range,
-                             skip_empty_rows = FALSE,
-                             skip_empty_cols = FALSE,
-                             check_names = TRUE,
                              ...
                          )
     }, error = function(e) {

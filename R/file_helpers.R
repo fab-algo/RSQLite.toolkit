@@ -430,10 +430,6 @@ file_schema_xlsx <- function(input_file,
         col_names = header,
         cols = cols_range,
         rows = c(first_row:(first_row+max_lines)),
-        skip_empty_rows = FALSE,
-        skip_empty_cols = FALSE,
-        check_names = TRUE,
-        keep_attributes = TRUE,
         ...
         )
     
