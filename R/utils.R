@@ -116,7 +116,16 @@ Xlsx2R_types <- function(x) {
     y
 }
 
-
+#' R2SQL_types returns a character vector with the names of SQLite data types
+#' corresponding to the R classes passed through the `x` parameter.
+#'
+#' If any class is not recognized, it will be replaced with `TEXT` data type. 
+#'
+#' @param x character, a vector containing the strings with the R class names.
+#' 
+#' @returns a character vector with the names of SQLite data types.
+#' 
+#' @export
 R2SQL_types <- function(x) {
     r2sql_dict <- c("character"= "TEXT",
                     "double"   = "REAL",
