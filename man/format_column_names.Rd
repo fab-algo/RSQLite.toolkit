@@ -28,9 +28,8 @@ c. prefixing \code{F_} to all strings equal to any SQL92 keyword.
 \item \code{SINGLE_QUOTES} encloses each string in single quotes.
 \item \code{SQL_SERVER} encloses each string in square brackets.
 \item \code{MYSQL} encloses each string in back ticks.
-}
-
-Defaults to \code{DB_NAMES}.}
+Defaults to \code{DB_NAMES}.
+}}
 
 \item{unique_names}{logical, checks for any duplicate name after
 applying the selected quote methods. If duplicates exist, they

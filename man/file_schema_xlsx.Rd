@@ -41,9 +41,9 @@ the \code{\link[=format_column_names]{format_column_names()}} function. Defautls
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 100.}
 
-\item{null_columns}{logical, if \code{TRUE} the col_type of columuns consisting only
-of NAs or zero-length strings will be marked as \code{NA}, otherwise they will
-be marked as \code{character}. Defaults to \code{FALSE}}
+\item{null_columns}{logical, if \code{TRUE} the col_type of columuns consisting
+only of NAs or zero-length strings will be marked as \code{NA}, otherwise they
+will be marked as \code{character}. Defaults to \code{FALSE}}
 
 \item{...}{parameters passed to \code{\link[openxlsx2:wb_to_df]{openxlsx2::wb_to_df()}} function.}
 }

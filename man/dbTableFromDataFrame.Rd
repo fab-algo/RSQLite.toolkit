@@ -43,9 +43,10 @@ frame. Must be of the same length of the number of columns in the input.
 If \code{NULL} the data type inferred from the input will be used.
 Defaults to \code{NULL}.}
 
-\item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
-and recreated before importing the data.  if \code{FALSE}, data from input data
-frame will be appended to an existing table. Defaults to \code{FALSE}.}
+\item{drop_table}{logical, if \code{TRUE} the target table will be dropped
+(if exists) and recreated before importing the data.  if \code{FALSE},
+data from input data frame will be appended to an existing table.
+Defaults to \code{FALSE}.}
 
 \item{auto_pk}{logical, if \code{TRUE}, and \code{pk_fields} parameter is \code{NULL}, an
 additional column named \code{SEQ} will be added to the table and it will be

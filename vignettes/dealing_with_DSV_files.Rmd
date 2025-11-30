@@ -43,11 +43,11 @@ using the `dbTableFromDSV()` function.
 First we download the data from the repo:
 
 ```{r getdata}
-library("piggyback", quietly=TRUE)
-pb_download(file="DOSE_V2.10.zip", dest=tempdir(),
-            repo="fab-algo/RSQLite.toolkit-tests", tag="latest")
+library("piggyback", quietly = TRUE)
+pb_download(file = "DOSE_V2.10.zip", dest = tempdir(),
+            repo = "fab-algo/RSQLite.toolkit-tests", tag = "latest")
 
-unzip(zipfile=file.path(tempdir(), "DOSE_V2.10.zip"), exdir=tempdir())
+unzip(zipfile = file.path(tempdir(), "DOSE_V2.10.zip"), exdir = tempdir())
 dir(file.path(tempdir(), "DOSE_V2.10"))
 
 data_file <- file.path(tempdir(), "DOSE_V2.10/DOSE_V2.10.csv")
@@ -66,7 +66,7 @@ So we expect to have `r format(n_rows-1, nsmall=0)` records in the SQLite table.
 Now we connect to a sample database (i.e. `tests.sqlite`): 
 
 ```{r dbcon}
-dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(),"tests.sqlite"))
+dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(), "tests.sqlite"))
 ```
 and move the dataset in a table there, calling the `dbTableFromDSV()` function 
 specifying the connection to the database (i.e.  `dbcon` parameter) and the 

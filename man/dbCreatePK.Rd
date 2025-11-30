@@ -15,8 +15,8 @@ will be created.}
 \item{pk_fields}{character vector, the list of the fields' names that
 define the \verb{UNIQUE INDEX}.}
 
-\item{drop_index}{logical, if \code{TRUE} the index named \verb{<table_name>_PK} will be
-dropped (if exists) before recreating it. If \code{FALSE}, it will check
+\item{drop_index}{logical, if \code{TRUE} the index named \verb{<table_name>_PK} will
+be dropped (if exists) before recreating it. If \code{FALSE}, it will check
 if an index with that name exists and eventually stops. Default to \code{FALSE}.}
 }
 \value{

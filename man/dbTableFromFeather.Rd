@@ -56,9 +56,10 @@ if \code{col_names} is NULL, or those expressed in \code{col_names} vector.
 Defaults to NULL, i.e. all columns will be imported.
 }}
 
-\item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
-and recreated before importing the data.  if \code{FALSE}, data from the input
-file will be appended to an existing table. Defaults to \code{FALSE}.}
+\item{drop_table}{logical, if \code{TRUE} the target table will be dropped
+(if exists) and recreated before importing the data. If \code{FALSE},
+data from the input file will be appended to an existing table.
+Defaults to \code{FALSE}.}
 
 \item{auto_pk}{logical, if \code{TRUE}, and \code{pk_fields} parameter is \code{NULL}, an
 additional column named \code{SEQ} will be added to the table and it will be

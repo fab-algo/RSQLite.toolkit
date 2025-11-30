@@ -27,8 +27,8 @@ followed by the column number (as specified in \code{\link[utils:read.table]{uti
 \item{sep}{character, field delimiter (e.g., "," for CSV, "\\t" for TSV)
 in the input file. Defaults to ",".}
 
-\item{dec}{character, decimal separator (e.g., "." or "," depending on locale)
-in the input file. Defaults to ".".}
+\item{dec}{character, decimal separator (e.g., "." or "," depending on
+locale) in the input file. Defaults to ".".}
 
 \item{grp}{character, character used for digit grouping. It defaults
 to \code{""} (i.e. no grouping).}

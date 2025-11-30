@@ -21,9 +21,10 @@ dbTableFromView(
 
 \item{table_name}{character, the name of the table.}
 
-\item{drop_table}{logical, if \code{TRUE} the target table will be dropped (if exists)
-and recreated when importing the data.  if \code{FALSE}, data from input
-file will be appended to an existing table. Defaults to \code{FALSE}.}
+\item{drop_table}{logical, if \code{TRUE} the target table will be dropped
+(if exists) and recreated when importing the data.  if \code{FALSE}, data
+from input file will be appended to an existing table.
+Defaults to \code{FALSE}.}
 
 \item{build_pk}{logical, if \code{TRUE} creates a \verb{UNIQUE INDEX} named
 \verb{<table_name>_PK} defined by the combination of fields specified
