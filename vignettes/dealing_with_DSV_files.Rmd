@@ -177,6 +177,63 @@ dbDisconnect(dbcon)
 
 ## Issues with column names
 
+Unfortunately, when dealing with DSV files, problems are not limited to data interpretation
+only. Another common source of issues are the column names used in the input file.
+
+When working with DSV files, column names can present several challenges.
+While DSV files may contain column headers that are valid in their original context
+(such as Excel or other applications), these names might not conform to SQLite's naming
+conventions or best practices.
+
+SQLite has specific rules and restrictions regarding column names, including:
+
+- Must begin with a letter (A-Z, a-z) or an underscore (_)
+- Can contain letters, digits (0-9), and underscores (_)
+- Cannot be a reserved keyword in SQLite
+- Should avoid special characters and spaces for better compatibility
+
+You can find more details about SQLite's naming conventions in the
+[official documentation](https://www.sqlite.org/lang_keywords.html) and 
+[CREATE TABLE](https://www.sqlite.org/lang_createtable.html) page. There are
+also some interesting discussions on Stack Overflow:
+
+- [What are valid table names in SQLite?](https://stackoverflow.com/questions/3694276/what-are-valid-table-names-in-sqlite)
+- [What SQLite column name can be/cannot be?](https://stackoverflow.com/questions/3373234/what-sqlite-column-name-can-be-cannot-be)
+- [SQLite table and column name requirements](https://stackoverflow.com/questions/23770480/sqlite-table-and-column-name-requirements)
+
+
+### Common issues with column names
+
+Some typical problems you might encounter include:
+
+- *Special characters*: Column names containing spaces, hyphens, or other 
+  special characters (e.g., `"Patient-ID"`, `"Test Result"`, `"Cost($)"`)
+- *Reserved keywords*: Column names that match SQLite reserved words
+  (e.g., `"SELECT"`, `"TABLE"`, `"WHERE"`)
+- *Starting with numbers*: Column names beginning with digits 
+  (e.g., `"2023_Sales"`)
+- *Case sensitivity*: While SQLite is case-insensitive for column names,
+  mixing cases can lead to confusion
+- *Empty or duplicate names*: Missing headers or columns with identical names
+
+You should always inspect the column names in your DSV files before importing them
+into a SQLite database to ensure they meet these criteria. Failing to do so can lead
+to errors during the import process or unexpected behavior when querying the database.
+
+
+### How RSQLite.toolkit handles column names
+
+The `dbTableFromDSV()` function automatically sanitizes column names to ensure compatibility with SQLite by:
+
+1. Replacing spaces and special characters with underscores
+2. Adding a prefix to column names that start with numbers
+3. Handling reserved keywords by modifying them
+4. Ensuring uniqueness by appending suffixes to duplicate names
+
+### Example
+
+Let's create a simple example to demonstrate this behavior:
+
 
 ## Conclusions
 

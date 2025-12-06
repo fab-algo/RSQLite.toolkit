@@ -2,3 +2,12 @@
 ^README\.Rmd$
 ^\.vscode$
 ^RSQLite\.toolkit\.Rproj$
+.code-workspace$
+^\.Rhistory$
+^\.RData$
+^\.Rproj\.user$
+^\.Rprofile$
+^\.Renviron$
+^\.DS_Store$
+^\.Rbuildignore$
+^\.gitignore$
