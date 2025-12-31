@@ -1,13 +1,13 @@
 Package: RSQLite.toolkit
 Type: Package
-Title: Lightweight toolkit to load data in SQLite from tabular files
-Version: 0.0.1.9000
-Authors@R: person("Ludovico G.", "Beretta", , "ludovicogiovanni.beretta@gmail.com", role = c("aut", "cre"))
+Title: Load Data in SQLite from Tabular Files
+Version: 0.0.1.9100
+Authors@R: person("Ludovico G.", "Beretta", , "ludovicogiovanni.beretta@gmail.com", role = c("aut", "cre", "cph"))
 Description: A lightweight wrapper around the RSQLite package for streamlined loading of
     data from tabular files (i,e. text delimited files like CSV and TSV, Microsoft Excel,
-    and Arrow IPC files) in SQLite databases.
-    Includes helper functions for inspecting the structure of the input files, and 
-    some functions to simplify activities on the SQLite tables.
+    and Arrow IPC files) in SQLite databases. Includes helper functions for inspecting
+    the structure of the input files, and some functions to simplify activities on the
+    SQLite tables.
 License: GPL (>= 3)
 Depends:
 	R (>= 4.2.0),

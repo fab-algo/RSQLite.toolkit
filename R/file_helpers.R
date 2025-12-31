@@ -264,7 +264,6 @@ file_schema_dsv <- function(input_file,
                                    quote_method = id_quote_method,
                                    unique_names = TRUE,
                                    encoding = fileEncoding)
-  names(col_classes) <- col_names
 
 
   allowed_par_read <- c("quote", "na.strings", "skip",
@@ -297,7 +296,6 @@ file_schema_dsv <- function(input_file,
 
   col_types <- vapply(df, function(col) class(col)[1], character(1))
 
-  date_format <- c("%Y-%m-%d")
   if (length(df) > 0) {
     for (ii in seq_along(df)) {
       test <- df[, ii]
@@ -340,8 +338,14 @@ file_schema_dsv <- function(input_file,
           col_types[ii] <- paste0("integer", grp_suffix)
         } else if (!any(is.na(suppressWarnings(as.numeric(test1))))) {
           col_types[ii] <- paste0("numeric", grp_suffix)
-        } else if (!any(is.na(suppressWarnings(as.Date(test1, optional = TRUE,
-                                                       format = date_format))))
+        }
+
+        if (max(nchar(test1)) > 512) {
+          test1 <- substr(test1, 1, 512)
+        }
+        date_format <- c("%Y-%m-%d")
+        if (!any(is.na(suppressWarnings(as.Date(test1, optional = TRUE,
+                                                format = date_format))))
         ) {
           col_types[ii] <- "Date"
         }

@@ -29,12 +29,13 @@ loading data in a SQLite database from DSV files and how to deal with them.
 library(RSQLite.toolkit)
 ```
 
-Let's start with a simple example using real world data. To retrieve the examples
-data, we can use the package `package?piggyback` to download some public datasets 
-that has been stored in the [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
+Let's start with a simple example using real world data. To retrieve some examples
+data, we can use the package [piggyback](https://github.com/ropensci/piggyback) to 
+download some public datasets that has been stored in the 
+[RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
 GitHub repository[^1].
 
-This example will deal with a table contained in a "standard" CSV file
+The first example will deal with a table contained in a "standard" CSV file
 (i.e. a text file with the first line containing column names, using the
 comma to separate fields' values and the dot as a decimal separator for 
 numbers); we will load  the data in a new table inside a SQLite database
@@ -62,11 +63,12 @@ n_rows <- length(count.fields(data_file))
 n_rows
 ```
 
-So we expect to have `r format(n_rows-1, nsmall=0)` records in the SQLite table.
+So we expect to have `r format(n_rows-1, nsmall=0)` records in the SQLite
+table at the end of the import process.
 Now we connect to a sample database (i.e. `tests.sqlite`): 
 
 ```{r dbcon}
-dbcon <- dbConnect(dbDriver("SQLite"), file.path(tempdir(), "tests.sqlite"))
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
 ```
 and move the dataset in a table there, calling the `dbTableFromDSV()` function 
 specifying the connection to the database (i.e.  `dbcon` parameter) and the 
@@ -82,8 +84,8 @@ dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
 function calls `file_schema_dsv` function, that uses the *`read.table`* function 
 (from the `utils` package) to guess the table structure stored in the DSV file, 
-and than the *`scan`* function to actually read the data in a data frame and 
-write it to the SQLite table.
+and then it calls the *`scan`* function to actually read the file content in a
+data frame and write it to the SQLite table.
 
 Both these functions make some assumptions on how the data is stored in the DSV
 file as "plain text". More in detail, both functions use the parameters listed in the 
@@ -134,12 +136,13 @@ the help pages of the `scan` and `read.table` functions.
 It should be noted that the default values are seldom (... almost never) the right
 ones and we should invest some time to better understand the strategies used by the
 data source. If we have a technical description of the assumptions used in 
-creating the file we can follow those guidelines, otherwise we have to inspect the 
+creating the file, we can follow those guidelines, otherwise we have to inspect the 
 file and determine them by direct guess.
 
-To explore a DSV file (especially big files) it is better to use log file explorers
-and avoid general purpose text editors. As an example, we can use [klogg](https://klogg.filimonov.dev/) 
-that is available for all major operating systems.
+To look into a DSV file (especially big files) it is better to use log file
+explorers and avoid general purpose text editors. As an example, we can
+use [klogg](https://klogg.filimonov.dev/) that is available for all major
+operating systems.
 
 If we open the file and inspect some records we understand that:
 
@@ -158,10 +161,28 @@ For the input file used in this example we need:
   `fileEncoding = "UTF-8"`.
 
 ```{r schema}
-schema <- file_schema_dsv(input_file = data_file,
+f_schema1 <- file_schema_dsv(input_file = data_file,
                           quote = "\"", na.strings = "",
                           comment.char = "", fileEncoding = "UTF-8")
 ```
+
+Now we can see that the guessed schema is correct. Let's look at the first few rows
+of the file schema created using these parameters:
+
+```{r schema_head}
+f_schema1$schema[1:8, ]
+```
+
+The `file_schema_dsv()` function returns a list with many useful information about the
+input file, including the `schema` data frame that describes the columns found in the
+file (i.e. name, type, size, etc.). For more details about it please refer to its
+documentation. One point to note is that the `year` column has been modified to
+`F_year` since `year` is a reserved keyword in SQLite. That's the normal behavior of
+the `dbTableFromDSV()` function when dealing with column names (see next section for
+more details).
+
+Now we can re-run the `dbTableFromDSV()` function specifying the correct parameters
+to interpret the data in the input file:
 
 ```{r loaddata2}
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",
@@ -169,10 +190,15 @@ dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",
                comment.char = "", fileEncoding = "UTF-8")
 ```
 
-As we can see now we got all the expected records in the SQLite table.
+As we can see now we got all the expected records in the SQLite table. We can
+check that by listing the tables in the database, the fields in the `DOSE` table
+and counting the number of records in it:
+```{r check_db}
+dbListTables(dbcon)
 
-```{r close_db}
-dbDisconnect(dbcon)
+dbListFields(dbcon, "DOSE")[1:8]
+
+dbGetQuery(dbcon, "SELECT COUNT(*) AS n_records FROM DOSE")
 ```
 
 ## Issues with column names
@@ -201,9 +227,6 @@ also some interesting discussions on Stack Overflow:
 - [What SQLite column name can be/cannot be?](https://stackoverflow.com/questions/3373234/what-sqlite-column-name-can-be-cannot-be)
 - [SQLite table and column name requirements](https://stackoverflow.com/questions/23770480/sqlite-table-and-column-name-requirements)
 
-
-### Common issues with column names
-
 Some typical problems you might encounter include:
 
 - *Special characters*: Column names containing spaces, hyphens, or other 
@@ -223,17 +246,110 @@ to errors during the import process or unexpected behavior when querying the dat
 
 ### How RSQLite.toolkit handles column names
 
-The `dbTableFromDSV()` function automatically sanitizes column names to ensure compatibility with SQLite by:
+The `dbTableFromDSV()` function[^2] offers a built-in mechanism to handle problematic
+column names when importing data from DSV files. It does so throught the
+`id_quote_method` parameter that can be set to one of the following values:
 
-1. Replacing spaces and special characters with underscores
-2. Adding a prefix to column names that start with numbers
-3. Handling reserved keywords by modifying them
-4. Ensuring uniqueness by appending suffixes to duplicate names
+- `DB_NAMES` tries to build a valid SQLite column name:
+    a. substituting all characters, that are not letters or digits or
+       the `_` character, with the `_` character;
+    b. prefixing `N_` to all strings starting with a digit;
+    c. prefixing `F_` to all strings equal to any SQL92 keyword.
+- `SINGLE_QUOTES` encloses each string in single quotes.
+- `SQL_SERVER` encloses each string in square brackets.
+- `MYSQL` encloses each string in back ticks.
+
+The default value is `DB_NAMES`.
+
+What actually happens is that to ensure valid
+and unique column names, the `dbTableFromDSV()` function calls the
+`file_schema_dsv()` function that in turn calls the
+`format_column_names()` function, passing to it the column names read from the
+DSV file, the selected `id_quote_method` and the `unique_names = TRUE`
+parameter, to ensure that all column names are unique.
+
+If you are not satisfied with the way column names are handled, you can always
+manually specify the column names to be used in the SQLite table using the
+`col_names` parameter of the `dbTableFromDSV()` function. 
 
 ### Example
 
-Let's create a simple example to demonstrate this behavior:
+Let's create a simple example to demonstrate this behavior, we will use a
+DSV file with problematic column names, that we will download from the
+[RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
+repository.
+```{r getdata2}
+library("piggyback", quietly = TRUE)
+pb_download(file = "Blockchain_Banking_Scopus_Dataset_2015_2025.zip",
+            dest = tempdir(), repo = "fab-algo/RSQLite.toolkit-tests",
+            tag = "latest")
 
+unzip(zipfile = file.path(tempdir(),
+                          "Blockchain_Banking_Scopus_Dataset_2015_2025.zip"),
+      exdir = file.path(tempdir(), "Blockchain"))
+dir(file.path(tempdir(), "Blockchain"))
+
+data_file <- file.path(tempdir(),
+                 "Blockchain/Blockchain_Banking_Scopus_Dataset_2015_2025.csv")
+```
+
+Now we can inspect the column names used in the input file:
+```{r inspect_colnames}
+f_schema2 <- file_schema_dsv(input_file = data_file,
+                             quote = "\"", na.strings = "",
+                             comment.char = "", fileEncoding = "UTF-8")
+
+f_schema2$schema[1:10, ]
+``` 
+
+The `src_names` column contains the original column names found in the input file.
+As we can see there are some problematic column names, like for example `Author(s) ID`,
+`Document Title`, `Funding Text`, `Art. No.`, etc 
+
+The `col_names` column contains the transformed column names using the
+`DB_NAMES` method (i.e., the default value for the `id_quote_method` parameter).
+Comparing the two columns we can see how some characters have been replaced with
+the `_` character, spaces have been replaced with `_`, and some names have been
+prefixed with `F_` to avoid conflicts with SQLite reserved keywords (e.g., `Year`).
+
+Now let's see how the column names are handled when using the `SQL_SERVER` method: 
+
+```{r inspect_colnames2}
+f_schema2 <- file_schema_dsv(input_file = data_file,
+                             quote = "\"", na.strings = "",
+                             id_quote_method = "SQL_SERVER",
+                             comment.char = "", fileEncoding = "UTF-8")
+
+f_schema2$schema[1:10, ]
+``` 
+
+As we can see now the column names have been enclosed in square brackets
+(`[` and `]`) to make them valid SQLite identifiers. This quoting convention
+allows the use of special characters and spaces in column names without causing
+issues during database operations. We can test that by creating a new table
+in the database using this quoting method:
+
+```{r loaddata3}
+dbTableFromDSV(input_file = data_file,
+               dbcon = dbcon, table_name = "BLOCKCHAIN_BANKING",
+               quote = "\"", na.strings = "",
+               comment.char = "", fileEncoding = "UTF-8",
+               id_quote_method = "SQL_SERVER",
+               drop_table = TRUE)
+```
+
+```{r check_db2}
+dbListTables(dbcon)
+
+dbListFields(dbcon, "BLOCKCHAIN_BANKING")[1:8]
+
+dbGetQuery(dbcon, "SELECT COUNT(*) AS n_records FROM BLOCKCHAIN_BANKING")
+```
+
+```{r close_db}
+
+dbDisconnect(dbcon)
+```
 
 ## Conclusions
 
@@ -245,3 +361,5 @@ To handle in a safer way DSV files (and avoid some unexpected results)
 
 [^1]: The original source of each dataset is described in the README page of the GitHub repo.
 
+[^2]: The same mechanism to handle column names is used also by the `dbTableFromXlsx()`, 
+`dbTableFromFeather()` and `dbTableFromDataFrame()` functions.

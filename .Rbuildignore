@@ -11,3 +11,5 @@
 ^\.DS_Store$
 ^\.Rbuildignore$
 ^\.gitignore$
+^doc$
+^Meta$

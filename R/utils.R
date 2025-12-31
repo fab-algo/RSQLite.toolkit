@@ -234,6 +234,17 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
     }
   }
 
+  idx <- which(toupper(x1) %in% DBI::.SQL92Keywords)
+  if (length(idx) > 0) {
+    x1[idx] <- paste0("F_", x1[idx])
+  }
+
+  idx <- which(x1 == "")
+  if (length(idx) > 0) {
+    x1[idx] <- paste0("X_", idx)
+  }
+
+
   if (quote_method == "DB_NAMES") {
 
     x1 <- gsub("^\\s+|\\s+$", "", x1)
@@ -250,23 +261,9 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
     reg3 <- "(^sqlite_)"
     x1 <- gsub(pattern = reg3, replacement = "", x = x1)
 
-    idx <- which(x1 %in% DBI::.SQL92Keywords)
-    if (length(idx) > 0) {
-      x1[idx] <- paste0("F_", x1[idx])
-    }
-
-    idx <- which(x1 == "")
-    if (length(idx) > 0) {
-      x1[idx] <- paste0("X_", idx)
-    }
-
   } else if (quote_method == "SINGLE_QUOTES") {
     x1 <- gsub(pattern = "'", replacement = "\"", x = x1)
     x1 <- paste0("'", x1, "'")
-
-    ## } else if (quote_method=="DOUBLE_QUOTES") {
-    ##     x1 <- gsub(pattern="\"", replacement="'", x=x1)
-    ##     x1 <- paste0("\"", x1, "\"")
 
   } else if (quote_method == "SQL_SERVER") {
     x1 <- gsub(pattern = "[\\[\\]]", replacement = "_", x = x1)

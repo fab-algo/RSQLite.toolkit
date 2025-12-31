@@ -56,3 +56,5 @@ rsconnect/
 tmp/
 *~
 inst/doc
+/doc/
+/Meta/
