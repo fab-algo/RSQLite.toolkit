@@ -248,6 +248,7 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
   if (quote_method == "DB_NAMES") {
 
     x1 <- gsub("^\\s+|\\s+$", "", x1)
+    x1 <- gsub("^[\"'`]+|[\"'`]+$", "", x1)
 
     reg1 <- "([^[:alpha:]0-9_]+)"
     x1 <- gsub(pattern = reg1, replacement = "_", x = x1)

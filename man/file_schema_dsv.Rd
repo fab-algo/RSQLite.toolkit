@@ -65,15 +65,17 @@ a list with the following named elements:
 \item \code{sql_types}: columns' SQLite data types;
 \item \code{src_names}: columns' names as they appear in the input file.
 \item \code{src_types}: dafults to \code{text} for all columns.
+\item \code{src_is_quoted}: logical vector indicating if each column has at least
+one value enclosed in quotes.
 }
 \item \code{col_counts}, a data frame with these columns:
 \itemize{
-\item \code{Num_col}: number of columns,
+\item \code{num_col}: number of columns,
 \item \code{Freq}: number of rows (within \code{max_lines}) that have the number
-of colums shown in \code{Num_col}.
+of colums shown in \code{num_col}.
 }
 \item \code{n_cols}, integer, the number of columns selected for the file.
-\item \code{Num_col}, a vector of integers of length \code{max_lines} with the
+\item \code{num_col}, a vector of integers of length \code{max_lines} with the
 number of detected columns in each row tested.
 \item \code{col_fill}, logical, it is set to \code{TRUE} if there are lines with
 less columns than \code{n_cols}.

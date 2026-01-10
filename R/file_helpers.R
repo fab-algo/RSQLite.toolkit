@@ -98,12 +98,14 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'      - `sql_types`: columns' SQLite data types;
 #'      - `src_names`: columns' names as they appear in the input file.
 #'      - `src_types`: dafults to `text` for all columns.
+#'      - `src_is_quoted`: logical vector indicating if each column has at least
+#'         one value enclosed in quotes.
 #'    - `col_counts`, a data frame with these columns:
-#'      - `Num_col`: number of columns,
+#'      - `num_col`: number of columns,
 #'      - `Freq`: number of rows (within `max_lines`) that have the number
-#'         of colums shown in `Num_col`.
+#'         of colums shown in `num_col`.
 #'    - `n_cols`, integer, the number of columns selected for the file.
-#'    - `Num_col`, a vector of integers of length `max_lines` with the
+#'    - `num_col`, a vector of integers of length `max_lines` with the
 #'       number of detected columns in each row tested.
 #'    - `col_fill`, logical, it is set to `TRUE` if there are lines with
 #'       less columns than `n_cols`.
@@ -141,6 +143,10 @@ file_schema_dsv <- function(input_file,
   ## ---------------------------------------------
   lpar <- eval(substitute(alist(...)))
 
+  if (!("quote" %in% names(lpar))) {
+    lpar$quote <- ""
+  }
+
   if (!("comment.char" %in% names(lpar))) {
     lpar$comment.char <- ""
   }
@@ -156,71 +162,85 @@ file_schema_dsv <- function(input_file,
     fileEncoding <- eval(lpar$fileEncoding)
   }
 
-
-
   ## ---------------------------------------------
-  Num_col <- integer(max_lines)
+  text <- readLines(con = input_file, n = max_lines, 
+                    ok = TRUE, skipNul = TRUE)
 
-  allowed_par_scan <- c("quote", "na.strings", "strip.white",
-                        "blank.lines.skip", "comment.char",
-                        "allowEscapes", "fileEncoding", "encoding",
-                        "skipNul", "skip")
+  idx <- which(nchar(text) == 0)
+  if (length(idx) > 0)
+    text <- text[-idx]
 
-  lpar_scan <- lpar
-  lpar_scan <- lpar_scan[which(names(lpar_scan) %in% allowed_par_scan)]
-
-
-  fcon <- file(description = input_file, open = "r",
-               blocking = FALSE)
-
-  for (kk in 1:max_lines) {
-    if (kk > 1)
-      lpar_scan$skip <- 0
-
-    lpar1 <- append(x = lpar_scan,
-                    values = list(
-                      file = fcon,
-                      nlines = 1,
-                      sep = sep,
-                      what = "",
-                      flush = FALSE,
-                      fill = FALSE,
-                      multi.line = FALSE,
-                      quiet = TRUE
-                    ),
-                    after = 0)
-    x <- do.call(scan, lpar1)
-    if (length(x) == 0) {
-      kk <- kk - 1
-      break
-    }
-
-    Num_col[kk] <- length(x)
-
-    if (kk == 1)
-      raw_names <- x
-
+  if (lpar$skip > 0) {
+    text <- text[-(1:lpar$skip)]
   }
 
-  close(fcon)
+  rx <- paste0("([", lpar$quote, "])(?:\\\\.|(?!\\1).)*\\1")
 
-  Num_col <- Num_col[1:kk]
-  col_counts <- as.data.frame(table(Num_col), stringsAsFactors = FALSE)
-  col_counts$Num_col <- as.integer(col_counts$Num_col)
+  list_matches <- gregexpr(rx, text, perl = TRUE)
 
-  if (min(col_counts$Num_col) <= 0)
+  text2 <- character(length(text))
+  for (ii in seq_along(list_matches)) {
+
+    if (list_matches[[ii]][1] > 0) {
+
+      out_text <- ""
+
+      for (jj in seq_along(list_matches[[ii]])) {
+
+        match_start <- list_matches[[ii]][jj]
+        if (jj == 1 && match_start > 1) {
+          pre_text <- substr(text[ii], 1, match_start - 1)
+        } else {
+          pre_text <- ""
+        }
+
+        match_length <- attr(list_matches[[ii]], "match.length")[jj]
+        match_text <- substr(text[ii], match_start,
+                             match_start + match_length - 1)
+        match_text <- gsub(sep,  "", match_text, fixed = TRUE)
+        out_text <- paste0(out_text, pre_text, match_text)
+
+        if (jj <= length(list_matches[[ii]]) - 1) {
+          post_start <- match_start + match_length
+          if (post_start != list_matches[[ii]][jj + 1]) {
+            pos_length <- list_matches[[ii]][jj + 1] - post_start
+            post_text <- substr(text[ii], post_start,
+                                post_start + pos_length - 1)
+            out_text <- paste0(out_text, post_text)
+          }
+        } else if (jj == length(list_matches[[ii]])) {
+          post_start <- match_start + match_length
+          if (post_start <= nchar(text[ii])) {
+            post_text <- substr(text[ii], post_start, nchar(text[ii]))
+            out_text <- paste0(out_text, post_text)
+          }
+        }
+      }
+
+    }  else {
+      out_text <- text[ii]
+    }
+    text2[ii] <- out_text
+  }
+  list_split <- strsplit(text2, split = sep, fixed = TRUE)
+
+  num_col <- sapply(list_split, length, simplify = TRUE)
+  col_counts <- as.data.frame(table(num_col), stringsAsFactors = FALSE)
+  col_counts$num_col <- as.integer(col_counts$num_col)
+
+  if (min(col_counts$num_col) <= 0)
     stop("file_schema_dsv: no columns found in file.")
 
   col_flush <- FALSE
   col_fill <- FALSE
 
   if (nrow(col_counts) == 1) {
-    n_cols <- col_counts$Num_col[1]
+    n_cols <- col_counts$num_col[1]
   } else {
     idx <- which(col_counts$Freq == max(col_counts$Freq))
-    n_cols <- max(col_counts$Num_col[idx])
-    max_cols <- max(col_counts$Num_col)
-    min_cols <- min(col_counts$Num_col)
+    n_cols <- max(col_counts$num_col[idx])
+    max_cols <- max(col_counts$num_col)
+    min_cols <- min(col_counts$num_col)
 
     if (n_cols > min_cols)
       col_fill <- TRUE
@@ -229,36 +249,68 @@ file_schema_dsv <- function(input_file,
 
     if (force_num_cols == FALSE) {
       return(
-        list(
-             col_counts = col_counts,
+        list(col_counts = col_counts,
              n_cols = n_cols,
-             Num_col = Num_col,
+             num_col = num_col,
              col_fill = col_fill,
              col_flush = col_flush)
       )
     }
   }
 
-  if (header) {
-    src_names <- raw_names
+  check_quotes <- function(text_line, quote, n_cols) {
+    rx_quote <- paste0("(\\s*)([", quote, "])(?:\\\\.|(?!\\2).)*\\2(\\s*)")
+    matches <- grep(rx_quote, text_line, perl = TRUE)
+    no_matches <- setdiff(seq_along(text_line), matches)
 
-    if (length(src_names) < n_cols) {
-      add_cols <- paste0("X_", (length(src_names) + 1):n_cols)
-      src_names <- c(src_names, add_cols)
+    quoted_line <- rep(NA, n_cols)
+    if (length(matches) > 0) {
+      quoted_line[matches] <- TRUE
+    }
+    if (length(no_matches) > 0) {
+      quoted_line[no_matches] <- FALSE
+    }
+    quoted_line
+  }
+
+  is_quoted_matrix <- sapply(list_split, check_quotes,
+                             quote = lpar$quote, n_cols = n_cols)
+
+  is_quoted <- apply(X = is_quoted_matrix, MARGIN = 1,
+                     FUN = function(x) any(x, na.rm = TRUE))
+
+  align_columns <- function(x, n_cols) {
+    if (length(x) > n_cols) {
+      x  <- x[1:n_cols]
+    } else if (length(x) < n_cols) {
+      x <- c(x, rep(NA, n_cols - length(x)))
+    }
+    x <- gsub("^\\s+|\\s+$", "", x)
+    x
+  }
+
+  list_split_fixed <- sapply(list_split, align_columns, n_cols = n_cols)
+  df <- as.data.frame(t(list_split_fixed), stringsAsFactors = FALSE)
+
+  if (header) {
+    src_names <- as.vector(df[1, ], mode = "character")
+    src_names <- gsub(paste0("^[", lpar$quote, "]+|[", lpar$quote, "]+$"), "",
+                      src_names)
+    df <- df[-1, ]
+    idx <- which(is.na(src_names) | src_names == "")
+
+    if (length(idx) > 0) {
+      src_names[idx] <- paste0("X_", idx)
 
     } else if (length(src_names) > n_cols) {
       src_names <- src_names[1:n_cols]
     }
 
-    header <- FALSE
-    lpar$skip <- lpar$skip + 1
-
   } else {
     src_names <- paste0("V", 1:n_cols)
 
   }
-
-  col_classes <- rep("character", n_cols)
+  names(df) <- src_names
 
   col_names <- format_column_names(x = src_names,
                                    quote_method = id_quote_method,
@@ -266,38 +318,11 @@ file_schema_dsv <- function(input_file,
                                    encoding = fileEncoding)
 
 
-  allowed_par_read <- c("quote", "na.strings", "skip",
-                        "strip.white", "blank.lines.skip",
-                        "comment.char", "allowEscapes",
-                        "fileEncoding",
-                        "encoding", "skipNul", "numerals",
-                        "as.is", "tryLogical", "check.names")
-
-  lpar_read <- lpar
-  lpar_read <- lpar_read[which(names(lpar_read) %in% allowed_par_read)]
-
-  lpar_read$fill <- col_fill
-  lpar_read$flush <- col_flush
-
-  lpar1 <- append(x = lpar_read,
-                  values = list(
-                    file = input_file,
-                    header = header,
-                    sep = sep,
-                    dec = dec,
-                    nrows = max_lines,
-                    col.names  = col_names,
-                    colClasses = col_classes,
-                    stringsAsFactors = FALSE,
-                    row.names = NULL
-                  ),
-                  after = 0)
-  df <- do.call(read.table, lpar1)
-
   col_types <- vapply(df, function(col) class(col)[1], character(1))
 
   if (length(df) > 0) {
-    for (ii in seq_along(df)) {
+    idx <- which(is_quoted == FALSE)
+    for (ii in idx) {
       test <- df[, ii]
 
       test <- gsub("^\\s+|\\s+$", "", test)
@@ -363,6 +388,7 @@ file_schema_dsv <- function(input_file,
     sql_types = R2SQL_types(col_types),
     src_names,
     src_types = c("text"),
+    src_is_quoted = is_quoted,
     stringsAsFactors = FALSE,
     row.names = NULL
   )
@@ -371,12 +397,11 @@ file_schema_dsv <- function(input_file,
     schema = schema,
     col_counts = col_counts,
     n_cols = n_cols,
-    Num_col = Num_col,
+    num_col = num_col,
     col_fill = col_fill,
     col_flush = col_flush
   )
 }
-
 
 
 #' file_schema_xlsx returns a data frame with the schema of an Excel data table
