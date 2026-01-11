@@ -21,8 +21,7 @@ error_handler <- function(err, fun, step) {
     step_msg <- paste0("reading file schema: \n",
                        "please check 'sep', 'dec', 'grp' ",
                        "params and those used by 'scan' ",
-                       "and 'read.table' for quoting, ",
-                       "encoding, ...")
+                       "for quoting, encoding, ...")
 
   } else if (step == 121) {
     step_msg <- paste0("reading file schema: \n",
@@ -198,7 +197,9 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #'    to build column identifiers. Defaults to ‘""’ (for the encoding of
 #'    the current locale).
 #'
-#' @returns A character vector containing the columns' identifiers
+#' @returns A data frame containing the columns' identifiers in two formats:
+#'   - `quoted`: the quoted names, as per the selected `quote_method`;
+#'   - `unquoted`: the cleaned names, without any quoting.
 #'
 #' @importFrom DBI .SQL92Keywords
 #' @export
@@ -234,16 +235,10 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
     }
   }
 
-  idx <- which(toupper(x1) %in% DBI::.SQL92Keywords)
-  if (length(idx) > 0) {
-    x1[idx] <- paste0("F_", x1[idx])
-  }
-
   idx <- which(x1 == "")
   if (length(idx) > 0) {
     x1[idx] <- paste0("X_", idx)
   }
-
 
   if (quote_method == "DB_NAMES") {
 
@@ -253,6 +248,11 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
     reg1 <- "([^[:alpha:]0-9_]+)"
     x1 <- gsub(pattern = reg1, replacement = "_", x = x1)
 
+    idx <- which(toupper(x1) %in% DBI::.SQL92Keywords)
+    if (length(idx) > 0) {
+      x1[idx] <- paste0("F_", x1[idx])
+    }
+
     reg2 <- "(^[0-9])"
     idx <- grep(pattern = reg2, x = x1)
     if (length(idx) > 0) {
@@ -261,17 +261,21 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
 
     reg3 <- "(^sqlite_)"
     x1 <- gsub(pattern = reg3, replacement = "", x = x1)
+    x2 <- x1
 
   } else if (quote_method == "SINGLE_QUOTES") {
-    x1 <- gsub(pattern = "'", replacement = "\"", x = x1)
+    x1 <- gsub(pattern = "'", replacement = "`", x = x1)
+    x2 <- x1
     x1 <- paste0("'", x1, "'")
 
   } else if (quote_method == "SQL_SERVER") {
     x1 <- gsub(pattern = "[\\[\\]]", replacement = "_", x = x1)
+    x2 <- x1
     x1 <- paste0("[", x1, "]")
 
   } else if (quote_method == "MYSQL") {
     x1 <- gsub(pattern = "`", replacement = "'", x = x1)
+    x2 <- x1
     x1 <- paste0("`", x1, "`")
   }
 
@@ -281,9 +285,10 @@ format_column_names <- function(x, quote_method = "DB_NAMES",
     if (length(idx) > 0) {
       id <- c(seq_along(idx))
       x1[idx] <- paste0(x1[idx], "_", id)
+      x2[idx] <- paste0(x2[idx], "_", id)
 
     }
   }
 
-  x1
+  data.frame(quoted = x1, unquoted = x2)
 }

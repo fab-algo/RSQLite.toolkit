@@ -54,7 +54,9 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
   tryCatch({
     src_names <- names(df)
 
-    cnames <- format_column_names(src_names, quote_method = id_quote_method)
+    dnames <- format_column_names(src_names, quote_method = id_quote_method)
+    cnames <- dnames$quoted
+    cnames_unquoted <- dnames$unquoted 
     cclass <- vapply(df, function(col) class(col)[1], character(1))
     fields <- R2SQL_types(cclass)
 
@@ -64,6 +66,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
              length(cnames), " elements but found ", length(col_names))
       }
       cnames <- col_names
+      cnames_unquoted <- col_names
     }
 
     if (!is.null(col_types)) {
@@ -98,9 +101,9 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
     if (auto_pk1) {
       sql_body <- paste(sql_body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-      cnames2 <- c(cnames, "SEQ")
+      cnames_unquoted2 <- c(cnames_unquoted, "SEQ")
     } else {
-      cnames2 <- cnames
+      cnames_unquoted2 <- cnames_unquoted
     }
 
     sql_tail <- ");"
@@ -117,11 +120,10 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
   ## Write data -------------------------------
   tryCatch({
-    names(df) <- cnames
+    names(df) <- cnames_unquoted2
 
     if (auto_pk1) {
       df <- cbind(df, NA)
-      names(df) <- cnames2
     }
 
     dbWriteTable(dbcon, table_name, as.data.frame(df),

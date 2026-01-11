@@ -51,6 +51,11 @@ will be marked as \code{character}. Defaults to \code{FALSE}}
 a data frame with these columns:
 \itemize{
 \item \code{col_names}: columns' names, after applying the selected quote method;
+\item \code{col_names_unquoted}: columns' names, unquoted; if \code{id_quote_method}
+is set to \code{DB_NAMES} they will be the same as \code{col_names}; for other
+quote methods they will be the unquoted versions of \code{col_names},that
+is generally the same as \code{src_names} unless \code{src_names} contain the
+quoting characters;
 \item \code{col_types}: columns' R data types;
 \item \code{sql_types}: columns' SQLite data types;
 \item \code{src_names}: columns' names as they appear in the input file;

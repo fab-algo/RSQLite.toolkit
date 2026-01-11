@@ -83,7 +83,6 @@
 #'    from `input_file`.
 #'
 #' @import RSQLite
-#' @importFrom utils read.table
 #' @export
 dbTableFromDSV <- function(input_file, dbcon, table_name,
                            header = TRUE, sep = ",", dec = ".", grp = "",
@@ -126,6 +125,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                               max_lines = 2000, ...)$schema
 
     cnames <- df_scm$col_names
+    cnames_unquoted <- df_scm$col_names_unquoted
     cclass <- df_scm$col_types
     fields <- df_scm$sql_types
 
@@ -144,6 +144,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
              length(cnames), " elements but found ", length(col_names))
       }
       cnames <- col_names
+      cnames_unquoted <- col_names
     }
 
     if (!is.null(col_types)) {
@@ -199,9 +200,12 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
     if (!is.null(constant_values)) {
       src_names <- names(constant_values)
-      cv_names <- format_column_names(x = src_names,
-                                      quote_method = id_quote_method,
-                                      unique_names = TRUE)
+      dnames_cv <- format_column_names(x = src_names,
+                                       quote_method = id_quote_method,
+                                       unique_names = FALSE)
+      cv_names <- dnames_cv$quoted
+      cv_names_unquoted <- dnames_cv$unquoted
+
       cv_types <- vapply(constant_values,
                          function(col) class(col)[1], character(1))
       cv_sql <- R2SQL_types(cv_types)
@@ -209,12 +213,15 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
       sql_ext <- paste(cv_names, cv_sql, sep = " ", collapse = ", ")
       sql_body <- paste(sql_body, ", ", sql_ext, sep = "")
 
-      names(constant_values) <- cv_names
+      names(constant_values) <- cv_names_unquoted
 
       cnames1 <- c(cnames, cv_names)
+      cnames_unquoted1 <- c(cnames_unquoted, cv_names_unquoted)
+
       idx_import1 <- c(idx_import, length(cnames) + c(seq_along(cv_names)))
     } else {
       cnames1 <- cnames
+      cnames_unquoted1 <- cnames_unquoted
       idx_import1 <- idx_import
     }
 
@@ -224,9 +231,11 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
     if (auto_pk1) {
       sql_body <- paste(sql_body, ", SEQ INTEGER PRIMARY KEY", sep = "")
       cnames2 <- c(cnames1, "SEQ")
+      cnames_unquoted2 <- c(cnames_unquoted1, "SEQ")
       idx_import2 <- c(idx_import1, length(cnames1) + 1)
     } else {
       cnames2 <- cnames1
+      cnames_unquoted2 <- cnames_unquoted1
       idx_import2 <- idx_import1
     }
 
@@ -351,7 +360,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         dfbuffer <- cbind(dfbuffer, NA)
       }
 
-      names(dfbuffer) <- cnames2
+      names(dfbuffer) <- cnames_unquoted2
       dfbuffer <- dfbuffer[, idx_import2]
 
       dbWriteTable(dbcon, table_name, as.data.frame(dfbuffer),

@@ -42,7 +42,11 @@ to build column identifiers. Defaults to ‘""’ (for the encoding of
 the current locale).}
 }
 \value{
-A character vector containing the columns' identifiers
+A data frame containing the columns' identifiers in two formats:
+\itemize{
+\item \code{quoted}: the quoted names, as per the selected \code{quote_method};
+\item \code{unquoted}: the cleaned names, without any quoting.
+}
 }
 \description{
 format_column_names format a vector of strings to be

@@ -53,7 +53,17 @@ If \code{FALSE} and any of the tested lines has a number of columns not
 equal to \code{n_cols}, the function will return a list without the \code{schema}
 element. It defaults to \code{TRUE}.}
 
-\item{...}{Additional arguments passed to \code{\link[utils:read.table]{utils::read.table()}}.}
+\item{...}{Additional arguments for quoting and data interpretation as
+described in the \code{\link[utils:read.table]{utils::read.table()}} function. The parameters used
+by \code{file_schema_dsv} are:
+- \code{quote}, character, the set of quoting characters. Defaults to \code{""}
+(i.e., no quoting).
+- \code{comment.char}, character, the comment character. Defaults to \code{""}
+(i.e., no comments).
+- \code{skip}, integer, the number of lines to skip before reading data.
+Defaults to \code{0}.
+- \code{fileEncoding}, character, the name of the encoding of the input file.
+Defaults to \code{""}.}
 }
 \value{
 a list with the following named elements:
@@ -61,6 +71,11 @@ a list with the following named elements:
 \item \code{schema}, a data frame with these columns:
 \itemize{
 \item \code{col_names}: columns' names, after applying the selected quote method;
+\item \code{col_names_unquoted}: columns' names, unquoted; if \code{id_quote_method}
+is set to \code{DB_NAMES} they will be the same as \code{col_names}; for other
+quote methods they will be the unquoted versions of \code{col_names},that
+is generally the same as \code{src_names} unless \code{src_names} contain the
+quoting characters;
 \item \code{col_types}: columns' R data types;
 \item \code{sql_types}: columns' SQLite data types;
 \item \code{src_names}: columns' names as they appear in the input file.

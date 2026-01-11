@@ -14,6 +14,11 @@
 #'
 #' @returns a data frame with these columns:
 #'    - `col_names`: columns' names, after applying the selected quote method;
+#'    - `col_names_unquoted`: columns' names, unquoted; if `id_quote_method`
+#'      is set to `DB_NAMES` they will be the same as `col_names`; for other
+#'      quote methods they will be the unquoted versions of `col_names`,that
+#'      is generally the same as `src_names` unless `src_names` contain the
+#'      quoting characters;
 #'    - `col_types`: columns' R data types;
 #'    - `sql_types`: columns' SQLite data types;
 #'    - `src_names`: columns' names as they appear in the input file;
@@ -37,16 +42,18 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 
   src_names <- ft$column_names
 
-  col_names <- format_column_names(x = src_names,
-                                   quote_method = id_quote_method,
-                                   unique_names = TRUE)
+  dnames <- format_column_names(x = src_names,
+                                quote_method = id_quote_method,
+                                unique_names = TRUE)
+  col_names <- dnames$quoted
+  col_names_unquoted <- dnames$unquoted
 
   ss <- lapply(ft$schema$fields, FUN = function(x) `$`(x, "type"))
   src_types <- sapply(ss, FUN = function(x) `$`(x, "name"))
 
   rf$close()
 
-  data.frame(col_names,
+  data.frame(col_names, col_names_unquoted,
              col_types = Arrow2R_types(src_types),
              sql_types = R2SQL_types(Arrow2R_types(src_types)),
              src_names,
@@ -89,11 +96,26 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'     If `FALSE` and any of the tested lines has a number of columns not
 #'     equal to `n_cols`, the function will return a list without the `schema`
 #'     element. It defaults to `TRUE`.
-#' @param ... Additional arguments passed to [utils::read.table()].
+#' @param ... Additional arguments for quoting and data interpretation as
+#'     described in the [utils::read.table()] function. The parameters used
+#'     by `file_schema_dsv` are:
+#'     - `quote`, character, the set of quoting characters. Defaults to `""`
+#'       (i.e., no quoting).
+#'     - `comment.char`, character, the comment character. Defaults to `""`
+#'       (i.e., no comments).
+#'     - `skip`, integer, the number of lines to skip before reading data.
+#'       Defaults to `0`.
+#'     - `fileEncoding`, character, the name of the encoding of the input file.
+#'       Defaults to `""`.
 #'
 #' @returns a list with the following named elements:
 #'    - `schema`, a data frame with these columns:
 #'      - `col_names`: columns' names, after applying the selected quote method;
+#'      - `col_names_unquoted`: columns' names, unquoted; if `id_quote_method`
+#'        is set to `DB_NAMES` they will be the same as `col_names`; for other
+#'        quote methods they will be the unquoted versions of `col_names`,that
+#'        is generally the same as `src_names` unless `src_names` contain the
+#'        quoting characters;
 #'      - `col_types`: columns' R data types;
 #'      - `sql_types`: columns' SQLite data types;
 #'      - `src_names`: columns' names as they appear in the input file.
@@ -112,7 +134,6 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    - `col_flush`, logical, it is set to `TRUE` if there are lines with
 #'       more columns than `n_cols`.
 #'
-#' @importFrom utils read.table
 #' @export
 #'
 #' @examples
@@ -127,6 +148,7 @@ file_schema_dsv <- function(input_file,
                             null_columns = FALSE,
                             force_num_cols = TRUE,
                             ...) {
+
 
   if (!file.exists(input_file)) {
     stop("file_schema_dsv: File does not exist: ", input_file)
@@ -163,8 +185,17 @@ file_schema_dsv <- function(input_file,
   }
 
   ## ---------------------------------------------
-  text <- readLines(con = input_file, n = max_lines, 
+  text_con <- file(input_file, open = "r",
+                   encoding = fileEncoding)
+  on.exit(close(text_con), add = TRUE)
+
+  text <- readLines(con = text_con, n = max_lines,
                     ok = TRUE, skipNul = TRUE)
+
+  if (lpar$comment.char != "") {
+    rx_comment <- paste0("^", lpar$comment.char, ".*")
+    text <- gsub(rx_comment, "", text, perl = TRUE)
+  }
 
   idx <- which(nchar(text) == 0)
   if (length(idx) > 0)
@@ -198,6 +229,9 @@ file_schema_dsv <- function(input_file,
         match_text <- substr(text[ii], match_start,
                              match_start + match_length - 1)
         match_text <- gsub(sep,  "", match_text, fixed = TRUE)
+        if (lpar$comment.char != "") {
+          match_text <- gsub(lpar$comment.char,  "", match_text, fixed = TRUE)
+        }
         out_text <- paste0(out_text, pre_text, match_text)
 
         if (jj <= length(list_matches[[ii]]) - 1) {
@@ -222,6 +256,12 @@ file_schema_dsv <- function(input_file,
     }
     text2[ii] <- out_text
   }
+
+  if (lpar$comment.char != "") {
+    rx_comment <- paste0(lpar$comment.char, ".*")
+    text2 <- gsub(rx_comment, "", text2, perl = TRUE)
+  }
+
   list_split <- strsplit(text2, split = sep, fixed = TRUE)
 
   num_col <- sapply(list_split, length, simplify = TRUE)
@@ -258,27 +298,6 @@ file_schema_dsv <- function(input_file,
     }
   }
 
-  check_quotes <- function(text_line, quote, n_cols) {
-    rx_quote <- paste0("(\\s*)([", quote, "])(?:\\\\.|(?!\\2).)*\\2(\\s*)")
-    matches <- grep(rx_quote, text_line, perl = TRUE)
-    no_matches <- setdiff(seq_along(text_line), matches)
-
-    quoted_line <- rep(NA, n_cols)
-    if (length(matches) > 0) {
-      quoted_line[matches] <- TRUE
-    }
-    if (length(no_matches) > 0) {
-      quoted_line[no_matches] <- FALSE
-    }
-    quoted_line
-  }
-
-  is_quoted_matrix <- sapply(list_split, check_quotes,
-                             quote = lpar$quote, n_cols = n_cols)
-
-  is_quoted <- apply(X = is_quoted_matrix, MARGIN = 1,
-                     FUN = function(x) any(x, na.rm = TRUE))
-
   align_columns <- function(x, n_cols) {
     if (length(x) > n_cols) {
       x  <- x[1:n_cols]
@@ -312,11 +331,33 @@ file_schema_dsv <- function(input_file,
   }
   names(df) <- src_names
 
-  col_names <- format_column_names(x = src_names,
-                                   quote_method = id_quote_method,
-                                   unique_names = TRUE,
-                                   encoding = fileEncoding)
+  dnames <- format_column_names(x = src_names,
+                                quote_method = id_quote_method,
+                                unique_names = TRUE,
+                                encoding = fileEncoding)
+  col_names <- dnames$quoted
+  col_names_unquoted <- dnames$unquoted
 
+  check_quotes <- function(text_line, quote, n_cols) {
+    rx_quote <- paste0("(\\s*)([", quote, "])(?:\\\\.|(?!\\2).)*\\2(\\s*)")
+    matches <- grep(rx_quote, text_line, perl = TRUE)
+    no_matches <- setdiff(seq_along(text_line), matches)
+
+    quoted_line <- rep(NA, n_cols)
+    if (length(matches) > 0) {
+      quoted_line[matches] <- TRUE
+    }
+    if (length(no_matches) > 0) {
+      quoted_line[no_matches] <- FALSE
+    }
+    quoted_line
+  }
+
+  is_quoted_matrix <- sapply(df, check_quotes,
+                             quote = lpar$quote, n_cols = n_cols)
+
+  is_quoted <- apply(X = is_quoted_matrix, MARGIN = 2,
+                     FUN = function(x) any(x, na.rm = TRUE))
 
   col_types <- vapply(df, function(col) class(col)[1], character(1))
 
@@ -384,7 +425,7 @@ file_schema_dsv <- function(input_file,
   }
 
   schema <- data.frame(
-    col_names, col_types,
+    col_names, col_names_unquoted, col_types,
     sql_types = R2SQL_types(col_types),
     src_names,
     src_types = c("text"),
@@ -433,6 +474,11 @@ file_schema_dsv <- function(input_file,
 #'
 #' @returns a data frame with these columns:
 #'    - `col_names`: columns' names, after applying the selected quote method;
+#'    - `col_names_unquoted`: columns' names, unquoted; if `id_quote_method`
+#'      is set to `DB_NAMES` they will be the same as `col_names`; for other
+#'      quote methods they will be the unquoted versions of `col_names`,that
+#'      is generally the same as `src_names` unless `src_names` contain the
+#'      quoting characters;
 #'    - `col_types`: columns' R data types;
 #'    - `sql_types`: columns' SQLite data types;
 #'    - `src_names`: columns' names as they appear in the input file;
@@ -465,9 +511,12 @@ file_schema_xlsx <- function(input_file,
   src_names <- names(df)
   col_types <- vapply(df, function(col) class(col)[1], character(1))
 
-  col_names <- format_column_names(x = src_names,
-                                   quote_method = id_quote_method,
-                                   unique_names = TRUE)
+  dnames <- format_column_names(x = src_names,
+                                quote_method = id_quote_method,
+                                unique_names = TRUE)
+
+  col_names <- dnames$quoted
+  col_names_unquoted <- dnames$unquoted
 
   if (length(df) > 0) {
     for (ii in seq_along(df)) {
@@ -488,7 +537,7 @@ file_schema_xlsx <- function(input_file,
   xt <- attr(df, "types")
 
   data.frame(
-    col_names,
+    col_names, col_names_unquoted,
     col_types,
     sql_types = R2SQL_types(col_types),
     src_names,

@@ -162,8 +162,8 @@ For the input file used in this example we need:
 
 ```{r schema}
 f_schema1 <- file_schema_dsv(input_file = data_file,
-                          quote = "\"", na.strings = "",
-                          comment.char = "", fileEncoding = "UTF-8")
+                             quote = "\"", na.strings = "",
+                             comment.char = "", fileEncoding = "UTF-8")
 ```
 
 Now we can see that the guessed schema is correct. Let's look at the first few rows
@@ -177,7 +177,7 @@ The `file_schema_dsv()` function returns a list with many useful information abo
 input file, including the `schema` data frame that describes the columns found in the
 file (i.e. name, type, size, etc.). For more details about it please refer to its
 documentation. One point to note is that the `year` column has been modified to
-`F_year` since `year` is a reserved keyword in SQLite. That's the normal behavior of
+`F_year` since `year` is a reserved keyword in SQLite. That's the default behavior of
 the `dbTableFromDSV()` function when dealing with column names (see next section for
 more details).
 
@@ -206,7 +206,6 @@ dbGetQuery(dbcon, "SELECT COUNT(*) AS n_records FROM DOSE")
 Unfortunately, when dealing with DSV files, problems are not limited to data interpretation
 only. Another common source of issues are the column names used in the input file.
 
-When working with DSV files, column names can present several challenges.
 While DSV files may contain column headers that are valid in their original context
 (such as Excel or other applications), these names might not conform to SQLite's naming
 conventions or best practices.
@@ -353,10 +352,18 @@ dbDisconnect(dbcon)
 
 ## Conclusions
 
-To handle in a safer way DSV files (and avoid some unexpected results)
+To handle in a safer way DSV files (and avoid some unexpected results) when
+importing data in a SQLite database using the `dbTableFromDSV()` function, you
+should always:
 
-	  
-
+- inspect the input file to understand how data is represented there &rarr; to that
+  end you can use the `file_schema_dsv()` function to help you in this task and test
+  different parameters settings before importing the data;
+- specify the correct parameters to interpret data in the input file (i.e. `quote`,
+  `na.strings`, `comment.char`, `fileEncoding`, etc.);
+- check the column names used in the input file and choose the right strategy
+  to handle them &rarr; here the `id_quote_method` parameter of the `dbTableFromDSV()`
+  function can be very useful.
 
 
 [^1]: The original source of each dataset is described in the README page of the GitHub repo.
