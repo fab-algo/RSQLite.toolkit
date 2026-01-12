@@ -65,8 +65,11 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
         stop("dbTableFromFeather: wrong 'col_names' length, must be ",
              length(cnames), " elements but found ", length(col_names))
       }
-      cnames <- col_names
-      cnames_unquoted <- col_names
+      dnames <- format_column_names(x = col_names,
+                                    quote_method = id_quote_method,
+                                    unique_names = FALSE)
+      cnames <- dnames$quoted
+      cnames_unquoted <- dnames$unquoted
     }
 
     if (!is.null(col_types)) {
@@ -93,7 +96,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
     }
 
     auto_pk1 <- FALSE
-    if (is.null(pk_fields) && auto_pk) auto_pk1 <- TRUE
+    if (is.null(pk_fields) && !build_pk && auto_pk) auto_pk1 <- TRUE
 
     sql_head <- paste("CREATE TABLE IF NOT EXISTS ",
                       table_name, " (", sep = "")
@@ -143,6 +146,9 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
       if (!is.character(pk_fields)) {
         stop("dbCreateTableFromDF: 'pk_fields' must be a character vector.")
       }
+
+      pk_fields <- format_column_names(
+        pk_fields, quote_method = id_quote_method)$quoted
 
       check_fields <- setdiff(pk_fields, cnames)
       if (length(check_fields) > 0) {

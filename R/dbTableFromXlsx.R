@@ -129,8 +129,11 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
         stop("dbTableFromXlsx: wrong 'col_names' length, must be ",
              length(cnames), " elements but found ", length(col_names))
       }
-      cnames <- col_names
-      cnames_unquoted <- col_names
+      dnames <- format_column_names(x = col_names,
+                                    quote_method = id_quote_method,
+                                    unique_names = FALSE)
+      cnames <- dnames$quoted
+      cnames_unquoted <- dnames$unquoted
     }
 
     if (!is.null(col_types)) {
@@ -210,7 +213,7 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
     }
 
     auto_pk1 <- FALSE
-    if (length(pk_fields) == 0 && auto_pk) auto_pk1 <- TRUE
+    if (length(pk_fields) == 0 && !build_pk && auto_pk) auto_pk1 <- TRUE
 
     if (auto_pk1) {
       sql_body <- paste(sql_body, ", SEQ INTEGER PRIMARY KEY", sep = "")
@@ -287,6 +290,9 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
       if (!is.character(pk_fields)) {
         stop("dbTableFromXlsx: 'pk_fields' must be a character vector.")
       }
+
+      pk_fields <- format_column_names(
+        pk_fields, quote_method = id_quote_method)$quoted
 
       check_fields <- setdiff(pk_fields, cnames1)
       if (length(check_fields) > 0) {
