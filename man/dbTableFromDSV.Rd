@@ -103,13 +103,14 @@ the content of multiple input files in the same table.}
 
 \item{chunk_size}{integer, the number of lines in each "chunk" (i.e. block
 of lines from the input file). Setting its value to a positive integer
-number, will process the input file by blocks of \code{chunck_size} lines,
+number, will process the input file by blocks of \code{chunk_size} lines,
 avoiding to read all the data in memory at once. It can be useful
 for very large size files. If set to zero, it will process the whole
 text file in one pass. Default to zero.}
 
 \item{...}{additional arguments passed to \code{\link[base:scan]{base::scan()}} function used
-to read input data.}
+to read input data. Please note that if the \code{quote} parameter is not
+specified, it will be set to \code{""} (i.e., no quoting) by default.}
 }
 \value{
 integer, the number of records in \code{table_name} after reading data

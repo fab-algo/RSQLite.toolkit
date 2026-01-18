@@ -39,6 +39,6 @@ memory, only meta-data are accessed.
 \section{References}{
 
 The implementation is based on this question on
-\href{https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow}{Stackoverflow}.
+\href{https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow}{Stackoverflow}. # nolint: line_length_linter.
 }
 

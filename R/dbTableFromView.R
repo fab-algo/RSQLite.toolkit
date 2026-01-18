@@ -21,7 +21,7 @@
 #'
 #' @import RSQLite
 #' @export
-dbTableFromView <- function(view_name, dbcon, table_name,
+dbTableFromView <- function(view_name, dbcon, table_name,  #nolint
                             drop_table = FALSE,
                             build_pk = FALSE, pk_fields = NULL) {
   ## local vars .................................

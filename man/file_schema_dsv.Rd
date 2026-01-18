@@ -46,9 +46,10 @@ only of NAs or zero-length strings will be marked as \code{"NULL"}, otherwise
 they will be marked as \code{character}. Defaults to \code{FALSE}}
 
 \item{force_num_cols}{logical, if \code{TRUE} the returned schema will have
-\code{n_cols} rows (i.e. the guessed number of columns determined inspecting
-the first \code{max_lines} lines of the input file), even if there are rows
-in the input file with fewer or greater columns than \code{n_cols}.
+all rows with \code{n_cols} columns (i.e. the guessed number of columns
+determined inspecting the first \code{max_lines} lines of the input file),
+even if there are rows in the input file with fewer or greater columns
+than \code{n_cols}.
 If \code{FALSE} and any of the tested lines has a number of columns not
 equal to \code{n_cols}, the function will return a list without the \code{schema}
 element. It defaults to \code{TRUE}.}
@@ -56,14 +57,16 @@ element. It defaults to \code{TRUE}.}
 \item{...}{Additional arguments for quoting and data interpretation as
 described in the \code{\link[utils:read.table]{utils::read.table()}} function. The parameters used
 by \code{file_schema_dsv} are:
-- \code{quote}, character, the set of quoting characters. Defaults to \code{""}
+\itemize{
+\item \code{quote}, character, the set of quoting characters. Defaults to \code{""}
 (i.e., no quoting).
-- \code{comment.char}, character, the comment character. Defaults to \code{""}
+\item \code{comment.char}, character, the comment character. Defaults to \code{""}
 (i.e., no comments).
-- \code{skip}, integer, the number of lines to skip before reading data.
+\item \code{skip}, integer, the number of lines to skip before reading data.
 Defaults to \code{0}.
-- \code{fileEncoding}, character, the name of the encoding of the input file.
-Defaults to \code{""}.}
+\item \code{fileEncoding}, character, the name of the encoding of the input file.
+Defaults to \code{""}.
+}}
 }
 \value{
 a list with the following named elements:

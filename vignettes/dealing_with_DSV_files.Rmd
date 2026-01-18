@@ -289,7 +289,7 @@ unzip(zipfile = file.path(tempdir(),
 dir(file.path(tempdir(), "Blockchain"))
 
 data_file <- file.path(tempdir(),
-                 "Blockchain/Blockchain_Banking_Scopus_Dataset_2015_2025.csv")
+                       "Blockchain/Blockchain_Banking_Scopus_Dataset_2015_2025.csv") # nolint
 ```
 
 Now we can inspect the column names used in the input file:

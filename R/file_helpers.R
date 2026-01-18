@@ -26,7 +26,7 @@
 #'
 #' @section References:
 #' The implementation is based on this question on
-#' [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow).
+#' [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow). # nolint: line_length_linter.
 #'
 #' @importFrom arrow ReadableFile
 #' @importFrom arrow FeatherReader
@@ -90,23 +90,24 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    only of NAs or zero-length strings will be marked as `"NULL"`, otherwise
 #'    they will be marked as `character`. Defaults to `FALSE`
 #' @param force_num_cols logical, if `TRUE` the returned schema will have
-#'    `n_cols` rows (i.e. the guessed number of columns determined inspecting
-#'     the first `max_lines` lines of the input file), even if there are rows
-#'     in the input file with fewer or greater columns than `n_cols`.
-#'     If `FALSE` and any of the tested lines has a number of columns not
-#'     equal to `n_cols`, the function will return a list without the `schema`
-#'     element. It defaults to `TRUE`.
+#'    all rows with `n_cols` columns (i.e. the guessed number of columns
+#'    determined inspecting the first `max_lines` lines of the input file),
+#'    even if there are rows in the input file with fewer or greater columns
+#'    than `n_cols`.
+#'    If `FALSE` and any of the tested lines has a number of columns not
+#'    equal to `n_cols`, the function will return a list without the `schema`
+#'    element. It defaults to `TRUE`.
 #' @param ... Additional arguments for quoting and data interpretation as
-#'     described in the [utils::read.table()] function. The parameters used
-#'     by `file_schema_dsv` are:
-#'     - `quote`, character, the set of quoting characters. Defaults to `""`
-#'       (i.e., no quoting).
-#'     - `comment.char`, character, the comment character. Defaults to `""`
-#'       (i.e., no comments).
-#'     - `skip`, integer, the number of lines to skip before reading data.
-#'       Defaults to `0`.
-#'     - `fileEncoding`, character, the name of the encoding of the input file.
-#'       Defaults to `""`.
+#'    described in the [utils::read.table()] function. The parameters used
+#'    by `file_schema_dsv` are:
+#'    - `quote`, character, the set of quoting characters. Defaults to `""`
+#'      (i.e., no quoting).
+#'    - `comment.char`, character, the comment character. Defaults to `""`
+#'      (i.e., no comments).
+#'    - `skip`, integer, the number of lines to skip before reading data.
+#'      Defaults to `0`.
+#'    - `fileEncoding`, character, the name of the encoding of the input file.
+#'      Defaults to `""`.
 #'
 #' @returns a list with the following named elements:
 #'    - `schema`, a data frame with these columns:
@@ -163,7 +164,7 @@ file_schema_dsv <- function(input_file,
 
 
   ## ---------------------------------------------
-  lpar <- eval(substitute(alist(...)))
+  lpar <- list(...)
 
   if (!("quote" %in% names(lpar))) {
     lpar$quote <- ""
@@ -179,14 +180,11 @@ file_schema_dsv <- function(input_file,
 
   if (!("fileEncoding" %in% names(lpar))) {
     lpar$fileEncoding <- ""
-    fileEncoding <- ""
-  } else {
-    fileEncoding <- eval(lpar$fileEncoding)
   }
 
   ## ---------------------------------------------
   text_con <- file(input_file, open = "r",
-                   encoding = fileEncoding)
+                   encoding = lpar$fileEncoding)
   on.exit(close(text_con), add = TRUE)
 
   text <- readLines(con = text_con, n = max_lines,
@@ -334,7 +332,7 @@ file_schema_dsv <- function(input_file,
   dnames <- format_column_names(x = src_names,
                                 quote_method = id_quote_method,
                                 unique_names = TRUE,
-                                encoding = fileEncoding)
+                                encoding = lpar$fileEncoding)
   col_names <- dnames$quoted
   col_names_unquoted <- dnames$unquoted
 

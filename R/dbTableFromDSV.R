@@ -70,13 +70,14 @@
 #'
 #' @param chunk_size integer, the number of lines in each "chunk" (i.e. block
 #'    of lines from the input file). Setting its value to a positive integer
-#'    number, will process the input file by blocks of `chunck_size` lines,
+#'    number, will process the input file by blocks of `chunk_size` lines,
 #'    avoiding to read all the data in memory at once. It can be useful
 #'    for very large size files. If set to zero, it will process the whole
 #'    text file in one pass. Default to zero.
 #'
 #' @param ... additional arguments passed to [base::scan()] function used
-#'    to read input data.
+#'    to read input data. Please note that if the `quote` parameter is not
+#'    specified, it will be set to `""` (i.e., no quoting) by default.
 #'
 #'
 #' @returns integer, the number of records in `table_name` after reading data
@@ -84,7 +85,7 @@
 #'
 #' @import RSQLite
 #' @export
-dbTableFromDSV <- function(input_file, dbcon, table_name,
+dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
                            header = TRUE, sep = ",", dec = ".", grp = "",
                            id_quote_method = "DB_NAMES",
                            col_names = NULL, col_types = NULL,
@@ -96,9 +97,24 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
   ## local vars ....................................
   fun_name <- match.call()[[1]]
 
+  ## optional parameters passed to "scan" .........
+  lpar <- list(...)
 
-  ## optional parameters passed to "scan" ..........
-  lpar <- eval(substitute(alist(...)))
+  if (!("quote" %in% names(lpar))) {
+    lpar$quote <- ""
+  }
+
+  if (!("comment.char" %in% names(lpar))) {
+    lpar$comment.char <- ""
+  }
+
+  if (!("skip" %in% names(lpar))) {
+    lpar$skip <- 0
+  }
+
+  if (!("fileEncoding" %in% names(lpar))) {
+    lpar$fileEncoding <- ""
+  }
 
   ## formal checks on parameters ................
   if (!("data.frame" %in% class(constant_values)) &&
@@ -233,11 +249,9 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
 
     if (auto_pk1) {
       sql_body <- paste(sql_body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-      cnames2 <- c(cnames1, "SEQ")
       cnames_unquoted2 <- c(cnames_unquoted1, "SEQ")
       idx_import2 <- c(idx_import1, length(cnames1) + 1)
     } else {
-      cnames2 <- cnames1
       cnames_unquoted2 <- cnames_unquoted1
       idx_import2 <- idx_import1
     }
@@ -306,6 +320,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
                         quiet = TRUE
                       ),
                       after = 0)
+
       dfbuffer <- do.call(scan, lpar1)
 
       if (length(dfbuffer[[1]]) == 0) break
@@ -389,8 +404,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,
         stop("dbTableFromDSV: 'pk_fields' must be a character vector.")
       }
 
-      pk_fields <- format_column_names(
-        pk_fields, quote_method = id_quote_method)$quoted
+      pk_fields <- format_column_names(pk_fields,
+                                       quote_method = id_quote_method)$quoted
 
       check_fields <- setdiff(pk_fields, cnames1)
       if (length(check_fields) > 0) {

@@ -66,7 +66,7 @@
 #' @import RSQLite
 #' @importFrom arrow read_feather
 #' @export
-dbTableFromFeather <- function(input_file, dbcon, table_name,
+dbTableFromFeather <- function(input_file, dbcon, table_name,  #nolint
                                id_quote_method = "DB_NAMES",
                                col_names = NULL, col_types = NULL,
                                col_import = NULL,
@@ -208,11 +208,10 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
 
     if (auto_pk1) {
       sql_body <- paste(sql_body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-      cnames2 <- c(cnames1, "SEQ")
       cnames_unquoted2 <- c(cnames_unquoted1, "SEQ")
       idx_import2 <- c(idx_import1, length(cnames1) + 1)
     } else {
-      cnames2 <- cnames1
+
       cnames_unquoted2 <- cnames_unquoted1
       idx_import2 <- idx_import1
     }
@@ -283,8 +282,8 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,
         stop("dbTableFromFeather: 'pk_fields' must be a character vector.")
       }
 
-      pk_fields <- format_column_names(
-        pk_fields, quote_method = id_quote_method)$quoted
+      pk_fields <- format_column_names(pk_fields,
+                                       quote_method = id_quote_method)$quoted
 
       check_fields <- setdiff(pk_fields, cnames1)
       if (length(check_fields) > 0) {

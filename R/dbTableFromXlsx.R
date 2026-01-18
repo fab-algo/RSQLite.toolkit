@@ -77,7 +77,7 @@
 #' @import RSQLite
 #' @importFrom openxlsx2 wb_to_df
 #' @export
-dbTableFromXlsx <- function(input_file, dbcon, table_name,
+dbTableFromXlsx <- function(input_file, dbcon, table_name,   #nolint
                             sheet_name, first_row, cols_range, header = TRUE,
                             id_quote_method = "DB_NAMES",
                             col_names = NULL, col_types = NULL,
@@ -217,11 +217,9 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
 
     if (auto_pk1) {
       sql_body <- paste(sql_body, ", SEQ INTEGER PRIMARY KEY", sep = "")
-      cnames2 <- c(cnames1, "SEQ")
       cnames_unquoted2 <- c(cnames_unquoted1, "SEQ")
       idx_import2 <- c(idx_import1, length(cnames1) + 1)
     } else {
-      cnames2 <- cnames1
       cnames_unquoted2 <- cnames_unquoted1
       idx_import2 <- idx_import1
     }
@@ -291,8 +289,8 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,
         stop("dbTableFromXlsx: 'pk_fields' must be a character vector.")
       }
 
-      pk_fields <- format_column_names(
-        pk_fields, quote_method = id_quote_method)$quoted
+      pk_fields <- format_column_names(pk_fields,
+                                       quote_method = id_quote_method)$quoted
 
       check_fields <- setdiff(pk_fields, cnames1)
       if (length(check_fields) > 0) {
