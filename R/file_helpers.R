@@ -98,7 +98,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    equal to `n_cols`, the function will return a list without the `schema`
 #'    element. It defaults to `TRUE`.
 #' @param ... Additional arguments for quoting and data interpretation as
-#'    described in the [utils::read.table()] function. The parameters used
+#'    described in the [base::scan()] function. The parameters used
 #'    by `file_schema_dsv` are:
 #'    - `quote`, character, the set of quoting characters. Defaults to `""`
 #'      (i.e., no quoting).
@@ -108,7 +108,9 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'      Defaults to `0`.
 #'    - `fileEncoding`, character, the name of the encoding of the input file.
 #'      Defaults to `""`.
-#'
+#'    - `na.strings`, character vector, the strings to be interpreted as NAs.
+#'      Defaults to `c("NA")`.
+#' 
 #' @returns a list with the following named elements:
 #'    - `schema`, a data frame with these columns:
 #'      - `col_names`: columns' names, after applying the selected quote method;
@@ -182,7 +184,11 @@ file_schema_dsv <- function(input_file,
     lpar$fileEncoding <- ""
   }
 
-  ## ---------------------------------------------
+  if (!("na.strings" %in% names(lpar))) {
+    lpar$na.strings <- "NA"
+  }
+
+  ## reading all lines -----------------------------------------
   text_con <- file(input_file, open = "r",
                    encoding = lpar$fileEncoding)
   on.exit(close(text_con), add = TRUE)
@@ -203,6 +209,7 @@ file_schema_dsv <- function(input_file,
     text <- text[-(1:lpar$skip)]
   }
 
+  ## clean sep character from quoted columns -------------------
   rx <- paste0("([", lpar$quote, "])(?:\\\\.|(?!\\1).)*\\1")
 
   list_matches <- gregexpr(rx, text, perl = TRUE)
@@ -260,6 +267,7 @@ file_schema_dsv <- function(input_file,
     text2 <- gsub(rx_comment, "", text2, perl = TRUE)
   }
 
+  ## splitting lines into columns ------------------------------
   list_split <- strsplit(text2, split = sep, fixed = TRUE)
 
   num_col <- sapply(list_split, length, simplify = TRUE)
@@ -296,6 +304,7 @@ file_schema_dsv <- function(input_file,
     }
   }
 
+  ## align rows and map text in a data frame -------------------
   align_columns <- function(x, n_cols) {
     if (length(x) > n_cols) {
       x  <- x[1:n_cols]
@@ -309,6 +318,7 @@ file_schema_dsv <- function(input_file,
   list_split_fixed <- sapply(list_split, align_columns, n_cols = n_cols)
   df <- as.data.frame(t(list_split_fixed), stringsAsFactors = FALSE)
 
+  ## header and column names ------------------------------------
   if (header) {
     src_names <- as.vector(df[1, ], mode = "character")
     src_names <- gsub(paste0("^[", lpar$quote, "]+|[", lpar$quote, "]+$"), "",
@@ -336,6 +346,7 @@ file_schema_dsv <- function(input_file,
   col_names <- dnames$quoted
   col_names_unquoted <- dnames$unquoted
 
+  ## find quoted columns ------------------------------------
   check_quotes <- function(text_line, quote, n_cols) {
     rx_quote <- paste0("(\\s*)([", quote, "])(?:\\\\.|(?!\\2).)*\\2(\\s*)")
     matches <- grep(rx_quote, text_line, perl = TRUE)
@@ -357,6 +368,7 @@ file_schema_dsv <- function(input_file,
   is_quoted <- apply(X = is_quoted_matrix, MARGIN = 2,
                      FUN = function(x) any(x, na.rm = TRUE))
 
+  ## infer column types ----------------------------------------
   col_types <- vapply(df, function(col) class(col)[1], character(1))
 
   if (length(df) > 0) {
@@ -367,7 +379,7 @@ file_schema_dsv <- function(input_file,
       test <- gsub("^\\s+|\\s+$", "", test)
 
       id1 <- which(is.na(test))
-      id2 <- which(test == "")
+      id2 <- which(test %in% lpar$na.strings)
       if (length(c(id1, id2)) > 0) {
         test <- test[-c(id1, id2)]
       }
@@ -468,8 +480,9 @@ file_schema_dsv <- function(input_file,
 #' @param null_columns logical, if `TRUE` the col_type of columuns consisting
 #'    only of NAs or zero-length strings will be marked as `NA`, otherwise they
 #'    will be marked as `character`. Defaults to `FALSE`
-#' @param ...  parameters passed to [openxlsx2::wb_to_df()] function.
-#'
+#' @param ...  Additional parameters passed to [openxlsx2::wb_to_df()]
+#'    function.
+#' 
 #' @returns a data frame with these columns:
 #'    - `col_names`: columns' names, after applying the selected quote method;
 #'    - `col_names_unquoted`: columns' names, unquoted; if `id_quote_method`

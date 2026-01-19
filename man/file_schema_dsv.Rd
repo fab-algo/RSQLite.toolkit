@@ -55,7 +55,7 @@ equal to \code{n_cols}, the function will return a list without the \code{schema
 element. It defaults to \code{TRUE}.}
 
 \item{...}{Additional arguments for quoting and data interpretation as
-described in the \code{\link[utils:read.table]{utils::read.table()}} function. The parameters used
+described in the \code{\link[base:scan]{base::scan()}} function. The parameters used
 by \code{file_schema_dsv} are:
 \itemize{
 \item \code{quote}, character, the set of quoting characters. Defaults to \code{""}
@@ -66,6 +66,8 @@ by \code{file_schema_dsv} are:
 Defaults to \code{0}.
 \item \code{fileEncoding}, character, the name of the encoding of the input file.
 Defaults to \code{""}.
+\item \code{na.strings}, character vector, the strings to be interpreted as NAs.
+Defaults to \code{c("NA")}.
 }}
 }
 \value{

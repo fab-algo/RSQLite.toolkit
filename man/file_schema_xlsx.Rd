@@ -45,7 +45,8 @@ read to infer columns' data types. Defaults to 100.}
 only of NAs or zero-length strings will be marked as \code{NA}, otherwise they
 will be marked as \code{character}. Defaults to \code{FALSE}}
 
-\item{...}{parameters passed to \code{\link[openxlsx2:wb_to_df]{openxlsx2::wb_to_df()}} function.}
+\item{...}{Additional parameters passed to \code{\link[openxlsx2:wb_to_df]{openxlsx2::wb_to_df()}}
+function.}
 }
 \value{
 a data frame with these columns:
