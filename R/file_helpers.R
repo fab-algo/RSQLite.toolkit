@@ -509,6 +509,31 @@ file_schema_xlsx <- function(input_file,
     stop("file_schema_xlsx: File does not exist: ", input_file)
   }
 
+  ## ---------------------------------------------
+  lpar <- list(...)
+
+  allowed_par_scan <- c("quote", "comment.char", "na.strings",
+                        "allowEscapes", "strip.white",
+                        "skip", "fill",  "flush", "skipNul",
+                        "blank.lines.skip",
+                        "fileEncoding", "encoding")
+
+  lpar <- lpar[which(names(lpar) %in% allowed_par_scan)]
+
+  lpar1 <- append(x = lpar,
+                  values = list(
+                    file = fcon,
+                    nlines = chunk_size,
+                    sep = sep,
+                    dec = dec,
+                    what = lclass,
+                    multi.line = FALSE,
+                    quiet = TRUE
+                  ),
+                  after = 0)
+
+  dfbuffer <- do.call(scan, lpar1)
+
   df <- openxlsx2::wb_to_df(
     file = input_file,
     sheet = sheet_name,
@@ -519,6 +544,7 @@ file_schema_xlsx <- function(input_file,
     ...
   )
 
+  xt <- attr(df, "types")
   src_names <- names(df)
   col_types <- vapply(df, function(col) class(col)[1], character(1))
 
@@ -544,8 +570,6 @@ file_schema_xlsx <- function(input_file,
       }
     }
   }
-
-  xt <- attr(df, "types")
 
   data.frame(
     col_names, col_names_unquoted,
