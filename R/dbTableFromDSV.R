@@ -375,7 +375,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
     ## Write data ...............................
     tryCatch({
       if (auto_pk1) {
-        dfbuffer <- cbind(dfbuffer, NA)
+        dfbuffer <- cbind(dfbuffer, SEQ = NA_integer_)
       }
 
       names(dfbuffer) <- cnames_unquoted2

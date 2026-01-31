@@ -12,4 +12,5 @@
 ^\.Rbuildignore$
 ^\.gitignore$
 ^doc$
+^dev.notes$
 ^Meta$

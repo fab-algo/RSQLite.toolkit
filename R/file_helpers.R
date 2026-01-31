@@ -512,37 +512,31 @@ file_schema_xlsx <- function(input_file,
   ## ---------------------------------------------
   lpar <- list(...)
 
-  allowed_par_scan <- c("quote", "comment.char", "na.strings",
-                        "allowEscapes", "strip.white",
-                        "skip", "fill",  "flush", "skipNul",
-                        "blank.lines.skip",
-                        "fileEncoding", "encoding")
-
-  lpar <- lpar[which(names(lpar) %in% allowed_par_scan)]
-
-  lpar1 <- append(x = lpar,
-                  values = list(
-                    file = fcon,
-                    nlines = chunk_size,
-                    sep = sep,
-                    dec = dec,
-                    what = lclass,
-                    multi.line = FALSE,
-                    quiet = TRUE
-                  ),
-                  after = 0)
-
-  dfbuffer <- do.call(scan, lpar1)
-
-  df <- openxlsx2::wb_to_df(
-    file = input_file,
-    sheet = sheet_name,
-    start_row = first_row,
-    col_names = header,
-    cols = cols_range,
-    rows = c(first_row:(first_row + max_lines)),
-    ...
+  allowed_params <- c(
+    "start_col", "row_names", "skip_empty_rows",
+    "skip_empty_cols", "skip_hidden_rows",
+    "skip_hidden_cols", "detect_dates", "na.strings",
+    "na.numbers", "fill_merged_cells", "dims",
+    "show_formula", "convert", "types", "named_region"
   )
+
+  lpar <- lpar[which(names(lpar) %in% allowed_params)]
+
+  lpar1 <- append(
+    x = lpar,
+    values = list(
+      file = input_file,
+      sheet = sheet_name,
+      start_row = first_row,
+      col_names = header,
+      cols = cols_range,
+      rows = c(first_row:(first_row + max_lines)),
+      keep_attributes = TRUE
+    ),
+    after = 0
+  )
+
+  df <- do.call(openxlsx2::wb_to_df, lpar1)
 
   xt <- attr(df, "types")
   src_names <- names(df)

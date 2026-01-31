@@ -259,7 +259,7 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,  #nolint
       )
 
     if (auto_pk1) {
-      df <- cbind(df, NA)
+      df <- cbind(df, SEQ = NA_integer_)
     }
 
     df <- df[, idx_import2]

@@ -106,10 +106,33 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,   #nolint
 
   ## read schema ................................
   tryCatch({
-    df_scm <- file_schema_xlsx(input_file, sheet_name = sheet_name,
-                               first_row = first_row, cols_range = cols_range,
-                               header = header,
-                               id_quote_method = id_quote_method)
+    lpar <- list(...)
+
+    allowed_params <- c(
+      "start_col", "row_names", "skip_empty_rows",
+      "skip_empty_cols", "skip_hidden_rows",
+      "skip_hidden_cols", "detect_dates", "na.strings",
+      "na.numbers", "fill_merged_cells", "dims",
+      "show_formula", "convert", "types", "named_region"
+    )
+
+    lpar1 <- lpar[which(names(lpar) %in% allowed_params)]
+
+    lpar1 <- append(
+      x = lpar1,
+      values = list(
+        input_file = input_file,
+        sheet_name = sheet_name,
+        first_row = first_row,
+        cols_range = cols_range,
+        header = header,
+        id_quote_method = id_quote_method,
+        max_lines = 1000
+      ),
+      after = 0
+    )
+
+    df_scm <- do.call(file_schema_xlsx, lpar1)
 
     cnames <- df_scm$col_names
     cnames_unquoted <- df_scm$col_names_unquoted
@@ -238,14 +261,31 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,   #nolint
 
   ## read data ..................................
   tryCatch({
-    df <- openxlsx2::wb_to_df(
-      file = input_file,
-      sheet = sheet_name,
-      start_row = first_row,
-      col_names = header,
-      cols = cols_range,
-      ...
+    allowed_params <- c(
+      "start_col", "rows", "row_names", "skip_empty_rows",
+      "skip_empty_cols", "skip_hidden_rows",
+      "skip_hidden_cols", "detect_dates", "na.strings",
+      "na.numbers", "fill_merged_cells", "dims",
+      "show_formula", "convert", "types", "named_region", "keep_attributes",
+      "show_hyperlinks"
     )
+
+    lpar1 <- lpar[which(names(lpar) %in% allowed_params)]
+
+    lpar1 <- append(
+      x = lpar1,
+      values = list(
+        file = input_file,
+        sheet = sheet_name,
+        start_row = first_row,
+        col_names = header,
+        cols = cols_range
+      ),
+      after = 0
+    )
+
+    df <- do.call(openxlsx2::wb_to_df, lpar1)
+
   }, error = function(e) {
     err <- conditionMessage(e)
     step <- 104
@@ -255,8 +295,26 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,   #nolint
 
   ## Write data ................................
   tryCatch({
-    if (!is.null(constant_values)) {
-      df <- cbind(df, constant_values)
+
+    source_types <- vapply(df, function(col) class(col)[1], character(1))
+
+    idx1 <- which(source_types != cclass)
+    for (i in idx1) {
+      target_class <- cclass[i]
+      if (target_class == "character") {
+        df[[i]] <- as.character(df[[i]])
+      } else if (target_class == "integer") {
+        df[[i]] <- as.integer(df[[i]])
+      } else if (target_class == "numeric") {
+        df[[i]] <- as.numeric(df[[i]])
+      } else if (target_class == "logical") {
+        df[[i]] <- as.logical(df[[i]])
+      } else if (target_class == "Date") {
+        df[[i]] <- as.Date(df[[i]])
+      } else {
+        stop("dbTableFromXlsx: unsupported target class '", target_class,
+             "' for column ", names(df)[i], ".")
+      }
     }
 
     df[, which(cclass == "Date")] <-
@@ -264,8 +322,12 @@ dbTableFromXlsx <- function(input_file, dbcon, table_name,   #nolint
                           function(x) format(x, format = "%Y-%m-%d"))
       )
 
+    if (!is.null(constant_values)) {
+      df <- cbind(df, constant_values)
+    }
+
     if (auto_pk1) {
-      df <- cbind(df, NA)
+      df <- cbind(df, SEQ = NA_integer_)
     }
 
     names(df) <- cnames_unquoted2
