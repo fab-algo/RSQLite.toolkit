@@ -32,7 +32,8 @@ tables.
 
 ## Installation
 
-You can install the development version of RSQLite.toolkit from [GitHub](https://github.com/) with:
+You can install the development version of RSQLite.toolkit
+from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
@@ -53,13 +54,13 @@ dbcon <- dbConnect(dbDriver("SQLite"), "./data/test.sqlite")
 ## the field 'SEQ' with the ROWID of each record
 ## through the use of the parameter 'auto_pk=TRUE'
 dbTableFromDSV(input_file = "./data/src/iris.csv",
-               dbcon=dbcon, table_name="IRIS",
-               header=T, sep=",", dec=".",
-               drop_table=TRUE, auto_pk=TRUE)
+               dbcon = dbcon, table_name = "IRIS",
+               header = TRUE, sep = ",", dec = ".",
+               drop_table = TRUE, auto_pk = TRUE)
 
 ## creates table PASSENGERS from Feather file
-dbTableFromFeather(input_file="./data/src/passengers.feather",
-                   dbcon=dbcon, table_name="PASSENGERS")
+dbTableFromFeather(input_file = "./data/src/passengers.feather",
+                   dbcon = dbcon, table_name = "PASSENGERS")
 
 dbListTables(dbcon)
 

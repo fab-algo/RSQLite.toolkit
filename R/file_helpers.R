@@ -110,7 +110,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'      Defaults to `""`.
 #'    - `na.strings`, character vector, the strings to be interpreted as NAs.
 #'      Defaults to `c("NA")`.
-#' 
+#'
 #' @returns a list with the following named elements:
 #'    - `schema`, a data frame with these columns:
 #'      - `col_names`: columns' names, after applying the selected quote method;
@@ -482,7 +482,7 @@ file_schema_dsv <- function(input_file,
 #'    will be marked as `character`. Defaults to `FALSE`
 #' @param ...  Additional parameters passed to [openxlsx2::wb_to_df()]
 #'    function.
-#' 
+#'
 #' @returns a data frame with these columns:
 #'    - `col_names`: columns' names, after applying the selected quote method;
 #'    - `col_names_unquoted`: columns' names, unquoted; if `id_quote_method`

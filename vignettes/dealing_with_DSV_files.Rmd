@@ -23,15 +23,20 @@ kind of files.
 The purpose of this article is to show some problems you can encounter 
 loading data in a SQLite database from DSV files and how to deal with them.
 
-## What to check in a DSV file
+## Data interpretation issues
+
+When dealing with DSV files, one of the most common sources of issues is the way
+data is represented in the file. Since DSV files are plain text files, there are
+many conventions that can be used to represent different data types (e.g., strings,
+numbers, dates, missing data, etc.).
 
 ```{r setup}
 library(RSQLite.toolkit)
 ```
 
 Let's start with a simple example using real world data. To retrieve some examples
-data, we can use the package [piggyback](https://github.com/ropensci/piggyback) to 
-download some public datasets that has been stored in the 
+files, we can use the package [piggyback](https://github.com/ropensci/piggyback)
+to download some public datasets that has been stored in the 
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
 GitHub repository[^1].
 
@@ -82,16 +87,16 @@ dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
 
 To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
-function calls `file_schema_dsv` function, that uses the *`read.table`* function 
-(from the `utils` package) to guess the table structure stored in the DSV file, 
-and then it calls the *`scan`* function to actually read the file content in a
-data frame and write it to the SQLite table.
+function calls *`file_schema_dsv`* function, to guess the table structure stored
+in the DSV file, and then it calls the *`scan`* function to actually read the
+file content in a data frame and write it to the SQLite table.
 
 Both these functions make some assumptions on how the data is stored in the DSV
-file as "plain text". More in detail, both functions use the parameters listed in the 
-following table along with their default values.
+file as "plain text". To that end, `scan` function uses the parameters listed
+in the following table along with their default values (we inclued also those of
+the `read.table` function for comparison):
 
-| parameters   | scan    | read.table |
+| parameters   | *scan*  | read.table |
 |--------------|---------|------------|
 | quote        | `"'\""` | `"\"'"`    |
 | allowEscapes | `FALSE` | `FALSE`    |
@@ -131,7 +136,7 @@ from the file:
    Parameter: `fileEncoding`
 
 To understand how to use each of these parameters you are strongly encouraged to read 
-the help pages of the `scan` and `read.table` functions.
+the help pages of the `scan` function.
 
 It should be noted that the default values are seldom (... almost never) the right
 ones and we should invest some time to better understand the strategies used by the
@@ -229,14 +234,14 @@ also some interesting discussions on Stack Overflow:
 Some typical problems you might encounter include:
 
 - *Special characters*: Column names containing spaces, hyphens, or other 
-  special characters (e.g., `"Patient-ID"`, `"Test Result"`, `"Cost($)"`)
+  special characters (e.g., `"Patient-ID"`, `"Test Result"`, `"Cost($)"`);
 - *Reserved keywords*: Column names that match SQLite reserved words
-  (e.g., `"SELECT"`, `"TABLE"`, `"WHERE"`)
+  (e.g., `"SELECT"`, `"TABLE"`, `"WHERE"`);
 - *Starting with numbers*: Column names beginning with digits 
-  (e.g., `"2023_Sales"`)
+  (e.g., `"2025_Sales"`);
 - *Case sensitivity*: While SQLite is case-insensitive for column names,
-  mixing cases can lead to confusion
-- *Empty or duplicate names*: Missing headers or columns with identical names
+  mixing cases can lead to confusion;
+- *Empty or duplicate names*: Missing headers or columns with identical names.
 
 You should always inspect the column names in your DSV files before importing them
 into a SQLite database to ensure they meet these criteria. Failing to do so can lead
@@ -356,13 +361,13 @@ To handle in a safer way DSV files (and avoid some unexpected results) when
 importing data in a SQLite database using the `dbTableFromDSV()` function, you
 should always:
 
-- inspect the input file to understand how data is represented there &rarr; to that
+- inspect the input file to understand how data is represented; to that
   end you can use the `file_schema_dsv()` function to help you in this task and test
   different parameters settings before importing the data;
 - specify the correct parameters to interpret data in the input file (i.e. `quote`,
   `na.strings`, `comment.char`, `fileEncoding`, etc.);
 - check the column names used in the input file and choose the right strategy
-  to handle them &rarr; here the `id_quote_method` parameter of the `dbTableFromDSV()`
+  to handle them, here the `id_quote_method` parameter of the `dbTableFromDSV()`
   function can be very useful.
 
 
