@@ -36,7 +36,7 @@ library(RSQLite.toolkit)
 
 Let's start with a simple example using real world data. To retrieve some examples
 files, we can use the package [piggyback](https://github.com/ropensci/piggyback)
-to download some public datasets that has been stored in the 
+to download public datasets that have been stored in the 
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
 GitHub repository[^1].
 
@@ -357,7 +357,7 @@ dbDisconnect(dbcon)
 
 ## Conclusions
 
-To handle in a safer way DSV files (and avoid some unexpected results) when
+To handle in a safer way DSV files (and avoid unexpected results) when
 importing data in a SQLite database using the `dbTableFromDSV()` function, you
 should always:
 

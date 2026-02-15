@@ -1,7 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit"><img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" /></a>
+# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit">
+
+<img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" />
+</a>
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -25,29 +28,107 @@ You can install the development version of RSQLite.toolkit from
 pak::pak("fab-algo/RSQLite.toolkit")
 ```
 
-## Example
+## Examples
 
-This basic example shows you how to use the core functions of the
-package to load some data in different tables in a test database:
+These basic examples show how to use the core functions of the package
+to load example data in different tables in a test database:
+
+``` r
+library(RSQLite.toolkit)
+#> Loading required package: RSQLite
+
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
+
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+## creates the table ABALONE from a CSV file, adding the field 'SEQ' with the
+## ROWID of each record through the use of the parameter 'auto_pk=TRUE'
+dbTableFromDSV(input_file = file.path(data_path, "abalone.csv"),
+               dbcon = dbcon, table_name = "ABALONE",
+               drop_table = TRUE, auto_pk = TRUE,
+               header = TRUE, sep = ",", dec = ".")
+#> [1] 4177
+
+## creates table PORTFOLIO_PERF from Excel file, using the "all period" sheet
+dbTableFromXlsx(input_file = file.path(data_path,
+                                       "stock_portfolio.xlsx"),
+                dbcon = dbcon, table_name = "PORTFOLIO_PERF",
+                drop_table = TRUE,
+                sheet_name = "all period", first_row = 2, cols_range = "A:S")
+#> [1] 63
+
+## creates table PENGUINS from Feather file
+dbTableFromFeather(input_file = file.path(data_path, "penguins.feather"),
+                   dbcon = dbcon, table_name = "PENGUINS",
+                   drop_table = TRUE)
+#> [1] 333
+
+dbListTables(dbcon)
+#> [1] "ABALONE"        "PENGUINS"       "PORTFOLIO_PERF"
+dbListFields(dbcon, "ABALONE")
+#>  [1] "Sex"     "Length"  "Diam"    "Height"  "Whole"   "Shucked" "Viscera"
+#>  [8] "Shell"   "Rings"   "SEQ"
+dbListFields(dbcon, "PENGUINS")
+#> [1] "species"           "culmen_length_mm"  "culmen_depth_mm"  
+#> [4] "flipper_length_mm" "body_mass_g"       "sex"
+dbListFields(dbcon, "PORTFOLIO_PERF")[1:5]
+#> [1] "ID"                                   
+#> [2] "Large_B_P"                            
+#> [3] "Large_ROE"                            
+#> [4] "Large_S_P"                            
+#> [5] "Large_Return_Rate_in_the_last_quarter"
+
+dbDisconnect(dbcon)
+```
+
+To inspect the structure of the input files, you can use the following
+functions:
 
 ``` r
 library(RSQLite.toolkit)
 
-dbcon <- dbConnect(dbDriver("SQLite"), "./data/test.sqlite")
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
 
-## creates the table IRIS from a CSV file, adding
-## the field 'SEQ' with the ROWID of each record
-## through the use of the parameter 'auto_pk=TRUE'
-dbTableFromDSV(input_file = "./data/src/iris.csv",
-               dbcon=dbcon, table_name="IRIS",
-               header=T, sep=",", dec=".",
-               drop_table=TRUE, auto_pk=TRUE)
+file_schema_dsv(input_file = file.path(data_path, "abalone.csv"),
+                header = TRUE, sep = ",", dec = ".")$schema[, c(1, 3:7)]
+#>   col_names col_types sql_types src_names src_types src_is_quoted
+#> 1       Sex character      TEXT       Sex      text         FALSE
+#> 2    Length   numeric      REAL    Length      text         FALSE
+#> 3      Diam   numeric      REAL      Diam      text         FALSE
+#> 4    Height   numeric      REAL    Height      text         FALSE
+#> 5     Whole   numeric      REAL     Whole      text         FALSE
+#> 6   Shucked   numeric      REAL   Shucked      text         FALSE
+#> 7   Viscera   numeric      REAL   Viscera      text         FALSE
+#> 8     Shell   numeric      REAL     Shell      text         FALSE
+#> 9     Rings   integer   INTEGER     Rings      text         FALSE
 
-## creates table PASSENGERS from Feather file
-dbTableFromFeather(input_file="./data/src/passengers.feather",
-                   dbcon=dbcon, table_name="PASSENGERS")
-
-dbListTables(dbcon)
-
-dbDisconnect(dbcon)
+file_schema_feather(input_file = file.path(data_path,
+                                           "penguins.feather"))[, c(1, 3:6)]
+#>           col_names col_types sql_types         src_names src_types
+#> 1           species character      TEXT           species      utf8
+#> 2  culmen_length_mm    double      REAL  culmen_length_mm    double
+#> 3   culmen_depth_mm    double      REAL   culmen_depth_mm    double
+#> 4 flipper_length_mm    double      REAL flipper_length_mm    double
+#> 5       body_mass_g    double      REAL       body_mass_g    double
+#> 6               sex character      TEXT               sex      utf8
 ```
+
+## How to use the package
+
+<img src="man/figures/README-dbTableFrom_template.png" width="90%" />
+
+## Data sources
+
+The example datasets, included in the `extdata` package directory, have
+been retrieved from the following sources:
+
+- `"abalone.csv"`: Predicting the age of abalone from physical
+  measurements. source link:
+  <https://archive.ics.uci.edu/dataset/1/abalone>
+- `"stock_portfolio.xlsx"`: Stock portfolio performance under a new
+  weighted scoring stock selection model. source link:
+  <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
+- `"penguins.feather"`: The Palmer Arcipelago’s penguins data set.
+  source link: <https://allisonhorst.github.io/palmerpenguins/> The
+  “feather” file format of the dataset was downloaded from
+  <https://github.com/lmassaron/datasets>

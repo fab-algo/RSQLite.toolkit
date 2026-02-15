@@ -210,56 +210,61 @@ file_schema_dsv <- function(input_file,
   }
 
   ## clean sep character from quoted columns -------------------
-  rx <- paste0("([", lpar$quote, "])(?:\\\\.|(?!\\1).)*\\1")
+  if (lpar$quote == "" || length(lpar$quote) == 0) {
+    text2 <- text
 
-  list_matches <- gregexpr(rx, text, perl = TRUE)
+  } else {
+    rx <- paste0("([", lpar$quote, "])(?:\\\\.|(?!\\1).)*\\1")
 
-  text2 <- character(length(text))
-  for (ii in seq_along(list_matches)) {
+    list_matches <- gregexpr(rx, text, perl = TRUE)
 
-    if (list_matches[[ii]][1] > 0) {
+    text2 <- character(length(text))
+    for (ii in seq_along(list_matches)) {
 
-      out_text <- ""
+      if (list_matches[[ii]][1] > 0) {
 
-      for (jj in seq_along(list_matches[[ii]])) {
+        out_text <- ""
 
-        match_start <- list_matches[[ii]][jj]
-        if (jj == 1 && match_start > 1) {
-          pre_text <- substr(text[ii], 1, match_start - 1)
-        } else {
-          pre_text <- ""
-        }
+        for (jj in seq_along(list_matches[[ii]])) {
 
-        match_length <- attr(list_matches[[ii]], "match.length")[jj]
-        match_text <- substr(text[ii], match_start,
-                             match_start + match_length - 1)
-        match_text <- gsub(sep,  "", match_text, fixed = TRUE)
-        if (lpar$comment.char != "") {
-          match_text <- gsub(lpar$comment.char,  "", match_text, fixed = TRUE)
-        }
-        out_text <- paste0(out_text, pre_text, match_text)
-
-        if (jj <= length(list_matches[[ii]]) - 1) {
-          post_start <- match_start + match_length
-          if (post_start != list_matches[[ii]][jj + 1]) {
-            pos_length <- list_matches[[ii]][jj + 1] - post_start
-            post_text <- substr(text[ii], post_start,
-                                post_start + pos_length - 1)
-            out_text <- paste0(out_text, post_text)
+          match_start <- list_matches[[ii]][jj]
+          if (jj == 1 && match_start > 1) {
+            pre_text <- substr(text[ii], 1, match_start - 1)
+          } else {
+            pre_text <- ""
           }
-        } else if (jj == length(list_matches[[ii]])) {
-          post_start <- match_start + match_length
-          if (post_start <= nchar(text[ii])) {
-            post_text <- substr(text[ii], post_start, nchar(text[ii]))
-            out_text <- paste0(out_text, post_text)
+
+          match_length <- attr(list_matches[[ii]], "match.length")[jj]
+          match_text <- substr(text[ii], match_start,
+                              match_start + match_length - 1)
+          match_text <- gsub(sep,  "", match_text, fixed = TRUE)
+          if (lpar$comment.char != "") {
+            match_text <- gsub(lpar$comment.char,  "", match_text, fixed = TRUE)
+          }
+          out_text <- paste0(out_text, pre_text, match_text)
+
+          if (jj <= length(list_matches[[ii]]) - 1) {
+            post_start <- match_start + match_length
+            if (post_start != list_matches[[ii]][jj + 1]) {
+              pos_length <- list_matches[[ii]][jj + 1] - post_start
+              post_text <- substr(text[ii], post_start,
+                                  post_start + pos_length - 1)
+              out_text <- paste0(out_text, post_text)
+            }
+          } else if (jj == length(list_matches[[ii]])) {
+            post_start <- match_start + match_length
+            if (post_start <= nchar(text[ii])) {
+              post_text <- substr(text[ii], post_start, nchar(text[ii]))
+              out_text <- paste0(out_text, post_text)
+            }
           }
         }
+
+      }  else {
+        out_text <- text[ii]
       }
-
-    }  else {
-      out_text <- text[ii]
+      text2[ii] <- out_text
     }
-    text2[ii] <- out_text
   }
 
   if (lpar$comment.char != "") {
@@ -348,6 +353,10 @@ file_schema_dsv <- function(input_file,
 
   ## find quoted columns ------------------------------------
   check_quotes <- function(text_line, quote, n_cols) {
+    if (quote == "" || length(quote) == 0) {
+      return(rep(FALSE, n_cols))
+    }
+
     rx_quote <- paste0("(\\s*)([", quote, "])(?:\\\\.|(?!\\2).)*\\2(\\s*)")
     matches <- grep(rx_quote, text_line, perl = TRUE)
     no_matches <- setdiff(seq_along(text_line), matches)

@@ -15,10 +15,7 @@ dd <- file_schema_xlsx(input_file = file.path(file_path, file_name),
 
 
 d2 <- openxlsx2::wb_to_df(file = file.path(file_path, file_name),
-                          sheet = "Foglio1",
-                          start_row = 1, cols = c("A:EV"), col_names = TRUE,
-                          na.strings = ".", keep_attr = TRUE
-                         )
-                         
-
-
+  sheet = "Foglio1",
+  start_row = 1, cols = c("A:EV"), col_names = TRUE,
+  na.strings = ".", keep_attr = TRUE
+)

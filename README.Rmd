@@ -40,30 +40,72 @@ from [GitHub](https://github.com/) with:
 pak::pak("fab-algo/RSQLite.toolkit")
 ```
 
-## Example
+## Examples
 
-This basic example shows you how to use the core functions of the package
-to load some data in different tables in a test database:
+These basic examples show how to use the core functions of the package
+to load example data in different tables in a test database:
 
-```{r example, eval = FALSE}
+```{r example, eval = TRUE}
 library(RSQLite.toolkit)
 
-dbcon <- dbConnect(dbDriver("SQLite"), "./data/test.sqlite")
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
 
-## creates the table IRIS from a CSV file, adding
-## the field 'SEQ' with the ROWID of each record
-## through the use of the parameter 'auto_pk=TRUE'
-dbTableFromDSV(input_file = "./data/src/iris.csv",
-               dbcon = dbcon, table_name = "IRIS",
-               header = TRUE, sep = ",", dec = ".",
-               drop_table = TRUE, auto_pk = TRUE)
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
 
-## creates table PASSENGERS from Feather file
-dbTableFromFeather(input_file = "./data/src/passengers.feather",
-                   dbcon = dbcon, table_name = "PASSENGERS")
+## creates the table ABALONE from a CSV file, adding the field 'SEQ' with the
+## ROWID of each record through the use of the parameter 'auto_pk=TRUE'
+dbTableFromDSV(input_file = file.path(data_path, "abalone.csv"),
+               dbcon = dbcon, table_name = "ABALONE",
+               drop_table = TRUE, auto_pk = TRUE,
+               header = TRUE, sep = ",", dec = ".")
+
+## creates table PORTFOLIO_PERF from Excel file, using the "all period" sheet
+dbTableFromXlsx(input_file = file.path(data_path,
+                                       "stock_portfolio.xlsx"),
+                dbcon = dbcon, table_name = "PORTFOLIO_PERF",
+                drop_table = TRUE,
+                sheet_name = "all period", first_row = 2, cols_range = "A:S")
+
+## creates table PENGUINS from Feather file
+dbTableFromFeather(input_file = file.path(data_path, "penguins.feather"),
+                   dbcon = dbcon, table_name = "PENGUINS",
+                   drop_table = TRUE)
 
 dbListTables(dbcon)
+dbListFields(dbcon, "ABALONE")
+dbListFields(dbcon, "PENGUINS")
+dbListFields(dbcon, "PORTFOLIO_PERF")[1:5]
 
 dbDisconnect(dbcon)
 ```
 
+To inspect the structure of the input files, you can use the following functions: 
+```{r example2, eval = TRUE}
+library(RSQLite.toolkit)
+
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+file_schema_dsv(input_file = file.path(data_path, "abalone.csv"),
+                header = TRUE, sep = ",", dec = ".")$schema[, c(1, 3:7)]
+
+file_schema_feather(input_file = file.path(data_path,
+                                           "penguins.feather"))[, c(1, 3:6)]
+```
+
+## How to use the package
+
+<img src="man/figures/README-dbTableFrom_template.png" width="90%" />
+
+## Data sources
+
+The example datasets, included in the `extdata` package directory, have been retrieved from
+the following sources:
+
+- `"abalone.csv"`: Predicting the age of abalone from physical measurements.
+  source link: <https://archive.ics.uci.edu/dataset/1/abalone>
+- `"stock_portfolio.xlsx"`: Stock portfolio performance under a new weighted scoring
+  stock selection model.
+  source link: <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
+- `"penguins.feather"`: The Palmer Arcipelago's penguins data set.
+  source link: <https://allisonhorst.github.io/palmerpenguins/>
+  The "feather" file format of the dataset was downloaded from <https://github.com/lmassaron/datasets>
