@@ -10,7 +10,7 @@
 <!-- badges: end -->
 
 RSQLite.toolkit is lightweight wrapper around the RSQLite package for
-streamlined loading of data from tabular files (i.e. text delimited
+streamlined loading of data from **tabular files** (i.e. text delimited
 files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in SQLite
 databases.
 
@@ -65,6 +65,7 @@ dbTableFromFeather(input_file = file.path(data_path, "penguins.feather"),
 
 dbListTables(dbcon)
 #> [1] "ABALONE"        "PENGUINS"       "PORTFOLIO_PERF"
+
 dbListFields(dbcon, "ABALONE")
 #>  [1] "Sex"     "Length"  "Diam"    "Height"  "Whole"   "Shucked" "Viscera"
 #>  [8] "Shell"   "Rings"   "SEQ"
@@ -115,7 +116,34 @@ file_schema_feather(input_file = file.path(data_path,
 
 ## How to use the package
 
-<img src="man/figures/README-dbTableFrom_template.png" width="90%" />
+The basic idea behind this package is that storing all the data used
+throughout a data‑analysis workflow in a database is a highly efficient
+and effective way to manage information. The advantages of keeping raw
+data and their metadata together in the same database—ideally under a
+shared data model—far outweigh not only the additional overhead of
+maintaining a structured and centralized system, but also the costs and
+complexity involved in importing information from external files with
+disparate formats and conventions.
+
+The purpose of this package is to reduce the burden of the last point
+(i.e., importing the data) as much as possible, through a set of
+function that
+
+The core functions of the package are those that can be used to move
+data from a file to a database table:
+
+- `dbTableFromDSV()`
+- `dbTableFromXlsx()`
+- `dbTableFromFeather()`
+
+All these functions share a common calling template that is outlined in
+the following picture:
+
+<img src="man/figures/README-dbTableFrom_template.png" width="100%" style="display: block; margin: auto;" />
+
+Be careful with default values, especially when importing form
+*delimiter separated values* text files: the default values for input
+data interpretation parameters are seldom the right ones.
 
 ## Data sources
 
@@ -123,12 +151,12 @@ The example datasets, included in the `extdata` package directory, have
 been retrieved from the following sources:
 
 - `"abalone.csv"`: Predicting the age of abalone from physical
-  measurements. source link:
+  measurements. Source link:
   <https://archive.ics.uci.edu/dataset/1/abalone>
 - `"stock_portfolio.xlsx"`: Stock portfolio performance under a new
-  weighted scoring stock selection model. source link:
+  weighted scoring stock selection model. Source link:
   <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
 - `"penguins.feather"`: The Palmer Arcipelago’s penguins data set.
-  source link: <https://allisonhorst.github.io/palmerpenguins/> The
+  Source link: <https://allisonhorst.github.io/palmerpenguins/>. The
   “feather” file format of the dataset was downloaded from
-  <https://github.com/lmassaron/datasets>
+  <https://github.com/lmassaron/datasets>.

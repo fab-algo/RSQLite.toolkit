@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-	
+
 # RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit">
   <img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" />
   </a>
@@ -20,15 +20,14 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-RSQLite.toolkit is lightweight wrapper around the RSQLite package for 
-streamlined loading of data from tabular files (i.e. text delimited 
-files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in 
+RSQLite.toolkit is lightweight wrapper around the RSQLite package for
+streamlined loading of data from **tabular files** (i.e. text delimited
+files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in
 SQLite databases.
 
-It includes also helper functions for inspecting the structure of the 
-input files, and some functions to simplify activities on the SQLite 
+It includes also helper functions for inspecting the structure of the
+input files, and some functions to simplify activities on the SQLite
 tables.
-
 
 ## Installation
 
@@ -72,6 +71,7 @@ dbTableFromFeather(input_file = file.path(data_path, "penguins.feather"),
                    drop_table = TRUE)
 
 dbListTables(dbcon)
+
 dbListFields(dbcon, "ABALONE")
 dbListFields(dbcon, "PENGUINS")
 dbListFields(dbcon, "PORTFOLIO_PERF")[1:5]
@@ -79,7 +79,8 @@ dbListFields(dbcon, "PORTFOLIO_PERF")[1:5]
 dbDisconnect(dbcon)
 ```
 
-To inspect the structure of the input files, you can use the following functions: 
+To inspect the structure of the input files, you can use the following functions:
+
 ```{r example2, eval = TRUE}
 library(RSQLite.toolkit)
 
@@ -94,7 +95,34 @@ file_schema_feather(input_file = file.path(data_path,
 
 ## How to use the package
 
-<img src="man/figures/README-dbTableFrom_template.png" width="90%" />
+The basic idea behind this package is that storing all the data used throughout
+a data‑analysis workflow in a database is a highly efficient and effective way
+to manage information. The advantages of keeping raw data and their metadata
+together in the same database—ideally under a shared data model—far outweigh
+not only the additional overhead of maintaining a structured and centralized
+system, but also the costs and complexity involved in importing information
+from external files with disparate formats and conventions.
+
+The purpose of this package is to reduce the burden of the last point (i.e.,
+importing the data) as much as possible, through a set of function that
+
+The core functions of the package are those that can be used to move data from
+a file to a database table:
+
+- `dbTableFromDSV()`
+- `dbTableFromXlsx()`
+- `dbTableFromFeather()`
+
+All these functions share a common calling template that is outlined in the
+following picture:
+
+```{r, eval = TRUE, echo = FALSE, fig.align='center', out.width="100%"}
+knitr::include_graphics("man/figures/README-dbTableFrom_template.png")
+```
+
+Be careful with default values, especially when importing form _delimiter separated
+values_ text files: the default values for input data interpretation parameters
+are seldom the right ones.
 
 ## Data sources
 
@@ -102,10 +130,10 @@ The example datasets, included in the `extdata` package directory, have been ret
 the following sources:
 
 - `"abalone.csv"`: Predicting the age of abalone from physical measurements.
-  source link: <https://archive.ics.uci.edu/dataset/1/abalone>
+  Source link: <https://archive.ics.uci.edu/dataset/1/abalone>
 - `"stock_portfolio.xlsx"`: Stock portfolio performance under a new weighted scoring
   stock selection model.
-  source link: <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
+  Source link: <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
 - `"penguins.feather"`: The Palmer Arcipelago's penguins data set.
-  source link: <https://allisonhorst.github.io/palmerpenguins/>
-  The "feather" file format of the dataset was downloaded from <https://github.com/lmassaron/datasets>
+  Source link: <https://allisonhorst.github.io/palmerpenguins/>.
+  The "feather" file format of the dataset was downloaded from <https://github.com/lmassaron/datasets>.
