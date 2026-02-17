@@ -1,4 +1,8 @@
-#' dbExecFile execute the SQL statements contained in a text file
+#' Execute SQL statements from a text file
+#' 
+#' @description
+#' The `dbExecFile()` function executes the SQL statements contained
+#' in a text file.
 #'
 #' This function reads the text in `input_file`, strips all comment lines
 #' (i.e. all lines beginning with `--` characters) and splits the SQL statements
@@ -58,9 +62,10 @@ dbExecFile <- function(input_file, dbcon, plist = NULL) {
 
 
 
-#' dbCopyTable copy a table from one SQLite database to another
+#' Copy a table from one SQLite database to another
 #'
-#' This function can be used to create a copy of the data in a table
+#' @description
+#' The `dbCopyTable()` function can be used to create a copy of the data in a table
 #' of a SQLite database in another database. The data can be appended
 #' to an already existing table (with the same name of the source one), or
 #' a new table can be created. It is possible to move also the indexes
@@ -177,14 +182,15 @@ dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
 
 
 
-#' dbCreatePK creates a uniqe index on a table in a SQLite database
+#' Creates a unique index on a table in a SQLite database
 #'
-#' This functions create a `UNIQUE INDEX` named `<table_name>_PK`
-#' defined by the combination of fields specified in the `pk_fields`
-#' parameter.
+#' The `dbCreatePK()` function creates a `UNIQUE INDEX` named 
+#' `<table_name>_PK` on the table specified by `table_name` in
+#' the database connected by `dbcon`. The index is created on
+#' the fields specified in the `pk_fields` argument.
 #'
 #' @param dbcon database connection, as created by the dbConnect function.
-#' @param table_name charater, the name of the table where the index
+#' @param table_name character, the name of the table where the index
 #'    will be created.
 #' @param pk_fields character vector, the list of the fields' names that
 #'    define the `UNIQUE INDEX`.

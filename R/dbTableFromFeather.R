@@ -1,7 +1,11 @@
-#' dbTableFromFeather create a table in a SQLite database from a
-#'   Feather (Arrow IPC) file
+#' Create a table from a Feather (Arrow IPC) file
+#' 
+#' @description
+#' The `dbTableFromFeather()` function reads the data from a Feather (Arrow IPC) file
+#' and copies it to a table in a SQLite database. If table does not exist, it will
+#' create it.
 #'
-#' The dbTableFromFeather function reads the data from a Apache
+#' The `dbTableFromFeather()` function reads the data from an Apache
 #' Arrow table serialized in a Feather (Arrow IPC) file and copies it
 #' to a table in a SQLite database. If table does not exist, it will
 #' create it.
@@ -13,7 +17,7 @@
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defaults to `DB_NAMES`.
 #'
 #' @param col_names character vector, names of the columuns in the input file.
 #'    Used to override the field names derived from the input file (using the
@@ -49,7 +53,7 @@
 #'    in the `pk_fields` parameter. It will be effective only if
 #'    `pk_fields` is not null. Defaults to `FALSE`.
 #' @param pk_fields character vector, the list of the fields' names that
-#'    define the `UNIQUE INDEX`. Defults to `NULL`.
+#'    define the `UNIQUE INDEX`. Defaults to `NULL`.
 #'
 #' @param constant_values a one row data frame whose columns will be added to
 #'    the table in the database. The additional table columns will be named

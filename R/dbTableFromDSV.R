@@ -1,7 +1,11 @@
-#' dbTableFromDSV create a table in a SQLite database from a
-#'   delimiter separated values (DSV) text file
+#' Create a table from a delimiter separated values (DSV) text file
+#' 
+#' @description
+#' The `dbTableFromDSV()` function reads the data from a DSV file
+#' and copies it to a table in a SQLite database. If table does
+#' not exist, it will create it.
 #'
-#' The dbTableFromDSV function reads the data from a DSV file
+#' The `dbTableFromDSV()` function reads the data from a DSV file
 #' and copies it to a table in a SQLite database. If table does
 #' not exist, it will create it.
 #'

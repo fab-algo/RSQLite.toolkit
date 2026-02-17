@@ -19,7 +19,7 @@ to serialize tabular data and are widely used as a data exchange format.
 Since there isn't a strict technical standard that specifies how different data types
 should be represented in plain text, and a lot of possible customizations are left to
 the final users, it is very common to encounter issues when data is imported from this
-kind of files. 
+kind of files.
 The purpose of this article is to show some problems you can encounter 
 loading data in a SQLite database from DSV files and how to deal with them.
 
@@ -198,6 +198,7 @@ dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",
 As we can see now we got all the expected records in the SQLite table. We can
 check that by listing the tables in the database, the fields in the `DOSE` table
 and counting the number of records in it:
+
 ```{r check_db}
 dbListTables(dbcon)
 
@@ -223,7 +224,7 @@ SQLite has specific rules and restrictions regarding column names, including:
 - Should avoid special characters and spaces for better compatibility
 
 You can find more details about SQLite's naming conventions in the
-[official documentation](https://www.sqlite.org/lang_keywords.html) and 
+[official documentation](https://www.sqlite.org/lang_keywords.html) and
 [CREATE TABLE](https://www.sqlite.org/lang_createtable.html) page. There are
 also some interesting discussions on Stack Overflow:
 
@@ -247,10 +248,9 @@ You should always inspect the column names in your DSV files before importing th
 into a SQLite database to ensure they meet these criteria. Failing to do so can lead
 to errors during the import process or unexpected behavior when querying the database.
 
-
 ### How RSQLite.toolkit handles column names
 
-The `dbTableFromDSV()` function[^2] offers a built-in mechanism to handle problematic
+  The `dbTableFromDSV()` function[^2] offers a built-in mechanism to handle problematic
 column names when importing data from DSV files. It does so through the
 `id_quote_method` parameter that can be set to one of the following values:
 
@@ -274,7 +274,7 @@ parameter, to ensure that all column names are unique.
 
 If you are not satisfied with the way column names are handled, you can always
 manually specify the column names to be used in the SQLite table using the
-`col_names` parameter of the `dbTableFromDSV()` function. 
+`col_names` parameter of the `dbTableFromDSV()` function.
 
 ### Example
 
@@ -282,6 +282,7 @@ Let's create a simple example to demonstrate this behavior; we will use a
 DSV file with problematic column names that we will download from the
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
 repository.
+
 ```{r getdata2}
 library("piggyback", quietly = TRUE)
 pb_download(file = "Blockchain_Banking_Scopus_Dataset_2015_2025.zip",
@@ -298,13 +299,14 @@ data_file <- file.path(tempdir(),
 ```
 
 Now we can inspect the column names used in the input file:
+
 ```{r inspect_colnames}
 f_schema2 <- file_schema_dsv(input_file = data_file,
                              quote = "\"", na.strings = "",
                              comment.char = "", fileEncoding = "UTF-8")
 
 f_schema2$schema[1:10, ]
-``` 
+```
 
 The `src_names` column contains the original column names found in the input file.
 As we can see, there are some problematic column names, such as `Author(s) ID`,
@@ -370,8 +372,7 @@ should always:
   to handle them, here the `id_quote_method` parameter of the `dbTableFromDSV()`
   function can be very useful.
 
-
 [^1]: The original source of each dataset is described in the README page of the GitHub repo.
 
-[^2]: The same mechanism to handle column names is used also by the `dbTableFromXlsx()`, 
+[^2]: The same mechanism to handle column names is used also by the `dbTableFromXlsx()`,
 `dbTableFromFeather()` and `dbTableFromDataFrame()` functions.

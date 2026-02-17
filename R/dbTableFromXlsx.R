@@ -1,7 +1,10 @@
-#' dbTableFromXlsx create a table in a SQLite database from a
-#'   range of an Excel worksheet
+#' Create a table in a SQLite database from an Excel worksheet
 #'
-#' The dbTableFromXlsx function reads the data from a range of
+#' @description 
+#' The `dbTableFromXlsx()` function creates a table in a SQLite database from a
+#' range of an Excel worksheet.
+#'
+#' The `dbTableFromXlsx()` function reads the data from a range of
 #' an Excel worksheet. If table does not exist, it will
 #' create it.
 #'

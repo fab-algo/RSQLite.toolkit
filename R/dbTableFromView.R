@@ -1,5 +1,8 @@
-#' dbTableFromView create a table in a SQLite database from  a
-#'    view already present in the same database.
+#' Create a table in a SQLite database from a view
+#' 
+#' @description   
+#' The `dbTableFromView()` function creates a table in a SQLite database
+#' from a view already present in the same database.
 #'
 #' @param view_name character, name of the view.
 #' @param dbcon database connection, as created by the dbConnect function.

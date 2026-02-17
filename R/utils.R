@@ -115,8 +115,12 @@ Xlsx2R_types <- function(x) {
   y
 }
 
-#' R2SQL_types returns a character vector with the names of SQLite data types
-#' corresponding to the R classes passed through the `x` parameter.
+#' From R class names to SQLite data types
+#' 
+#' @description 
+#' The `R2SQL_types()` function returns a character vector with the names
+#' of SQLite data types corresponding to the R classes passed through the
+#' `x` parameter.
 #'
 #' If any class is not recognized, it will be replaced with `TEXT` data type.
 #'
@@ -171,8 +175,12 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 }
 
 
-#' format_column_names format a vector of strings to be
-#'   used as columns' names for a table in a SQLite database
+#' Format column names for SQLite
+#' 
+#' @description
+#' The `format_column_names()` function formats a vector of
+#' strings to be used as columns' names for a table in a SQLite
+#' database.
 #'
 #' @param x character vector with the identifiers' names to be quoted.
 #' @param quote_method character, used to specify how to build the SQLite

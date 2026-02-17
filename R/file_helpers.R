@@ -1,22 +1,25 @@
-#' file_schema_feather returns a data frame with the schema of a Feather file
-#'
-#' Preview the table structure contained in a Feather file. This function
-#' inspects the input file metadata to read the field identifiers' names and
-#' data types, then converts them to the candidate data frame columns' names
-#' and data types. The dataset contained in the input file is not read in to
-#' memory, only meta-data are accessed.
+#' Preview the table structure contained in a Feather file.
+#' 
+#' @description
+#' The `file_schema_feather()` function returns a data frame with the
+#' schema of a Feather file. This function is used to preview the table
+#' structure contained in a Feather file, by reading only the metadata of
+#' the file. It inspects the input file metadata to read the field identifiers'
+#' names and data types, then converts them to the candidate data frame
+#' columns' names and data types. The dataset contained in the input file
+#' is not read in to memory, only meta-data are accessed.
 #'
 #' @param input_file File name (including path) to be read
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defaults to `DB_NAMES`.
 #'
 #' @returns a data frame with these columns:
 #'    - `col_names`: columns' names, after applying the selected quote method;
 #'    - `col_names_unquoted`: columns' names, unquoted; if `id_quote_method`
 #'      is set to `DB_NAMES` they will be the same as `col_names`; for other
-#'      quote methods they will be the unquoted versions of `col_names`,that
+#'      quote methods they will be the unquoted versions of `col_names`, that
 #'      is generally the same as `src_names` unless `src_names` contain the
 #'      quoting characters;
 #'    - `col_types`: columns' R data types;
@@ -63,12 +66,14 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 }
 
 
-#' file_schema_dsv returns a data frame with the schema of a DSV file
-#'
-#' Reads only the first `max_lines` of a delimiter separated values (DSV)
-#' text file to infer column names and data types, without reading the full
-#' dataset into memory. Then it converts them to the candidate data
-#' frame columns' names and data types.
+#' Preview the table structure contained in a DSV file. 
+#' 
+#' @description 
+#' The `file_schema_dsv()` function returns a data frame with the schema
+#' of a DSV file reading only the first `max_lines` of a delimiter
+#' separated values (DSV) text file to infer column names and data types
+#' (it does not read the full dataset into memory). Then it converts them
+#' to the candidate data frame columns' names and data types.
 #'
 #' @param input_file character, file name (including path) to be read.
 #' @param header logical, if `TRUE` the first line contains the fields'
@@ -122,7 +127,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'      - `col_types`: columns' R data types;
 #'      - `sql_types`: columns' SQLite data types;
 #'      - `src_names`: columns' names as they appear in the input file.
-#'      - `src_types`: dafults to `text` for all columns.
+#'      - `src_types`: defaults to `text` for all columns.
 #'      - `src_is_quoted`: logical vector indicating if each column has at least
 #'         one value enclosed in quotes.
 #'    - `col_counts`, a data frame with these columns:
@@ -464,10 +469,14 @@ file_schema_dsv <- function(input_file,
 }
 
 
-#' file_schema_xlsx returns a data frame with the schema of an Excel data table
-#'
-#' Preview the table structure contained in a rectangular range of worksheet
-#' of an Excel file.
+#' Preview the structure of a range of an Excel worksheet.
+#' 
+#' @description
+#' The `file_schema_xlsx()` function returns a data frame with the
+#' schema of an Excel data table. It will read only a range of
+#' the specified worksheet to infer column names and data types.
+#' Then it converts them to the candidate data frame columns' names
+#' and data types.
 #'
 #' @param input_file character, file name (including path) to be read.
 #' @param sheet_name character, the name of the worksheet containing the data
@@ -483,7 +492,7 @@ file_schema_dsv <- function(input_file,
 #' @param id_quote_method character, used to specify how to build the SQLite
 #'    columns' names using the fields' identifiers read from the input file.
 #'    For details see the description of the `quote_method` parameter of
-#'    the [format_column_names()] function. Defautls to `DB_NAMES`.
+#'    the [format_column_names()] function. Defaults to `DB_NAMES`.
 #' @param max_lines integer, number of lines (excluding the header) to be
 #'    read to infer columns' data types. Defaults to 100.
 #' @param null_columns logical, if `TRUE` the col_type of columuns consisting

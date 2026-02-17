@@ -1,4 +1,7 @@
-#' The dbTableFromDataFrame function reads the data from a rectangula region
+#' Create a table in a SQLite database from a data frame
+#' 
+#' @description
+#' The `dbTableFromDataFrame()` function reads the data from a rectangula region
 #' of a sheet in an Excel file and copies it to a table in a SQLite
 #' database. If table does not exist, it will create it.
 #'
