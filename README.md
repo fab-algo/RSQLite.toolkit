@@ -9,12 +9,12 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-RSQLite.toolkit is lightweight wrapper around the RSQLite package for
+RSQLite.toolkit is a lightweight wrapper around the RSQLite package for
 streamlined loading of data from **tabular files** (i.e. text delimited
 files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in SQLite
 databases.
 
-It includes also helper functions for inspecting the structure of the
+It also includes helper functions for inspecting the structure of the
 input files, and some functions to simplify activities on the SQLite
 tables.
 
@@ -49,7 +49,7 @@ dbTableFromDSV(input_file = file.path(data_path, "abalone.csv"),
                header = TRUE, sep = ",", dec = ".")
 #> [1] 4177
 
-## creates table PORTFOLIO_PERF from Excel file, using the "all period" sheet
+## creates the table PORTFOLIO_PERF from Excel file, using the "all period" sheet
 dbTableFromXlsx(input_file = file.path(data_path,
                                        "stock_portfolio.xlsx"),
                 dbcon = dbcon, table_name = "PORTFOLIO_PERF",
@@ -57,7 +57,7 @@ dbTableFromXlsx(input_file = file.path(data_path,
                 sheet_name = "all period", first_row = 2, cols_range = "A:S")
 #> [1] 63
 
-## creates table PENGUINS from Feather file
+## creates the table PENGUINS from Feather file
 dbTableFromFeather(input_file = file.path(data_path, "penguins.feather"),
                    dbcon = dbcon, table_name = "PENGUINS",
                    drop_table = TRUE)
@@ -117,33 +117,77 @@ file_schema_feather(input_file = file.path(data_path,
 ## How to use the package
 
 The basic idea behind this package is that storing all the data used
-throughout a data‑analysis workflow in a database is a highly efficient
-and effective way to manage information. The advantages of keeping raw
-data and their metadata together in the same database—ideally under a
-shared data model—far outweigh not only the additional overhead of
-maintaining a structured and centralized system, but also the costs and
-complexity involved in importing information from external files with
-disparate formats and conventions.
+throughout a data‑analysis workflow in a local database is a highly
+efficient and effective way to manage information. The advantages of
+keeping raw data and their metadata together in the same
+database—ideally under a shared data model—far outweigh not only the
+additional overhead of maintaining a structured system, but also the
+costs and complexity involved in importing information from external
+files with disparate formats and conventions.
 
 The purpose of this package is to reduce the burden of the last point
 (i.e., importing the data) as much as possible, through a set of
-function that
+functions that read the data from the source files, create the
+destination table (if it does not exist), store the data there and index
+it, all in one step.
 
-The core functions of the package are those that can be used to move
-data from a file to a database table:
+The core functions of the package are therefore those that can be used
+to move data from a file to a database table:
 
 - `dbTableFromDSV()`
 - `dbTableFromXlsx()`
 - `dbTableFromFeather()`
+
+Together with these, there are a couple of additional functions:
+
+- `dbTableFromDataFrame()`
+- `dbTableFromView()`
+
+that could be handy to move data from intermediate data structures to
+database tables, using the same logic of the core ones.
 
 All these functions share a common calling template that is outlined in
 the following picture:
 
 <img src="man/figures/README-dbTableFrom_template.png" width="100%" style="display: block; margin: auto;" />
 
-Be careful with default values, especially when importing form
-*delimiter separated values* text files: the default values for input
-data interpretation parameters are seldom the right ones.
+All core functions require three mandatory arguments:
+
+- `input_file`
+- `dbcon`
+- `table_name`
+
+that have no default values. The `dbTableFromXlsx()` requires three
+additional arguments (again with no defaults): `sheet_name`,
+`first_row`, `cols_range` that are needed to correctly locate the
+dataset to be imported inside the Excel file.
+
+More details on the parameters and functions’ behaviour are available in
+the standard function documentation accessible through R’s help system.
+
+Anyway, be careful with default values of all other arguments,
+especially when importing from *delimiter separated values* text files:
+the default values for input data interpretation arguments are seldom
+the right ones. This is also true for the default values of the
+functions actually used by this package to read data from files, that
+is:
+
+- `base::scan()` for reading from DSV files;
+- `openxlsx2::wb_to_df()` for reading from Xlsx files;
+- `arrow::FeatherReader()` for reading from Feather files.
+
+Given the high variability in how data can be stored in DSV and Excel
+files, there is always the possibility of passing specific parameters of
+the above listed functions through the special argument “`...`”. To help
+with using the additional arguments of `dbTableFromDSV()`, along with
+those of `base::scan()`, you can read the **vignette “Dealing with DSV
+files”** that is part of this package. The first section of the document
+describes how to use `base::scan()` arguments to read complex DSV files.
+In the second section there is a detailed description of the issues
+related to the column names used in the data file and their
+corresponding identifiers in the SQLite table’s fields. The second
+section of this vignette can be helpful also when importing data from
+Xlsx and Feather files.
 
 ## Data sources
 
@@ -156,7 +200,7 @@ been retrieved from the following sources:
 - `"stock_portfolio.xlsx"`: Stock portfolio performance under a new
   weighted scoring stock selection model. Source link:
   <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
-- `"penguins.feather"`: The Palmer Arcipelago’s penguins data set.
+- `"penguins.feather"`: The Palmer Archipelago’s penguins data set.
   Source link: <https://allisonhorst.github.io/palmerpenguins/>. The
   “feather” file format of the dataset was downloaded from
   <https://github.com/lmassaron/datasets>.
