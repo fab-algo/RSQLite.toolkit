@@ -1,0 +1,24 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/404.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/LICENSE.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/articles/dealing_with_DSV_files.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/articles/index.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/authors.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/index.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/R2SQL_types.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbCopyTable.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbCreatePK.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbExecFile.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromDSV.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromDataFrame.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromFeather.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromView.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromXlsx.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/error_handler.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_dsv.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_feather.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_xlsx.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/format_column_names.html</loc></url>
+<url><loc>https://fab-algo.github.io/RSQLite.toolkit/reference/index.html</loc></url>
+</urlset>
+
