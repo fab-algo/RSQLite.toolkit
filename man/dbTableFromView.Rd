@@ -2,8 +2,7 @@
 % Please edit documentation in R/dbTableFromView.R
 \name{dbTableFromView}
 \alias{dbTableFromView}
-\title{dbTableFromView create a table in a SQLite database from  a
-view already present in the same database.}
+\title{Create a table in a SQLite database from a view}
 \usage{
 dbTableFromView(
   view_name,
@@ -39,6 +38,6 @@ integer, the number of records in \code{table_name} after writing data
 from the input view.
 }
 \description{
-dbTableFromView create a table in a SQLite database from  a
-view already present in the same database.
+The \code{dbTableFromView()} function creates a table in a SQLite database
+from a view already present in the same database.
 }

@@ -2,9 +2,7 @@
 % Please edit documentation in R/dbTableFromDataFrame.R
 \name{dbTableFromDataFrame}
 \alias{dbTableFromDataFrame}
-\title{The dbTableFromDataFrame function reads the data from a rectangula region
-of a sheet in an Excel file and copies it to a table in a SQLite
-database. If table does not exist, it will create it.}
+\title{Create a table in a SQLite database from a data frame}
 \usage{
 dbTableFromDataFrame(
   df,
@@ -66,7 +64,7 @@ integer, the number of records in \code{table_name} after reading data
 from the data frame.
 }
 \description{
-The dbTableFromDataFrame function reads the data from a rectangula region
+The \code{dbTableFromDataFrame()} function reads the data from a rectangula region
 of a sheet in an Excel file and copies it to a table in a SQLite
 database. If table does not exist, it will create it.
 }

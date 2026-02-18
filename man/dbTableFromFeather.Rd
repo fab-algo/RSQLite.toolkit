@@ -2,8 +2,7 @@
 % Please edit documentation in R/dbTableFromFeather.R
 \name{dbTableFromFeather}
 \alias{dbTableFromFeather}
-\title{dbTableFromFeather create a table in a SQLite database from a
-Feather (Arrow IPC) file}
+\title{Create a table from a Feather (Arrow IPC) file}
 \usage{
 dbTableFromFeather(
   input_file,
@@ -30,7 +29,7 @@ dbTableFromFeather(
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
+the \code{\link[=format_column_names]{format_column_names()}} function. Defaults to \code{DB_NAMES}.}
 
 \item{col_names}{character vector, names of the columuns in the input file.
 Used to override the field names derived from the input file (using the
@@ -72,7 +71,7 @@ in the \code{pk_fields} parameter. It will be effective only if
 \code{pk_fields} is not null. Defaults to \code{FALSE}.}
 
 \item{pk_fields}{character vector, the list of the fields' names that
-define the \verb{UNIQUE INDEX}. Defults to \code{NULL}.}
+define the \verb{UNIQUE INDEX}. Defaults to \code{NULL}.}
 
 \item{constant_values}{a one row data frame whose columns will be added to
 the table in the database. The additional table columns will be named
@@ -87,7 +86,11 @@ integer, the number of records in \code{table_name} after reading data
 from \code{input_file}.
 }
 \description{
-The dbTableFromFeather function reads the data from a Apache
+The \code{dbTableFromFeather()} function reads the data from a Feather (Arrow IPC) file
+and copies it to a table in a SQLite database. If table does not exist, it will
+create it.
+
+The \code{dbTableFromFeather()} function reads the data from an Apache
 Arrow table serialized in a Feather (Arrow IPC) file and copies it
 to a table in a SQLite database. If table does not exist, it will
 create it.

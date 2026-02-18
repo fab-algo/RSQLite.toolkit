@@ -2,7 +2,7 @@
 % Please edit documentation in R/db_helpers.R
 \name{dbCopyTable}
 \alias{dbCopyTable}
-\title{dbCopyTable copy a table from one SQLite database to another}
+\title{Copy a table from one SQLite database to another}
 \usage{
 dbCopyTable(
   db_file_src,
@@ -33,7 +33,7 @@ table. Defaults to \code{FALSE}.}
 nothing
 }
 \description{
-This function can be used to create a copy of the data in a table
+The \code{dbCopyTable()} function can be used to create a copy of the data in a table
 of a SQLite database in another database. The data can be appended
 to an already existing table (with the same name of the source one), or
 a new table can be created. It is possible to move also the indexes

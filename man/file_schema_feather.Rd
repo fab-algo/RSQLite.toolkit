@@ -2,7 +2,7 @@
 % Please edit documentation in R/file_helpers.R
 \name{file_schema_feather}
 \alias{file_schema_feather}
-\title{file_schema_feather returns a data frame with the schema of a Feather file}
+\title{Preview the table structure contained in a Feather file.}
 \usage{
 file_schema_feather(input_file, id_quote_method = "DB_NAMES")
 }
@@ -12,7 +12,7 @@ file_schema_feather(input_file, id_quote_method = "DB_NAMES")
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
+the \code{\link[=format_column_names]{format_column_names()}} function. Defaults to \code{DB_NAMES}.}
 }
 \value{
 a data frame with these columns:
@@ -20,7 +20,7 @@ a data frame with these columns:
 \item \code{col_names}: columns' names, after applying the selected quote method;
 \item \code{col_names_unquoted}: columns' names, unquoted; if \code{id_quote_method}
 is set to \code{DB_NAMES} they will be the same as \code{col_names}; for other
-quote methods they will be the unquoted versions of \code{col_names},that
+quote methods they will be the unquoted versions of \code{col_names}, that
 is generally the same as \code{src_names} unless \code{src_names} contain the
 quoting characters;
 \item \code{col_types}: columns' R data types;
@@ -30,11 +30,13 @@ quoting characters;
 }
 }
 \description{
-Preview the table structure contained in a Feather file. This function
-inspects the input file metadata to read the field identifiers' names and
-data types, then converts them to the candidate data frame columns' names
-and data types. The dataset contained in the input file is not read in to
-memory, only meta-data are accessed.
+The \code{file_schema_feather()} function returns a data frame with the
+schema of a Feather file. This function is used to preview the table
+structure contained in a Feather file, by reading only the metadata of
+the file. It inspects the input file metadata to read the field identifiers'
+names and data types, then converts them to the candidate data frame
+columns' names and data types. The dataset contained in the input file
+is not read in to memory, only meta-data are accessed.
 }
 \section{References}{
 

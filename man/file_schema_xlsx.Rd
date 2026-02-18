@@ -2,7 +2,7 @@
 % Please edit documentation in R/file_helpers.R
 \name{file_schema_xlsx}
 \alias{file_schema_xlsx}
-\title{file_schema_xlsx returns a data frame with the schema of an Excel data table}
+\title{Preview the structure of a range of an Excel worksheet.}
 \usage{
 file_schema_xlsx(
   input_file,
@@ -36,7 +36,7 @@ Excel worksheet (i.e. letters).}
 \item{id_quote_method}{character, used to specify how to build the SQLite
 columns' names using the fields' identifiers read from the input file.
 For details see the description of the \code{quote_method} parameter of
-the \code{\link[=format_column_names]{format_column_names()}} function. Defautls to \code{DB_NAMES}.}
+the \code{\link[=format_column_names]{format_column_names()}} function. Defaults to \code{DB_NAMES}.}
 
 \item{max_lines}{integer, number of lines (excluding the header) to be
 read to infer columns' data types. Defaults to 100.}
@@ -65,6 +65,9 @@ quoting characters;
 }
 }
 \description{
-Preview the table structure contained in a rectangular range of worksheet
-of an Excel file.
+The \code{file_schema_xlsx()} function returns a data frame with the
+schema of an Excel data table. It will read only a range of
+the specified worksheet to infer column names and data types.
+Then it converts them to the candidate data frame columns' names
+and data types.
 }

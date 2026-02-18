@@ -2,7 +2,7 @@
 % Please edit documentation in R/file_helpers.R
 \name{file_schema_dsv}
 \alias{file_schema_dsv}
-\title{file_schema_dsv returns a data frame with the schema of a DSV file}
+\title{Preview the table structure contained in a DSV file.}
 \usage{
 file_schema_dsv(
   input_file,
@@ -84,7 +84,7 @@ quoting characters;
 \item \code{col_types}: columns' R data types;
 \item \code{sql_types}: columns' SQLite data types;
 \item \code{src_names}: columns' names as they appear in the input file.
-\item \code{src_types}: dafults to \code{text} for all columns.
+\item \code{src_types}: defaults to \code{text} for all columns.
 \item \code{src_is_quoted}: logical vector indicating if each column has at least
 one value enclosed in quotes.
 }
@@ -104,10 +104,11 @@ more columns than \code{n_cols}.
 }
 }
 \description{
-Reads only the first \code{max_lines} of a delimiter separated values (DSV)
-text file to infer column names and data types, without reading the full
-dataset into memory. Then it converts them to the candidate data
-frame columns' names and data types.
+The \code{file_schema_dsv()} function returns a data frame with the schema
+of a DSV file reading only the first \code{max_lines} of a delimiter
+separated values (DSV) text file to infer column names and data types
+(it does not read the full dataset into memory). Then it converts them
+to the candidate data frame columns' names and data types.
 }
 \examples{
 \dontrun{

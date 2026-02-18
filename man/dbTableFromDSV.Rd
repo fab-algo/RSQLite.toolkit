@@ -2,8 +2,7 @@
 % Please edit documentation in R/dbTableFromDSV.R
 \name{dbTableFromDSV}
 \alias{dbTableFromDSV}
-\title{dbTableFromDSV create a table in a SQLite database from a
-delimiter separated values (DSV) text file}
+\title{Create a table from a delimiter separated values (DSV) text file}
 \usage{
 dbTableFromDSV(
   input_file,
@@ -117,7 +116,11 @@ integer, the number of records in \code{table_name} after reading data
 from \code{input_file}.
 }
 \description{
-The dbTableFromDSV function reads the data from a DSV file
+The \code{dbTableFromDSV()} function reads the data from a DSV file
+and copies it to a table in a SQLite database. If table does
+not exist, it will create it.
+
+The \code{dbTableFromDSV()} function reads the data from a DSV file
 and copies it to a table in a SQLite database. If table does
 not exist, it will create it.
 }

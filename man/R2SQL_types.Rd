@@ -2,8 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{R2SQL_types}
 \alias{R2SQL_types}
-\title{R2SQL_types returns a character vector with the names of SQLite data types
-corresponding to the R classes passed through the \code{x} parameter.}
+\title{From R class names to SQLite data types}
 \usage{
 R2SQL_types(x)
 }
@@ -14,5 +13,9 @@ R2SQL_types(x)
 a character vector with the names of SQLite data types.
 }
 \description{
+The \code{R2SQL_types()} function returns a character vector with the names
+of SQLite data types corresponding to the R classes passed through the
+\code{x} parameter.
+
 If any class is not recognized, it will be replaced with \code{TEXT} data type.
 }

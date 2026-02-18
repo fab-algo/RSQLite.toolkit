@@ -1,10 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit">
-
-<img src="man/figures/RSQLite.toolkit_logo.png" align="right" height="138" />
-</a>
+# RSQLite.toolkit <a href="https://github.com/fab-algo/RSQLite.toolkit"><img src="man/figures/logo.png" align="right" height="138" alt="RSQLite.toolkit website"/></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -23,10 +20,15 @@ tables.
 You can install the development version of RSQLite.toolkit from
 [GitHub](https://github.com/) with:
 
+<div class=".pkgdown-devel">
+
 ``` r
+# Install development version from GitHub
 # install.packages("pak")
 pak::pak("fab-algo/RSQLite.toolkit")
 ```
+
+</div>
 
 ## Examples
 

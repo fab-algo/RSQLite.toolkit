@@ -2,14 +2,14 @@
 % Please edit documentation in R/db_helpers.R
 \name{dbCreatePK}
 \alias{dbCreatePK}
-\title{dbCreatePK creates a uniqe index on a table in a SQLite database}
+\title{Creates a unique index on a table in a SQLite database}
 \usage{
 dbCreatePK(dbcon, table_name, pk_fields, drop_index = FALSE)
 }
 \arguments{
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
-\item{table_name}{charater, the name of the table where the index
+\item{table_name}{character, the name of the table where the index
 will be created.}
 
 \item{pk_fields}{character vector, the list of the fields' names that
@@ -23,7 +23,8 @@ if an index with that name exists and eventually stops. Default to \code{FALSE}.
 nothing
 }
 \description{
-This functions create a \verb{UNIQUE INDEX} named \verb{<table_name>_PK}
-defined by the combination of fields specified in the \code{pk_fields}
-parameter.
+The \code{dbCreatePK()} function creates a \verb{UNIQUE INDEX} named
+\verb{<table_name>_PK} on the table specified by \code{table_name} in
+the database connected by \code{dbcon}. The index is created on
+the fields specified in the \code{pk_fields} argument.
 }

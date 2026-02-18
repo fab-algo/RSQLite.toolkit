@@ -2,8 +2,7 @@
 % Please edit documentation in R/dbTableFromXlsx.R
 \name{dbTableFromXlsx}
 \alias{dbTableFromXlsx}
-\title{dbTableFromXlsx create a table in a SQLite database from a
-range of an Excel worksheet}
+\title{Create a table in a SQLite database from an Excel worksheet}
 \usage{
 dbTableFromXlsx(
   input_file,
@@ -108,7 +107,10 @@ integer, the number of records in \code{table_name} after reading data
 from \code{input_file}.
 }
 \description{
-The dbTableFromXlsx function reads the data from a range of
+The \code{dbTableFromXlsx()} function creates a table in a SQLite database from a
+range of an Excel worksheet.
+
+The \code{dbTableFromXlsx()} function reads the data from a range of
 an Excel worksheet. If table does not exist, it will
 create it.
 }

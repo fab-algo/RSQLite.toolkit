@@ -2,8 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{format_column_names}
 \alias{format_column_names}
-\title{format_column_names format a vector of strings to be
-used as columns' names for a table in a SQLite database}
+\title{Format column names for SQLite}
 \usage{
 format_column_names(
   x,
@@ -49,6 +48,7 @@ A data frame containing the columns' identifiers in two formats:
 }
 }
 \description{
-format_column_names format a vector of strings to be
-used as columns' names for a table in a SQLite database
+The \code{format_column_names()} function formats a vector of
+strings to be used as columns' names for a table in a SQLite
+database.
 }
