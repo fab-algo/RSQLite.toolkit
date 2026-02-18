@@ -30,7 +30,7 @@ pak::pak("fab-algo/RSQLite.toolkit")
 
 </div>
 
-## Examples
+## Usage
 
 These basic examples show how to use the core functions of the package
 to load example data in different tables in a test database:
@@ -116,7 +116,7 @@ file_schema_feather(input_file = file.path(data_path,
 #> 6               sex character      TEXT               sex      utf8
 ```
 
-## How to use the package
+## Description
 
 The basic idea behind this package is that storing all the data used
 throughout a data‑analysis workflow in a local database is a highly
@@ -151,7 +151,7 @@ database tables, using the same logic of the core ones.
 All these functions share a common calling template that is outlined in
 the following picture:
 
-<img src="man/figures/README-dbTableFrom_template.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-dbTableFrom_template.png" alt="" width="100%" style="display: block; margin: auto;" />
 
 All core functions require three mandatory arguments:
 

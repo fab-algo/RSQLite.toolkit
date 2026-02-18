@@ -19,7 +19,7 @@ Imports:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-URL: https://github.com/fab-algo/RSQLite.toolkit
+URL: https://github.com/fab-algo/RSQLite.toolkit, https://fab-algo.github.io/RSQLite.toolkit/
 BugReports: https://github.com/fab-algo/RSQLite.toolkit/issues
 Suggests: 
     knitr,

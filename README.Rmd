@@ -43,7 +43,7 @@ pak::pak("fab-algo/RSQLite.toolkit")
 
 :::
 
-## Examples
+## Usage
 
 These basic examples show how to use the core functions of the package
 to load example data in different tables in a test database:
@@ -97,7 +97,7 @@ file_schema_feather(input_file = file.path(data_path,
                                            "penguins.feather"))[, c(1, 3:6)]
 ```
 
-## How to use the package
+## Description
 
 The basic idea behind this package is that storing all the data used throughout
 a data‑analysis workflow in a local database is a highly efficient and effective
