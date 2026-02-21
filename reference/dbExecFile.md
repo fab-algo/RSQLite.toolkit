@@ -5,9 +5,9 @@ text file.
 
 This function reads the text in `input_file`, strips all comment lines
 (i.e. all lines beginning with `--` characters) and splits the SQL
-statements assuming that they are separeted by the `;` character. The
+statements assuming that they are separated by the `;` character. The
 list of SQL statements is then executed, one at a time; the results of
-each statements are stored in a list with length equal to the number of
+each statement are stored in a list with length equal to the number of
 statements.
 
 ## Usage
@@ -34,4 +34,4 @@ dbExecFile(input_file, dbcon, plist = NULL)
 
 ## Value
 
-a list with the results of each statement executed.
+a list with the results returned by each statement executed.
