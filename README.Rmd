@@ -83,24 +83,10 @@ dbListFields(dbcon, "PORTFOLIO_PERF")[1:5]
 dbDisconnect(dbcon)
 ```
 
-To inspect the structure of the input files, you can use the following functions:
-
-```{r example2, eval = TRUE}
-library(RSQLite.toolkit)
-
-data_path <- system.file("extdata", package = "RSQLite.toolkit")
-
-file_schema_dsv(input_file = file.path(data_path, "abalone.csv"),
-                header = TRUE, sep = ",", dec = ".")$schema[, c(1, 3:7)]
-
-file_schema_feather(input_file = file.path(data_path,
-                                           "penguins.feather"))[, c(1, 3:6)]
-```
-
-## Description
+## Core Functions
 
 The basic idea behind this package is that storing all the data used throughout
-a data‑analysis workflow in a local database is a highly efficient and effective
+a data-analysis workflow in a local database is a highly efficient and effective
 way to manage information. The advantages of keeping raw data and their metadata
 together in the same database—ideally under a shared data model—far outweigh
 not only the additional overhead of maintaining a structured system, but also
@@ -108,9 +94,9 @@ the costs and complexity involved in importing information from external files
 with disparate formats and conventions.
 
 The purpose of this package is to reduce the burden of the last point (i.e.,
-importing the data) as much as possible, through a set of functions that
+importing the data) as much as possible through a set of functions that
 read the data from the source files, create the destination table (if it does not
-exist), store the data there and index it, all in one step.
+exist), store the data there, and index it, all in one step.
 
 The core functions of the package are therefore those that can be used to move
 data from a file to a database table:
@@ -160,7 +146,7 @@ to read data from files, that is:
 
 Given the high variability in how data can be stored in DSV and
 Excel files, there is always the possibility of passing specific parameters of
-the above listed functions through the special argument "`...`". To help with
+the above-listed functions through the special argument "`...`". To help with
 using the additional arguments of `dbTableFromDSV()`, along with those of
 `base::scan()`, you can read the **vignette "Dealing with DSV files"** that is
 part of this package. The first section of the document describes how to
@@ -170,10 +156,211 @@ the column names used in the data file and their corresponding identifiers
 in the SQLite table's fields. The second section of this vignette can
 be helpful also when importing data from Xlsx and Feather files.
 
-## Data sources
+## File Schema Inspection Functions
 
-The example datasets, included in the `extdata` package directory, have been retrieved from
-the following sources:
+Before loading data into your SQLite database, RSQLite.toolkit provides
+specialized functions to inspect the structure and schema of your input
+files **without loading the entire dataset into memory**. This is
+particularly useful for large files or when you need to understand the
+data types and column structure before importing.
+
+The package includes three schema inspection functions:
+
+- **`file_schema_dsv()`** - for delimiter-separated values files (CSV, TSV, etc.)
+- **`file_schema_feather()`** - for Arrow Feather files  
+- **`file_schema_xlsx()`** - for Microsoft Excel files
+
+### Purpose and Benefits
+
+These functions serve several important purposes:
+
+1. **Memory Efficiency**: Preview large files without loading them completely into memory
+2. **Data Type Detection**: Automatically infer (or at least try to) R and SQLite data types for each column
+3. **Column Name Formatting**: Show how column names will be formatted for SQLite compatibility
+4. **Import Planning**: Help you understand the structure before using the main `dbTableFrom*()` functions
+5. **Troubleshooting**: Identify potential issues with file structure, encoding, or formatting
+
+### What They Return
+
+All three functions return a data frame with the following key columns:
+
+- `col_names`: Column names after applying SQLite formatting rules
+- `col_names_unquoted`: Unquoted column names (if different from `col_names`)
+- `col_types`: Inferred R data types for each column
+- `sql_types`: Corresponding SQLite data types
+- `src_names`: Original column names as they appear in the source file
+- `src_types`: Source data types (varies by file format)
+
+### Usage Examples
+
+```{r example2, eval = TRUE}
+library(RSQLite.toolkit)
+
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+file_schema_dsv(input_file = file.path(data_path, "abalone.csv"),
+                header = TRUE, sep = ",", dec = ".")$schema[, c(1, 3:7)]
+
+file_schema_feather(input_file = file.path(data_path,
+                                           "penguins.feather"))[, c(1, 3:6)]
+```
+
+### When to Use These Functions
+
+- **Before importing large files** to understand their structure
+- **When debugging import issues** to identify data type conflicts
+- **For data documentation** to understand file contents without opening them
+- **When working with unfamiliar datasets** to explore column names and types
+- **To verify column naming conventions** will work with SQLite
+
+These _schema_ functions use the same parameters as their corresponding
+`dbTableFrom*()` functions, making it easy to test and refine your import
+settings before committing to the full data load.
+
+## Database Utility Functions
+
+Beyond the core data import capabilities, RSQLite.toolkit provides two utility
+functions for simplifying database operations:
+
+- **`dbExecFile()`** - Execute SQL statements from text files
+- **`dbCopyTable()`** - Copy tables between SQLite databases
+
+### dbExecFile: Batch SQL Execution
+
+The `dbExecFile()` function allows you to execute multiple SQL statements
+stored in a text file, making it ideal for:
+
+- **Database schema setup** (creating tables, indexes, views)
+- **Batch data operations** (updates, deletions, transformations)  
+- **Database maintenance scripts** (cleanup, optimization)
+- **Reproducible database workflows** (version-controlled SQL scripts)
+
+Moreover, the possibility to read SQL statements directly from a text file
+avoids the need to embed long SQL instructions in strings inside
+the main R code, making the source more readable.
+
+#### Key Features
+
+- **Comment stripping**: Automatically removes SQL comments (lines starting with `--`)
+- **Statement splitting**: Separates multiple statements using semicolons (`;`)
+- **Parameter binding**: Optional support for parameterized queries
+- **Result collection**: Returns results from each executed statement through a list
+
+#### Usage Examples
+
+```{r dbexecfile-examples, eval = TRUE}
+library(RSQLite.toolkit)
+
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
+
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+dbTableFromDSV(input_file = file.path(data_path, "abalone.csv"),
+               dbcon = dbcon, table_name = "ABALONE",
+               drop_table = TRUE, auto_pk = TRUE,
+               header = TRUE, sep = ",", dec = ".")
+
+## SQL file content: each statement is separated by a semicolon
+sql_text <- paste("SELECT SEX, RINGS, COUNT(*) AS NUM, AVG(LENGTH) ", 
+                  "AS AVG_LENGTH FROM ABALONE GROUP BY SEX, RINGS;",
+                  "SELECT SEX, round(WHOLE/0.02,0)*0.02 as WHOLE_GRP, ",
+                  "COUNT(*) AS NUM, AVG(LENGTH) AS AVG_LENGTH ", 
+                  "FROM ABALONE GROUP BY SEX, round(WHOLE/0.02,0)*0.02;",
+                  sep = "\n")
+
+sql_file <- tempfile(fileext = ".sql")
+writeLines(sql_text, con = sql_file)
+
+res <- dbExecFile(input_file = sql_file, dbcon = dbcon)
+
+res[[1]][1:10, ]
+
+res[[2]][1:10, ]
+
+unlink(sql_file)
+dbDisconnect(dbcon)
+```
+
+### dbCopyTable: Cross-Database Table Operations
+
+The `dbCopyTable()` function enables you to copy entire tables between
+different SQLite database files, useful for:
+
+- **Data archiving** (moving historical data to archive databases)
+- **Database splitting** (distributing data across multiple files)
+- **Backup operations** (creating table-specific backups)
+- **Data sharing** (copying tables to shared databases)
+- **Development workflows** (copying production data to test environments)
+
+The typical scenario where this function becomes really useful is when you
+want to start a new analysis workflow in a new environment and you want to
+carry over part of the data you used in a previous one. This function allows
+you to move whole tables from the SQLite database you used in the old workflow to
+the new database, so that you can add more recent data or you can reuse
+previous results.
+
+#### Key Features
+
+- **Flexible copying**: Append to existing tables or create new ones
+- **Index preservation**: Optionally copy indexes along with data
+- **Cross-database operation**: Works between different SQLite database files
+- **Safe operations**: Option to drop/recreate target tables safely
+
+#### Usage Examples
+
+```{r dbcopytable-examples, eval = FALSE}
+# Copy a table from one database to another
+dbCopyTable(
+  db_file_src = "source.sqlite", 
+  db_file_tgt = "backup.sqlite",
+  table_name = "sales_data",
+  drop_table = TRUE,        # Recreate table if it exists
+  copy_indexes = TRUE       # Copy indexes too
+)
+
+# Append data to existing table (no index copying)
+dbCopyTable(
+  db_file_src = "daily_data.sqlite",
+  db_file_tgt = "master.sqlite", 
+  table_name = "transactions",
+  drop_table = FALSE        # Append to existing table
+)
+
+# Archive old data
+dbCopyTable(
+  db_file_src = "production.sqlite",
+  db_file_tgt = "archive_2024.sqlite",
+  table_name = "historical_sales",
+  drop_table = TRUE,
+  copy_indexes = TRUE
+)
+```
+
+### When to Use These Functions:
+
+**Use `dbExecFile()` when:**
+
+- Setting up complex database schemas
+- Running maintenance or cleanup scripts
+- Executing version-controlled SQL migrations
+- Performing batch data transformations
+- Need to run multiple related SQL statements
+
+**Use `dbCopyTable()` when:**
+
+- Creating backups of specific tables
+- Moving data between environments (dev/test/prod)
+- Archiving historical data
+- Splitting large databases into smaller files
+- Sharing specific datasets with collaborators
+
+These utility functions complement the core data import functions by providing
+database management capabilities that are often needed in real-world
+data analysis workflows.
+
+## Data Sources
+
+The example datasets, included in the `extdata` package directory, have been
+retrieved from the following sources:
 
 - `"abalone.csv"`: Predicting the age of abalone from physical measurements.
   Source link: <https://archive.ics.uci.edu/dataset/1/abalone>
@@ -182,4 +369,5 @@ the following sources:
   Source link: <https://archive.ics.uci.edu/dataset/390/stock+portfolio+performance>
 - `"penguins.feather"`: The Palmer Archipelago's penguins data set.
   Source link: <https://allisonhorst.github.io/palmerpenguins/>.
-  The "feather" file format of the dataset was downloaded from <https://github.com/lmassaron/datasets>.
+  The "feather" file format of the dataset was downloaded from
+  <https://github.com/lmassaron/datasets>.

@@ -16,7 +16,7 @@ statements to be executed}
 SQL statements. Defaults to \code{NULL}}
 }
 \value{
-a list with the results of each statement executed.
+a list with the results returned by each statement executed.
 }
 \description{
 The \code{dbExecFile()} function executes the SQL statements contained
@@ -24,7 +24,7 @@ in a text file.
 
 This function reads the text in \code{input_file}, strips all comment lines
 (i.e. all lines beginning with \verb{--} characters) and splits the SQL statements
-assuming that they are separeted by the \verb{;} character. The list of SQL
-statements is then executed, one at a time; the results of each statements
+assuming that they are separated by the \verb{;} character. The list of SQL
+statements is then executed, one at a time; the results of each statement
 are stored in a list with length equal to the number of statements.
 }

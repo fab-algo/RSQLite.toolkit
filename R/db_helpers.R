@@ -6,8 +6,8 @@
 #'
 #' This function reads the text in `input_file`, strips all comment lines
 #' (i.e. all lines beginning with `--` characters) and splits the SQL statements
-#' assuming that they are separeted by the `;` character. The list of SQL
-#' statements is then executed, one at a time; the results of each statements
+#' assuming that they are separated by the `;` character. The list of SQL
+#' statements is then executed, one at a time; the results of each statement
 #' are stored in a list with length equal to the number of statements.
 #'
 #' @param input_file the file name (including path) containing the SQL
@@ -16,7 +16,7 @@
 #' @param plist a list with values to be binded to the parameters of
 #'    SQL statements. Defaults to `NULL`
 #'
-#' @returns a list with the results of each statement executed.
+#' @returns a list with the results returned by each statement executed.
 #'
 #' @import RSQLite
 #' @export
@@ -28,14 +28,20 @@ dbExecFile <- function(input_file, dbcon, plist = NULL) {
   sql[idx] <- sub("(--).+", "", sql[idx])
 
   sql <- unlist(strsplit(paste(sql, collapse = " "), ";", fixed = TRUE))
-  sql <- sql[grep("^ *$", sql, invert = TRUE)]
+  sql <- gsub("^\\s+", "", sql) 
+  sql <- gsub("\\s+$", "", sql)
+  sql <- sql[sql != ""]
 
   res <- list()
   if (length(sql) > 0) {
     if (is.null(plist)) {
 
       for (ii in seq_along(sql)) {
-        res[[ii]] <- dbExecute(dbcon, sql[ii])
+        rs <- dbSendQuery(dbcon, sql[ii])
+        while (!dbHasCompleted(rs)) {
+          res[[ii]] <- dbFetch(rs, n = -1)
+        }
+        dbClearResult(rs)
       }
 
     } else {
