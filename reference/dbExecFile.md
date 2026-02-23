@@ -30,7 +30,10 @@ dbExecFile(input_file, dbcon, plist = NULL)
 - plist:
 
   a list with values to be binded to the parameters of SQL statements.
-  Defaults to `NULL`
+  It should have the same length as the number of SQL statements. If any
+  of the statements do not require parameters, the corresponding element
+  of the list should be set to `NULL`. If no statements require
+  parameters, `plist` can be set to `NULL`.
 
 ## Value
 

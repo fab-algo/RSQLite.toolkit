@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -315,28 +315,62 @@
 <span></span>
 <span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">dbConnect</span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tests.sqlite"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co">## Load data from a DSV file into a database table ------------</span></span>
 <span><span class="va">data_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"RSQLite.toolkit"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/dbTableFromDSV.html">dbTableFromDSV</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_path</span>, <span class="st">"abalone.csv"</span><span class="op">)</span>,</span>
 <span>               dbcon <span class="op">=</span> <span class="va">dbcon</span>, table_name <span class="op">=</span> <span class="st">"ABALONE"</span>,</span>
 <span>               drop_table <span class="op">=</span> <span class="cn">TRUE</span>, auto_pk <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>               header <span class="op">=</span> <span class="cn">TRUE</span>, sep <span class="op">=</span> <span class="st">","</span>, dec <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 4177</span></span>
+<span><span class="co">## ------------------------------------------------------------</span></span>
 <span></span>
-<span><span class="co">## SQL file content: each statement is separated by a semicolon</span></span>
-<span><span class="va">sql_text</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"SELECT SEX, RINGS, COUNT(*) AS NUM, AVG(LENGTH) "</span>, </span>
+<span><span class="co">## SQL file: each statement is separated by a semicolon -------</span></span>
+<span><span class="va">sql_text</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"DROP TABLE IF EXISTS AVG_LEN_BY_SEX_RINGS;"</span>,</span>
+<span>                  <span class="st">" "</span>,</span>
+<span>                  <span class="st">"CREATE TABLE AVG_LEN_BY_SEX_RINGS "</span>,</span>
+<span>                  <span class="st">"(SEX TEXT, RINGS INTEGER, NUM INTEGER, AVG_LENGTH REAL);"</span>,</span>
+<span>                  <span class="st">" "</span>,</span>
+<span>                  <span class="st">"INSERT INTO AVG_LEN_BY_SEX_RINGS "</span>,</span>
+<span>                  <span class="st">"SELECT SEX, RINGS, COUNT(*) AS NUM, AVG(LENGTH) "</span>, </span>
 <span>                  <span class="st">"AS AVG_LENGTH FROM ABALONE GROUP BY SEX, RINGS;"</span>,</span>
-<span>                  <span class="st">"SELECT SEX, round(WHOLE/0.02,0)*0.02 as WHOLE_GRP, "</span>,</span>
+<span>                  <span class="st">" "</span>,</span>
+<span>                  <span class="st">"SELECT * FROM AVG_LEN_BY_SEX_RINGS;"</span>,</span>
+<span>                  <span class="st">" "</span>,</span>
+<span>                  <span class="st">"SELECT SEX, round(WHOLE/:bin_size,0)*:bin_size as WHOLE_GRP, "</span>,</span>
 <span>                  <span class="st">"COUNT(*) AS NUM, AVG(LENGTH) AS AVG_LENGTH "</span>, </span>
-<span>                  <span class="st">"FROM ABALONE GROUP BY SEX, round(WHOLE/0.02,0)*0.02;"</span>,</span>
+<span>                  <span class="st">"FROM ABALONE GROUP BY SEX, round(WHOLE/:bin_size,0)*:bin_size;"</span>,</span>
 <span>                  sep <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sql_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".sql"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="va">sql_text</span>, con <span class="op">=</span> <span class="va">sql_file</span><span class="op">)</span></span>
+<span><span class="co">## ------------------------------------------------------------</span></span>
 <span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dbExecFile.html">dbExecFile</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">sql_file</span>, dbcon <span class="op">=</span> <span class="va">dbcon</span><span class="op">)</span></span>
+<span><span class="co">## Execute SQL statements from the file -----------------------</span></span>
+<span><span class="va">plist</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>q1<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>           q2<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>           q3<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>           q4<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>           q5<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>bin_size <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dbExecFile.html">dbExecFile</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">sql_file</span>, dbcon <span class="op">=</span> <span class="va">dbcon</span>, </span>
+<span>                  plist <span class="op">=</span> <span class="va">plist</span><span class="op">)</span></span>
+<span><span class="co">## ------------------------------------------------------------</span></span>
 <span></span>
-<span><span class="va">res</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="op">]</span></span>
-<span><span class="co">#&gt;    Sex Rings NUM AVG_LENGTH</span></span>
+<span><span class="co">## Check results ----------------------------------------------</span></span>
+<span><span class="fu">dbListTables</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "ABALONE"              "AVG_LEN_BY_SEX_RINGS" "PENGUINS"            </span></span>
+<span><span class="co">#&gt; [4] "PORTFOLIO_PERF"</span></span>
+<span><span class="fu">dbListFields</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"AVG_LEN_BY_SEX_RINGS"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "SEX"        "RINGS"      "NUM"        "AVG_LENGTH"</span></span>
+<span></span>
+<span><span class="va">res</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="va">res</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="va">res</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span></span>
+<span><span class="va">res</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="op">]</span></span>
+<span><span class="co">#&gt;    SEX RINGS NUM AVG_LENGTH</span></span>
 <span><span class="co">#&gt; 1    F     5   4  0.3237500</span></span>
 <span><span class="co">#&gt; 2    F     6  16  0.4628125</span></span>
 <span><span class="co">#&gt; 3    F     7  44  0.4678409</span></span>
@@ -348,19 +382,21 @@
 <span><span class="co">#&gt; 9    F    13  88  0.5814773</span></span>
 <span><span class="co">#&gt; 10   F    14  56  0.5960714</span></span>
 <span></span>
-<span><span class="va">res</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="op">]</span></span>
+<span><span class="va">res</span><span class="op">[[</span><span class="fl">5</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;    Sex WHOLE_GRP NUM AVG_LENGTH</span></span>
-<span><span class="co">#&gt; 1    F      0.08   1  0.2750000</span></span>
-<span><span class="co">#&gt; 2    F      0.14   2  0.2975000</span></span>
-<span><span class="co">#&gt; 3    F      0.16   1  0.3050000</span></span>
-<span><span class="co">#&gt; 4    F      0.18   3  0.3483333</span></span>
-<span><span class="co">#&gt; 5    F      0.20   8  0.3425000</span></span>
-<span><span class="co">#&gt; 6    F      0.22   4  0.3737500</span></span>
-<span><span class="co">#&gt; 7    F      0.24   2  0.3700000</span></span>
-<span><span class="co">#&gt; 8    F      0.26   4  0.3775000</span></span>
-<span><span class="co">#&gt; 9    F      0.28   8  0.3675000</span></span>
-<span><span class="co">#&gt; 10   F      0.30   4  0.3925000</span></span>
+<span><span class="co">#&gt; 1    F     0.075   1  0.2750000</span></span>
+<span><span class="co">#&gt; 2    F     0.150   3  0.3000000</span></span>
+<span><span class="co">#&gt; 3    F     0.175   2  0.3425000</span></span>
+<span><span class="co">#&gt; 4    F     0.200   9  0.3444444</span></span>
+<span><span class="co">#&gt; 5    F     0.225   5  0.3730000</span></span>
+<span><span class="co">#&gt; 6    F     0.250   3  0.3733333</span></span>
+<span><span class="co">#&gt; 7    F     0.275  10  0.3700000</span></span>
+<span><span class="co">#&gt; 8    F     0.300   5  0.3900000</span></span>
+<span><span class="co">#&gt; 9    F     0.325   7  0.4000000</span></span>
+<span><span class="co">#&gt; 10   F     0.350   9  0.4038889</span></span>
+<span><span class="co">## ------------------------------------------------------------</span></span>
 <span></span>
+<span><span class="co">## Cleanup ----------------------------------------------------</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">sql_file</span><span class="op">)</span></span>
 <span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></code></pre></div>
 </div>

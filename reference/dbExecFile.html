@@ -19,7 +19,7 @@ are stored in a list with length equal to the number of statements."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,7 +77,10 @@ statements to be executed</p></dd>
 
 <dt id="arg-plist">plist<a class="anchor" aria-label="anchor" href="#arg-plist"></a></dt>
 <dd><p>a list with values to be binded to the parameters of
-SQL statements. Defaults to <code>NULL</code></p></dd>
+SQL statements. It should have the same length as the number of SQL
+statements. If any of the statements do not require parameters,
+the corresponding element of the list should be set to <code>NULL</code>.
+If no statements require parameters, <code>plist</code> can be set to <code>NULL</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
