@@ -285,28 +285,62 @@ library(RSQLite.toolkit)
 
 dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
 
+## Load data from a DSV file into a database table ------------
 data_path <- system.file("extdata", package = "RSQLite.toolkit")
 dbTableFromDSV(input_file = file.path(data_path, "abalone.csv"),
                dbcon = dbcon, table_name = "ABALONE",
                drop_table = TRUE, auto_pk = TRUE,
                header = TRUE, sep = ",", dec = ".")
 #> [1] 4177
+## ------------------------------------------------------------
 
-## SQL file content: each statement is separated by a semicolon
-sql_text <- paste("SELECT SEX, RINGS, COUNT(*) AS NUM, AVG(LENGTH) ", 
+## SQL file: each statement is separated by a semicolon -------
+sql_text <- paste("DROP TABLE IF EXISTS AVG_LEN_BY_SEX_RINGS;",
+                  " ",
+                  "CREATE TABLE AVG_LEN_BY_SEX_RINGS ",
+                  "(SEX TEXT, RINGS INTEGER, NUM INTEGER, AVG_LENGTH REAL);",
+                  " ",
+                  "INSERT INTO AVG_LEN_BY_SEX_RINGS ",
+                  "SELECT SEX, RINGS, COUNT(*) AS NUM, AVG(LENGTH) ", 
                   "AS AVG_LENGTH FROM ABALONE GROUP BY SEX, RINGS;",
-                  "SELECT SEX, round(WHOLE/0.02,0)*0.02 as WHOLE_GRP, ",
+                  " ",
+                  "SELECT * FROM AVG_LEN_BY_SEX_RINGS;",
+                  " ",
+                  "SELECT SEX, round(WHOLE/:bin_size,0)*:bin_size as WHOLE_GRP, ",
                   "COUNT(*) AS NUM, AVG(LENGTH) AS AVG_LENGTH ", 
-                  "FROM ABALONE GROUP BY SEX, round(WHOLE/0.02,0)*0.02;",
+                  "FROM ABALONE GROUP BY SEX, round(WHOLE/:bin_size,0)*:bin_size;",
                   sep = "\n")
 
 sql_file <- tempfile(fileext = ".sql")
 writeLines(sql_text, con = sql_file)
+## ------------------------------------------------------------
 
-res <- dbExecFile(input_file = sql_file, dbcon = dbcon)
+## Execute SQL statements from the file -----------------------
+plist=list(q1=NULL,
+           q2=NULL,
+           q3=NULL,
+           q4=NULL,
+           q5=list(bin_size = 0.025))
+res <- dbExecFile(input_file = sql_file, dbcon = dbcon, 
+                  plist = plist)
+## ------------------------------------------------------------
 
-res[[1]][1:10, ]
-#>    Sex Rings NUM AVG_LENGTH
+## Check results ----------------------------------------------
+dbListTables(dbcon)
+#> [1] "ABALONE"              "AVG_LEN_BY_SEX_RINGS" "PENGUINS"            
+#> [4] "PORTFOLIO_PERF"
+dbListFields(dbcon, "AVG_LEN_BY_SEX_RINGS")
+#> [1] "SEX"        "RINGS"      "NUM"        "AVG_LENGTH"
+
+res[[1]]
+#> NULL
+res[[2]]
+#> NULL
+res[[3]]
+#> NULL
+
+res[[4]][1:10, ]
+#>    SEX RINGS NUM AVG_LENGTH
 #> 1    F     5   4  0.3237500
 #> 2    F     6  16  0.4628125
 #> 3    F     7  44  0.4678409
@@ -318,19 +352,21 @@ res[[1]][1:10, ]
 #> 9    F    13  88  0.5814773
 #> 10   F    14  56  0.5960714
 
-res[[2]][1:10, ]
+res[[5]][1:10, ]
 #>    Sex WHOLE_GRP NUM AVG_LENGTH
-#> 1    F      0.08   1  0.2750000
-#> 2    F      0.14   2  0.2975000
-#> 3    F      0.16   1  0.3050000
-#> 4    F      0.18   3  0.3483333
-#> 5    F      0.20   8  0.3425000
-#> 6    F      0.22   4  0.3737500
-#> 7    F      0.24   2  0.3700000
-#> 8    F      0.26   4  0.3775000
-#> 9    F      0.28   8  0.3675000
-#> 10   F      0.30   4  0.3925000
+#> 1    F     0.075   1  0.2750000
+#> 2    F     0.150   3  0.3000000
+#> 3    F     0.175   2  0.3425000
+#> 4    F     0.200   9  0.3444444
+#> 5    F     0.225   5  0.3730000
+#> 6    F     0.250   3  0.3733333
+#> 7    F     0.275  10  0.3700000
+#> 8    F     0.300   5  0.3900000
+#> 9    F     0.325   7  0.4000000
+#> 10   F     0.350   9  0.4038889
+## ------------------------------------------------------------
 
+## Cleanup ----------------------------------------------------
 unlink(sql_file)
 dbDisconnect(dbcon)
 ```

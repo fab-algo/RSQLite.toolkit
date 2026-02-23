@@ -13,7 +13,10 @@ statements to be executed}
 \item{dbcon}{database connection, as created by the dbConnect function.}
 
 \item{plist}{a list with values to be binded to the parameters of
-SQL statements. Defaults to \code{NULL}}
+SQL statements. It should have the same length as the number of SQL
+statements. If any of the statements do not require parameters,
+the corresponding element of the list should be set to \code{NULL}.
+If no statements require parameters, \code{plist} can be set to \code{NULL}.}
 }
 \value{
 a list with the results returned by each statement executed.

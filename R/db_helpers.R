@@ -14,7 +14,10 @@
 #'    statements to be executed
 #' @param dbcon database connection, as created by the dbConnect function.
 #' @param plist a list with values to be binded to the parameters of
-#'    SQL statements. Defaults to `NULL`
+#'    SQL statements. It should have the same length as the number of SQL
+#'    statements. If any of the statements do not require parameters,
+#'    the corresponding element of the list should be set to `NULL`.
+#'    If no statements require parameters, `plist` can be set to `NULL`.
 #'
 #' @returns a list with the results returned by each statement executed.
 #'
@@ -34,33 +37,28 @@ dbExecFile <- function(input_file, dbcon, plist = NULL) {
 
   res <- list()
   if (length(sql) > 0) {
-    if (is.null(plist)) {
 
-      for (ii in seq_along(sql)) {
-        rs <- dbSendQuery(dbcon, sql[ii])
-        while (!dbHasCompleted(rs)) {
-          res[[ii]] <- dbFetch(rs, n = -1)
-        }
-        dbClearResult(rs)
-      }
-
-    } else {
-
+    if (!is.null(plist)) {
       if (length(sql) != length(plist)) {
         stop("RSQLite.toolkit: dbExecFile: ",
              "number of parameters in list should match ",
              "the length of the statements.")
       }
-
-      for (ii in seq_along(sql)) {
-        rs <- dbSendQuery(dbcon, sql[ii])
-        dbBind(rs, params = plist[[ii]])
-        while (!dbHasCompleted(rs)) {
-          res[[ii]] <- dbFetch(rs, n = -1)
-        }
-        dbClearResult(rs)
-      }
     }
+
+    for (ii in seq_along(sql)) {
+      rs <- dbSendQuery(dbcon, sql[ii])
+
+      if (!is.null(plist[[ii]])) {
+        dbBind(rs, params = plist[[ii]])
+      }
+
+      while (!dbHasCompleted(rs)) {
+        res[[ii]] <- dbFetch(rs, n = -1)
+      }
+      dbClearResult(rs)
+    }
+
   }
 
   res
