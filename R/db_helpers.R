@@ -21,6 +21,73 @@
 #'
 #' @returns a list with the results returned by each statement executed.
 #'
+#' @examples
+#' # Create a database and execute SQL from a file
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Load some sample data
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' dbTableFromDSV(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE",
+#'   drop_table = TRUE,
+#'   auto_pk = TRUE,
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = "."
+#' )
+#' 
+#' # Create a SQL file with multiple statements
+#' sql_content <- "
+#' -- Create a summary table
+#' DROP TABLE IF EXISTS ABALONE_SUMMARY;
+#' 
+#' CREATE TABLE ABALONE_SUMMARY AS 
+#' SELECT SEX, 
+#'        COUNT(*) as TOTAL_COUNT,
+#'        ROUND(AVG(LENGTH), 3) as AVG_LENGTH,
+#'        ROUND(AVG(WHOLE), 3) as AVG_WEIGHT
+#' FROM ABALONE 
+#' GROUP BY SEX;
+#' 
+#' -- Query the results  
+#' SELECT * FROM ABALONE_SUMMARY ORDER BY SEX;
+#' 
+#' -- Parameterized query example
+#' SELECT SEX, COUNT(*) as COUNT 
+#' FROM ABALONE 
+#' WHERE LENGTH > :min_length
+#' GROUP BY SEX;
+#' "
+#' 
+#' sql_file <- tempfile(fileext = ".sql")
+#' writeLines(sql_content, sql_file)
+#' 
+#' # Execute SQL statements with parameters
+#' plist <- list(
+#'   NULL,  # CREATE TABLE statement (no parameters)
+#'   NULL,  # First SELECT (no parameters) 
+#'   list(min_length = 0.5)  # Parameterized SELECT
+#' )
+#' 
+#' results <- dbExecFile(
+#'   input_file = sql_file,
+#'   dbcon = dbcon,
+#'   plist = plist
+#' )
+#' 
+#' # Check results
+#' print(results[[2]])  # Summary data
+#' print(results[[3]])  # Filtered data
+#' 
+#' # Clean up
+#' unlink(sql_file)
+#' dbDisconnect(dbcon)
+#'
 #' @import RSQLite
 #' @export
 dbExecFile <- function(input_file, dbcon, plist = NULL) {
@@ -203,6 +270,36 @@ dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
 #'   if an index with that name exists and eventually stops. Default to `FALSE`.
 #'
 #' @returns nothing
+#'
+#' @examples
+#' # Create a database and table, then add a primary key
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Load sample data
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' dbTableFromDSV(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE",
+#'   drop_table = TRUE,
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = "."
+#' )
+#' 
+#' # Create a primary key on multiple fields
+#' dbCreatePK(dbcon, "ABALONE", c("SEX", "LENGTH", "DIAMETER"))
+#' 
+#' # Check that the index was created
+#' indexes <- dbGetQuery(dbcon, 
+#'   "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='ABALONE'")
+#' print(indexes)
+#' 
+#' # Clean up
+#' dbDisconnect(dbcon)
 #'
 #' @import RSQLite
 #' @export

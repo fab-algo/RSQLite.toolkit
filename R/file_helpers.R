@@ -33,6 +33,22 @@
 #'
 #' @importFrom arrow ReadableFile
 #' @importFrom arrow FeatherReader
+#' @examples
+#' # Inspect Feather file schema without loading data into memory
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' 
+#' # Get schema information for penguins Feather file
+#' schema_info <- file_schema_feather(
+#'   input_file = file.path(data_path, "penguins.feather")
+#' )
+#' 
+#' # Display schema information
+#' print(schema_info[, c("col_names", "col_types", "sql_types", "src_names")])
+#' 
+#' # Check specific columns
+#' print(paste("Number of columns:", nrow(schema_info)))
+#' print(paste("Column names:", paste(schema_info$col_names, collapse = ", ")))
+#'
 #' @export
 file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 
@@ -145,10 +161,36 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' file_schema_dsv("data.csv", sep=",", dec=".", max_lines=50)
-#' file_schema_dsv("euro.csv", sep=";", dec=",", header=FALSE)
-#' }
+#' # Inspect CSV file schema without loading full dataset
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' 
+#' # Get schema information for abalone CSV
+#' schema_info <- file_schema_dsv(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = ".",
+#'   max_lines = 100
+#' )
+#' 
+#' # Display schema information
+#' print(schema_info$schema[, c("col_names", "col_types", "sql_types")])
+#' 
+#' # Check column consistency
+#' print(schema_info$col_counts)
+#' print(paste("Guessed columns:", schema_info$n_cols))
+#' 
+#' # Example with different parameters
+#' schema_custom <- file_schema_dsv(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = ".",
+#'   max_lines = 50,
+#'   id_quote_method = "DOUBLE_QUOTE"
+#' )
+#' 
+#' print(head(schema_custom$schema))
 file_schema_dsv <- function(input_file,
                             header = TRUE, sep = ",", dec = ".", grp = "",
                             id_quote_method = "DB_NAMES",

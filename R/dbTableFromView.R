@@ -22,6 +22,51 @@
 #' @returns integer, the number of records in `table_name` after writing data
 #'    from the input view.
 #'
+#' @examples
+#' # Create a temporary database and demonstrate view to table conversion
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Load some sample data first
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' dbTableFromDSV(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE",
+#'   drop_table = TRUE,
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = "."
+#' )
+#' 
+#' # Create a view with aggregated data
+#' dbExecute(dbcon, 
+#'   "CREATE VIEW ABALONE_SUMMARY AS 
+#'    SELECT SEX, 
+#'           COUNT(*) as COUNT, 
+#'           AVG(LENGTH) as AVG_LENGTH,
+#'           AVG(WHOLE) as AVG_WEIGHT
+#'    FROM ABALONE 
+#'    GROUP BY SEX"
+#' )
+#' 
+#' # Convert the view to a permanent table
+#' dbTableFromView(
+#'   view_name = "ABALONE_SUMMARY",
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE_STATS",
+#'   drop_table = TRUE
+#' )
+#' 
+#' # Check the result
+#' dbListTables(dbcon)
+#' dbGetQuery(dbcon, "SELECT * FROM ABALONE_STATS")
+#' 
+#' # Clean up
+#' dbDisconnect(dbcon)
+#'
 #' @import RSQLite
 #' @export
 dbTableFromView <- function(view_name, dbcon, table_name,  #nolint

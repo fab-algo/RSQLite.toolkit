@@ -87,6 +87,50 @@
 #' @returns integer, the number of records in `table_name` after reading data
 #'    from `input_file`.
 #'
+#' @examples
+#' # Create a temporary database and load CSV data
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Get path to example data
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' 
+#' # Load abalone CSV data with automatic primary key
+#' dbTableFromDSV(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE",
+#'   drop_table = TRUE,
+#'   auto_pk = TRUE,
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = "."
+#' )
+#' 
+#' # Check the imported data
+#' dbListFields(dbcon, "ABALONE")
+#' head(dbGetQuery(dbcon, "SELECT * FROM ABALONE"))
+#' 
+#' # Load data with specific column selection
+#' dbTableFromDSV(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE_SUBSET",
+#'   drop_table = TRUE,
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = ".",
+#'   col_import = c("SEX", "LENGTH", "DIAMETER", "WHOLE")
+#' )
+#' 
+#' # Check available tables
+#' dbListTables(dbcon)
+#' 
+#' # Clean up
+#' dbDisconnect(dbcon)
+#'
 #' @import RSQLite
 #' @export
 dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint

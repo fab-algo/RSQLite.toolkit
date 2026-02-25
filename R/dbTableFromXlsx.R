@@ -77,6 +77,40 @@
 #' @returns integer, the number of records in `table_name` after reading data
 #'    from `input_file`.
 #'
+#' @examples
+#' \donttest{
+#' # Create a temporary database and load Excel data
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Get path to example data
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' 
+#' # Check if Excel file exists (may not be available in all installations)
+#' xlsx_file <- file.path(data_path, "stock_portfolio.xlsx")
+#' if (file.exists(xlsx_file)) {
+#'   # Load Excel data from specific sheet and range
+#'   dbTableFromXlsx(
+#'     input_file = xlsx_file,
+#'     dbcon = dbcon,
+#'     table_name = "PORTFOLIO_PERF",
+#'     sheet_name = "all period",
+#'     first_row = 2,
+#'     cols_range = "A:S",
+#'     drop_table = TRUE
+#'   )
+#' 
+#'   # Check the imported data
+#'   dbListFields(dbcon, "PORTFOLIO_PERF")
+#'   dbGetQuery(dbcon, "SELECT COUNT(*) as row_count FROM PORTFOLIO_PERF")
+#' }
+#' 
+#' # Clean up
+#' dbDisconnect(dbcon)
+#' }
+#'
 #' @import RSQLite
 #' @importFrom openxlsx2 wb_to_df
 #' @export

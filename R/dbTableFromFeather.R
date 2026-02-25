@@ -67,6 +67,43 @@
 #' @returns integer, the number of records in `table_name` after reading data
 #'    from `input_file`.
 #'
+#' @examples
+#' # Create a temporary database and load Feather data
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Get path to example data
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' 
+#' # Load penguins Feather data
+#' dbTableFromFeather(
+#'   input_file = file.path(data_path, "penguins.feather"),
+#'   dbcon = dbcon,
+#'   table_name = "PENGUINS",
+#'   drop_table = TRUE
+#' )
+#' 
+#' # Check the imported data
+#' dbListFields(dbcon, "PENGUINS")
+#' head(dbGetQuery(dbcon, "SELECT * FROM PENGUINS"))
+#' 
+#' # Load with custom column selection and types
+#' dbTableFromFeather(
+#'   input_file = file.path(data_path, "penguins.feather"),
+#'   dbcon = dbcon,
+#'   table_name = "PENGUINS_SUBSET",
+#'   drop_table = TRUE,
+#'   col_import = c("species", "bill_length_mm", "bill_depth_mm", "body_mass_g")
+#' )
+#' 
+#' # Check available tables
+#' dbListTables(dbcon)
+#' 
+#' # Clean up
+#' dbDisconnect(dbcon)
+#'
 #' @import RSQLite
 #' @importFrom arrow read_feather
 #' @export

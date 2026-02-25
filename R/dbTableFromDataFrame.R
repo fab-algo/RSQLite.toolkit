@@ -42,6 +42,48 @@
 #' @returns integer, the number of records in `table_name` after reading data
 #'    from the data frame.
 #'
+#' @examples
+#' # Create a temporary database and load data frame
+#' library(RSQLite.toolkit)
+#' 
+#' # Set up database connection
+#' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+#' 
+#' # Create a sample data frame
+#' sample_data <- data.frame(
+#'   id = 1:10,
+#'   name = paste0("Item_", 1:10),
+#'   value = runif(10, 1, 100),
+#'   active = c(TRUE, FALSE),
+#'   date = Sys.Date() + 0:9,
+#'   stringsAsFactors = FALSE
+#' )
+#' 
+#' # Load data frame with automatic primary key
+#' dbTableFromDataFrame(
+#'   df = sample_data,
+#'   dbcon = dbcon,
+#'   table_name = "SAMPLE_DATA",
+#'   drop_table = TRUE,
+#'   auto_pk = TRUE
+#' )
+#' 
+#' # Check the imported data
+#' dbListFields(dbcon, "SAMPLE_DATA")
+#' dbGetQuery(dbcon, "SELECT * FROM SAMPLE_DATA LIMIT 5")
+#' 
+#' # Load with column selection and custom naming
+#' dbTableFromDataFrame(
+#'   df = sample_data,
+#'   dbcon = dbcon,
+#'   table_name = "SAMPLE_SUBSET",
+#'   drop_table = TRUE,
+#'   col_names = c("ID", "ITEM_NAME", "ITEM_VALUE", "IS_ACTIVE", "DATE_CREATED")
+#' )
+#' 
+#' # Clean up
+#' dbDisconnect(dbcon)
+#'
 #' @import RSQLite
 #' @export
 dbTableFromDataFrame <- function(df, dbcon, table_name,

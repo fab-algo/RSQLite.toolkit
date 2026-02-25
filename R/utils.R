@@ -128,6 +128,21 @@ Xlsx2R_types <- function(x) {
 #'
 #' @returns a character vector with the names of SQLite data types.
 #'
+#' @examples
+#' # Convert R data types to SQLite types
+#' r_types <- c("character", "integer", "numeric", "logical", "Date")
+#' sql_types <- R2SQL_types(r_types)
+#' 
+#' # Display the mapping
+#' data.frame(
+#'   R_type = r_types,
+#'   SQLite_type = sql_types
+#' )
+#' 
+#' # Handle unknown types (converted to TEXT)
+#' mixed_types <- c("character", "unknown_type", "integer")
+#' R2SQL_types(mixed_types)
+#'
 #' @export
 R2SQL_types <- function(x) {
   r2sql_dict <- c("character" = "TEXT",
