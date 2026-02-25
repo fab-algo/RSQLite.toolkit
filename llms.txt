@@ -496,8 +496,6 @@ been retrieved from the following sources:
   : Create a table in a SQLite database from a view
 - [`dbTableFromXlsx()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromXlsx.md)
   : Create a table in a SQLite database from an Excel worksheet
-- [`error_handler()`](https://fab-algo.github.io/RSQLite.toolkit/reference/error_handler.md)
-  : error_handler manage error messages for package
 - [`file_schema_dsv()`](https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_dsv.md)
   : Preview the table structure contained in a DSV file.
 - [`file_schema_feather()`](https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_feather.md)
