@@ -193,6 +193,106 @@ used to read input data.</p></dd>
 from <code>input_file</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create a temporary database and load Excel data</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/fab-algo/RSQLite.toolkit" class="external-link">RSQLite.toolkit</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Set up database connection</span></span></span>
+<span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">dbConnect</span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"example.sqlite"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get path to example data</span></span></span>
+<span class="r-in"><span><span class="va">data_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"RSQLite.toolkit"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check if Excel file exists (may not be available in all installations)</span></span></span>
+<span class="r-in"><span><span class="va">xlsx_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_path</span>, <span class="st">"stock_portfolio.xlsx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fschema</span> <span class="op">&lt;-</span> <span class="fu"><a href="file_schema_xlsx.html">file_schema_xlsx</a></span><span class="op">(</span><span class="va">xlsx_file</span>, sheet_name<span class="op">=</span><span class="st">"all period"</span>, </span></span>
+<span class="r-in"><span>                            first_row<span class="op">=</span><span class="fl">2</span>, cols_range<span class="op">=</span><span class="st">"A:S"</span>, header<span class="op">=</span><span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                            id_quote_method<span class="op">=</span><span class="st">"DB_NAMES"</span>, max_lines<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fschema</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"col_names"</span>, <span class="st">"src_names"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                col_names</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                     ID</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                              Large_B_P</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                              Large_ROE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                              Large_S_P</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Large_Return_Rate_in_the_last_quarter</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                     Large_Market_Value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                  Small_systematic_Risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                        Annual_Return_1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                        Excess_Return_2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                     Systematic_Risk_3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                          Total_Risk_4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                        Abs_Win_Rate_5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                        Rel_Win_Rate_6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                       Annual_Return_7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                       Excess_Return_8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                     Systematic_Risk_9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                         Total_Risk_10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                       Abs_Win_Rate_11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                       Rel_Win_Rate_12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  src_names</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                       ID</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                               Large B/P </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                               Large ROE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                               Large S/P </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   Large Return Rate in the last quarter </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                      Large Market Value </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                    Small systematic Risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                            Annual Return</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                            Excess Return</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                         Systematic Risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                              Total Risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                           Abs. Win Rate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                           Rel. Win Rate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                           Annual Return</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                           Excess Return</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                         Systematic Risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                              Total Risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                           Abs. Win Rate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                           Rel. Win Rate</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load Excel data from specific sheet and range</span></span></span>
+<span class="r-in"><span><span class="fu">dbTableFromXlsx</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  input_file <span class="op">=</span> <span class="va">xlsx_file</span>,</span></span>
+<span class="r-in"><span>  dbcon <span class="op">=</span> <span class="va">dbcon</span>,</span></span>
+<span class="r-in"><span>  table_name <span class="op">=</span> <span class="st">"PORTFOLIO_PERF"</span>,</span></span>
+<span class="r-in"><span>  sheet_name <span class="op">=</span> <span class="st">"all period"</span>,</span></span>
+<span class="r-in"><span>  first_row <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>  cols_range <span class="op">=</span> <span class="st">"A:S"</span>,</span></span>
+<span class="r-in"><span>  drop_table <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  col_import <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ID"</span>, <span class="st">"Large_B_P"</span>, <span class="st">"Large_ROE"</span>, <span class="st">"Large_S_P"</span>,</span></span>
+<span class="r-in"><span>                 <span class="st">"Annual_Return_7"</span>, <span class="st">"Excess_Return_8"</span>, <span class="st">"Systematic_Risk_9"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 63</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check the imported data</span></span></span>
+<span class="r-in"><span><span class="fu">dbListFields</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"PORTFOLIO_PERF"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ID"                "Large_B_P"         "Large_ROE"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "Large_S_P"         "Annual_Return_7"   "Excess_Return_8"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [7] "Systematic_Risk_9"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM PORTFOLIO_PERF"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ID Large_B_P Large_ROE Large_S_P Annual_Return_7 Excess_Return_8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1         1         0         0       0.5318748       0.4781162</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2         0         1         0       0.5497116       0.4875952</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3         0         0         1       0.6926254       0.6298950</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4         0         0         0       0.3243514       0.2556341</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5         0         0         0       0.3266149       0.3065006</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  6         0         0         0       0.2000000       0.2000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Systematic_Risk_9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         0.7380152</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         0.5715793</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         0.7030514</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         0.8000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5         0.4324519</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6         0.4908823</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Clean up</span></span></span>
+<span class="r-in"><span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

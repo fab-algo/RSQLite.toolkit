@@ -53,3 +53,31 @@ a data frame with these columns:
 The implementation is based on this question on
 [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow).
 \# nolint: line_length_linter.
+
+## Examples
+
+``` r
+# Inspect Feather file schema
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Get schema information for penguins Feather file
+schema_info <- file_schema_feather(
+  input_file = file.path(data_path, "penguins.feather")
+)
+
+# Display schema information
+print(schema_info[, c("col_names", "col_types", "sql_types", "src_names")])
+#>           col_names col_types sql_types         src_names
+#> 1           species character      TEXT           species
+#> 2  culmen_length_mm    double      REAL  culmen_length_mm
+#> 3   culmen_depth_mm    double      REAL   culmen_depth_mm
+#> 4 flipper_length_mm    double      REAL flipper_length_mm
+#> 5       body_mass_g    double      REAL       body_mass_g
+#> 6               sex character      TEXT               sex
+
+# Check specific columns
+print(paste("Number of columns:", nrow(schema_info)))
+#> [1] "Number of columns: 6"
+print(paste("Column names:", paste(schema_info$col_names, collapse = ", ")))
+#> [1] "Column names: species, culmen_length_mm, culmen_depth_mm, flipper_length_mm, body_mass_g, sex"
+```

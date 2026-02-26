@@ -98,6 +98,34 @@ quoting characters;</p></li>
 <a href="https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow" class="external-link">Stackoverflow</a>. # nolint: line_length_linter.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Inspect Feather file schema</span></span></span>
+<span class="r-in"><span><span class="va">data_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"RSQLite.toolkit"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get schema information for penguins Feather file</span></span></span>
+<span class="r-in"><span><span class="va">schema_info</span> <span class="op">&lt;-</span> <span class="fu">file_schema_feather</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  input_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_path</span>, <span class="st">"penguins.feather"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Display schema information</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">schema_info</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"col_names"</span>, <span class="st">"col_types"</span>, <span class="st">"sql_types"</span>, <span class="st">"src_names"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           col_names col_types sql_types         src_names</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           species character      TEXT           species</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  culmen_length_mm    double      REAL  culmen_length_mm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   culmen_depth_mm    double      REAL   culmen_depth_mm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 flipper_length_mm    double      REAL flipper_length_mm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       body_mass_g    double      REAL       body_mass_g</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6               sex character      TEXT               sex</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check specific columns</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Number of columns:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">schema_info</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of columns: 6"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Column names:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">schema_info</span><span class="op">$</span><span class="va">col_names</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Column names: species, culmen_length_mm, culmen_depth_mm, flipper_length_mm, body_mass_g, sex"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

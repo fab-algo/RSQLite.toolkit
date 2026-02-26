@@ -147,3 +147,103 @@ dbTableFromXlsx(
 
 integer, the number of records in `table_name` after reading data from
 `input_file`.
+
+## Examples
+
+``` r
+# Create a temporary database and load Excel data
+library(RSQLite.toolkit)
+
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Get path to example data
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Check if Excel file exists (may not be available in all installations)
+xlsx_file <- file.path(data_path, "stock_portfolio.xlsx")
+
+fschema <- file_schema_xlsx(xlsx_file, sheet_name="all period", 
+                            first_row=2, cols_range="A:S", header=TRUE,
+                            id_quote_method="DB_NAMES", max_lines=10)
+
+fschema[, c("col_names", "src_names")]
+#>                                col_names
+#> 1                                     ID
+#> 2                              Large_B_P
+#> 3                              Large_ROE
+#> 4                              Large_S_P
+#> 5  Large_Return_Rate_in_the_last_quarter
+#> 6                     Large_Market_Value
+#> 7                  Small_systematic_Risk
+#> 8                        Annual_Return_1
+#> 9                        Excess_Return_2
+#> 10                     Systematic_Risk_3
+#> 11                          Total_Risk_4
+#> 12                        Abs_Win_Rate_5
+#> 13                        Rel_Win_Rate_6
+#> 14                       Annual_Return_7
+#> 15                       Excess_Return_8
+#> 16                     Systematic_Risk_9
+#> 17                         Total_Risk_10
+#> 18                       Abs_Win_Rate_11
+#> 19                       Rel_Win_Rate_12
+#>                                  src_names
+#> 1                                       ID
+#> 2                               Large B/P 
+#> 3                               Large ROE 
+#> 4                               Large S/P 
+#> 5   Large Return Rate in the last quarter 
+#> 6                      Large Market Value 
+#> 7                    Small systematic Risk
+#> 8                            Annual Return
+#> 9                            Excess Return
+#> 10                         Systematic Risk
+#> 11                              Total Risk
+#> 12                           Abs. Win Rate
+#> 13                           Rel. Win Rate
+#> 14                           Annual Return
+#> 15                           Excess Return
+#> 16                         Systematic Risk
+#> 17                              Total Risk
+#> 18                           Abs. Win Rate
+#> 19                           Rel. Win Rate
+
+# Load Excel data from specific sheet and range
+dbTableFromXlsx(
+  input_file = xlsx_file,
+  dbcon = dbcon,
+  table_name = "PORTFOLIO_PERF",
+  sheet_name = "all period",
+  first_row = 2,
+  cols_range = "A:S",
+  drop_table = TRUE,
+  col_import = c("ID", "Large_B_P", "Large_ROE", "Large_S_P",
+                 "Annual_Return_7", "Excess_Return_8", "Systematic_Risk_9")
+)
+#> [1] 63
+
+# Check the imported data
+dbListFields(dbcon, "PORTFOLIO_PERF")
+#> [1] "ID"                "Large_B_P"         "Large_ROE"        
+#> [4] "Large_S_P"         "Annual_Return_7"   "Excess_Return_8"  
+#> [7] "Systematic_Risk_9"
+head(dbGetQuery(dbcon, "SELECT * FROM PORTFOLIO_PERF"))
+#>   ID Large_B_P Large_ROE Large_S_P Annual_Return_7 Excess_Return_8
+#> 1  1         1         0         0       0.5318748       0.4781162
+#> 2  2         0         1         0       0.5497116       0.4875952
+#> 3  3         0         0         1       0.6926254       0.6298950
+#> 4  4         0         0         0       0.3243514       0.2556341
+#> 5  5         0         0         0       0.3266149       0.3065006
+#> 6  6         0         0         0       0.2000000       0.2000000
+#>   Systematic_Risk_9
+#> 1         0.7380152
+#> 2         0.5715793
+#> 3         0.7030514
+#> 4         0.8000000
+#> 5         0.4324519
+#> 6         0.4908823
+
+# Clean up
+dbDisconnect(dbcon)
+```

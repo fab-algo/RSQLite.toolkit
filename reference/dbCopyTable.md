@@ -50,3 +50,53 @@ dbCopyTable(
 ## Value
 
 nothing
+
+## Examples
+
+``` r
+db_source <- tempfile(fileext = ".sqlite")
+db_target <- tempfile(fileext = ".sqlite")
+
+# Load some sample data
+dbcon <- dbConnect(RSQLite::SQLite(), db_source)
+
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+dbTableFromDSV(
+  input_file = file.path(data_path, "abalone.csv"),
+  dbcon = dbcon,
+  table_name = "ABALONE",
+  drop_table = TRUE,
+  auto_pk = TRUE,
+  header = TRUE,
+  sep = ",",
+  dec = "."
+)
+#> [1] 4177
+
+dbDisconnect(dbcon)
+
+# Copy the table to a new database, recreating it 
+# if it already exists and copying indexes
+dbCopyTable(
+  db_file_src = db_source, 
+  db_file_tgt = db_target,
+  table_name = "ABALONE",
+  drop_table = TRUE,        # Recreate table if it exists
+  copy_indexes = TRUE       # Copy indexes too
+)
+
+# Check that the table was copied correctly
+dbcon_tgt <- dbConnect(RSQLite::SQLite(), db_target)
+print(dbListTables(dbcon_tgt))
+#> [1] "ABALONE"
+print(dbListFields(dbcon_tgt, "ABALONE"))
+#>  [1] "Sex"     "Length"  "Diam"    "Height"  "Whole"   "Shucked" "Viscera"
+#>  [8] "Shell"   "Rings"   "SEQ"    
+print(dbGetQuery(dbcon_tgt, "SELECT COUNT(*) AS TOTAL_ROWS FROM ABALONE;"))
+#>   TOTAL_ROWS
+#> 1       4177
+dbDisconnect(dbcon_tgt)
+
+# Clean up temporary database files
+unlink(c(db_source, db_target))
+```

@@ -161,3 +161,71 @@ dbTableFromDSV(
 
 integer, the number of records in `table_name` after reading data from
 `input_file`.
+
+## Examples
+
+``` r
+# Create a temporary database and load CSV data
+library(RSQLite.toolkit)
+
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Get path to example data
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Load abalone CSV data with automatic primary key
+dbTableFromDSV(
+  input_file = file.path(data_path, "abalone.csv"),
+  dbcon = dbcon,
+  table_name = "ABALONE",
+  drop_table = TRUE,
+  auto_pk = TRUE,
+  header = TRUE,
+  sep = ",",
+  dec = "."
+)
+#> [1] 4177
+
+# Check the imported data
+dbListFields(dbcon, "ABALONE")
+#>  [1] "Sex"     "Length"  "Diam"    "Height"  "Whole"   "Shucked" "Viscera"
+#>  [8] "Shell"   "Rings"   "SEQ"    
+head(dbGetQuery(dbcon, "SELECT * FROM ABALONE"))
+#>   Sex Length  Diam Height  Whole Shucked Viscera Shell Rings SEQ
+#> 1   M  0.455 0.365  0.095 0.5140  0.2245  0.1010 0.150    15   1
+#> 2   M  0.350 0.265  0.090 0.2255  0.0995  0.0485 0.070     7   2
+#> 3   F  0.530 0.420  0.135 0.6770  0.2565  0.1415 0.210     9   3
+#> 4   M  0.440 0.365  0.125 0.5160  0.2155  0.1140 0.155    10   4
+#> 5   I  0.330 0.255  0.080 0.2050  0.0895  0.0395 0.055     7   5
+#> 6   I  0.425 0.300  0.095 0.3515  0.1410  0.0775 0.120     8   6
+
+# Load data with specific column selection
+dbTableFromDSV(
+  input_file = file.path(data_path, "abalone.csv"),
+  dbcon = dbcon,
+  table_name = "ABALONE_SUBSET",
+  drop_table = TRUE,
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  col_import = c("Sex", "Length", "Diam", "Whole")
+)
+#> [1] 4177
+
+head(dbGetQuery(dbcon, "SELECT * FROM ABALONE_SUBSET"))
+#>   Sex Length  Diam  Whole
+#> 1   M  0.455 0.365 0.5140
+#> 2   M  0.350 0.265 0.2255
+#> 3   F  0.530 0.420 0.6770
+#> 4   M  0.440 0.365 0.5160
+#> 5   I  0.330 0.255 0.2050
+#> 6   I  0.425 0.300 0.3515
+
+# Check available tables
+dbListTables(dbcon)
+#> [1] "ABALONE"         "ABALONE_SUBSET"  "ABALONE_SUMMARY" "PENGUINS"       
+
+# Clean up
+dbDisconnect(dbcon)
+```

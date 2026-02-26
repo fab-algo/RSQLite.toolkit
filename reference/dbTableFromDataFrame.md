@@ -89,3 +89,64 @@ dbTableFromDataFrame(
 
 integer, the number of records in `table_name` after reading data from
 the data frame.
+
+## Examples
+
+``` r
+# Create a temporary database and load data frame
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Create a sample data frame
+sample_data <- data.frame(
+  id = 1:10,
+  name = paste0("Item_", 1:10),
+  value = runif(10, 1, 100),
+  active = c(TRUE, FALSE),
+  date = Sys.Date() + 0:9,
+  stringsAsFactors = FALSE,
+  row.names = NULL
+)
+
+# Load data frame with automatic primary key
+dbTableFromDataFrame(
+  df = sample_data,
+  dbcon = dbcon,
+  table_name = "SAMPLE_DATA",
+  drop_table = TRUE,
+  auto_pk = TRUE  
+)
+#> [1] 10
+
+# Check the imported data
+dbListFields(dbcon, "SAMPLE_DATA")
+#> [1] "id"      "name"    "F_value" "active"  "F_date"  "SEQ"    
+dbGetQuery(dbcon, "SELECT * FROM SAMPLE_DATA LIMIT 5")
+#>   id   name  F_value active F_date SEQ
+#> 1  1 Item_1 20.27480      1  20510   1
+#> 2  2 Item_2 17.29236      0  20511   2
+#> 3  3 Item_3 66.65745      1  20512   3
+#> 4  4 Item_4 85.80093      0  20513   4
+#> 5  5 Item_5 92.72810      1  20514   5
+
+# Load with column selection and custom naming
+dbTableFromDataFrame(
+  df = sample_data,
+  dbcon = dbcon,
+  table_name = "SAMPLE_SUBSET",
+  drop_table = TRUE,
+  col_names = c("ID", "ITEM_NAME", "ITEM_VALUE", "IS_ACTIVE", "DATE_CREATED")
+)
+#> [1] 10
+
+dbGetQuery(dbcon, "SELECT * FROM SAMPLE_SUBSET LIMIT 5")
+#>   ID ITEM_NAME ITEM_VALUE IS_ACTIVE DATE_CREATED
+#> 1  1    Item_1   20.27480         1        20510
+#> 2  2    Item_2   17.29236         0        20511
+#> 3  3    Item_3   66.65745         1        20512
+#> 4  4    Item_4   85.80093         0        20513
+#> 5  5    Item_5   92.72810         1        20514
+
+# Clean up
+dbDisconnect(dbcon)
+```

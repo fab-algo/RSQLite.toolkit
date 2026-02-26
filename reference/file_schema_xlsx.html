@@ -134,6 +134,38 @@ quoting characters;</p></li>
 <code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_to_df.html" class="external-link">openxlsx2::wb_to_df()</a></code> function.</p></li>
 </ul></div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Inspect xlsx file schema</span></span></span>
+<span class="r-in"><span><span class="va">data_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"RSQLite.toolkit"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get schema information for Excel file</span></span></span>
+<span class="r-in"><span><span class="va">schema_info</span> <span class="op">&lt;-</span> <span class="fu">file_schema_xlsx</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  input_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_path</span>, <span class="st">"stock_portfolio.xlsx"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  sheet_name <span class="op">=</span> <span class="st">"all period"</span>,</span></span>
+<span class="r-in"><span>  first_row <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>  cols_range <span class="op">=</span> <span class="st">"A:S"</span>,</span></span>
+<span class="r-in"><span>  header <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  id_quote_method <span class="op">=</span> <span class="st">"DB_NAMES"</span>,</span></span>
+<span class="r-in"><span>  max_lines <span class="op">=</span> <span class="fl">10</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Display schema information</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">schema_info</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"col_names"</span>, <span class="st">"src_names"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                               col_names                               src_names</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                    ID                                      ID</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                             Large_B_P                              Large B/P </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                             Large_ROE                              Large ROE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                             Large_S_P                              Large S/P </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Large_Return_Rate_in_the_last_quarter  Large Return Rate in the last quarter </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                    Large_Market_Value                     Large Market Value </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check specific columns</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Number of columns:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">schema_info</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of columns: 19"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

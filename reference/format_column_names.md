@@ -59,3 +59,36 @@ A data frame containing the columns' identifiers in two formats:
 - `quoted`: the quoted names, as per the selected `quote_method`;
 
 - `unquoted`: the cleaned names, without any quoting.
+
+## Examples
+
+``` r
+# Example with DB_NAMES method
+col_names <- c("column 1", "column-2", "3rd_column", "SELECT")
+
+formatted_names <- format_column_names(col_names, quote_method = "DB_NAMES")
+print(formatted_names)
+#>         quoted     unquoted
+#> 1     column_1     column_1
+#> 2     column_2     column_2
+#> 3 N_3rd_column N_3rd_column
+#> 4     F_SELECT     F_SELECT
+
+# Example with SINGLE_QUOTES method
+formatted_names_sq <- format_column_names(col_names, quote_method = "SINGLE_QUOTES")
+print(formatted_names_sq)
+#>         quoted   unquoted
+#> 1   'column 1'   column 1
+#> 2   'column-2'   column-2
+#> 3 '3rd_column' 3rd_column
+#> 4     'SELECT'     SELECT
+
+# Example with SQL_SERVER method
+formatted_names_sqlsrv <- format_column_names(col_names, quote_method = "SQL_SERVER")
+print(formatted_names_sqlsrv)
+#>         quoted   unquoted
+#> 1   [column 1]   column 1
+#> 2   [column-2]   column-2
+#> 3 [3rd_column] 3rd_column
+#> 4     [SELECT]     SELECT
+```

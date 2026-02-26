@@ -148,8 +148,57 @@ a list with the following named elements:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-file_schema_dsv("data.csv", sep=",", dec=".", max_lines=50)
-file_schema_dsv("euro.csv", sep=";", dec=",", header=FALSE)
-} # }
+# Inspect CSV file schema without loading full dataset
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Get schema information for abalone CSV
+schema_info <- file_schema_dsv(
+  input_file = file.path(data_path, "abalone.csv"),
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  max_lines = 50
+)
+
+# Display schema information
+print(schema_info$schema[, c("col_names", "col_types", "sql_types")])
+#>   col_names col_types sql_types
+#> 1       Sex character      TEXT
+#> 2    Length   numeric      REAL
+#> 3      Diam   numeric      REAL
+#> 4    Height   numeric      REAL
+#> 5     Whole   numeric      REAL
+#> 6   Shucked   numeric      REAL
+#> 7   Viscera   numeric      REAL
+#> 8     Shell   numeric      REAL
+#> 9     Rings   integer   INTEGER
+
+# Check column consistency
+print(schema_info$col_counts)
+#>   num_col Freq
+#> 1       9   50
+print(paste("Guessed columns:", schema_info$n_cols))
+#> [1] "Guessed columns: 9"
+
+# Example with different parameters
+schema_custom <- file_schema_dsv(
+  input_file = file.path(data_path, "abalone.csv"),
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  max_lines = 50,
+  id_quote_method = "SQL_SERVER"
+)
+
+print(schema_custom$schema[, c("col_names", "col_types", "src_names")])
+#>   col_names col_types src_names
+#> 1     [Sex] character       Sex
+#> 2  [Length]   numeric    Length
+#> 3    [Diam]   numeric      Diam
+#> 4  [Height]   numeric    Height
+#> 5   [Whole]   numeric     Whole
+#> 6 [Shucked]   numeric   Shucked
+#> 7 [Viscera]   numeric   Viscera
+#> 8   [Shell]   numeric     Shell
+#> 9   [Rings]   integer     Rings
 ```

@@ -94,3 +94,35 @@ a data frame with these columns:
 - `src_types`: data type attribute of each column, as determined by the
   [`openxlsx2::wb_to_df()`](https://janmarvin.github.io/openxlsx2/reference/wb_to_df.html)
   function.
+
+## Examples
+
+``` r
+# Inspect xlsx file schema
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Get schema information for Excel file
+schema_info <- file_schema_xlsx(
+  input_file = file.path(data_path, "stock_portfolio.xlsx"),
+  sheet_name = "all period",
+  first_row = 2,
+  cols_range = "A:S",
+  header = TRUE,
+  id_quote_method = "DB_NAMES",
+  max_lines = 10
+)
+
+# Display schema information
+head(schema_info[, c("col_names", "src_names")])
+#>                               col_names                               src_names
+#> 1                                    ID                                      ID
+#> 2                             Large_B_P                              Large B/P 
+#> 3                             Large_ROE                              Large ROE 
+#> 4                             Large_S_P                              Large S/P 
+#> 5 Large_Return_Rate_in_the_last_quarter  Large Return Rate in the last quarter 
+#> 6                    Large_Market_Value                     Large Market Value 
+
+# Check specific columns
+print(paste("Number of columns:", nrow(schema_info)))
+#> [1] "Number of columns: 19"
+```

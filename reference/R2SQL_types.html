@@ -66,6 +66,33 @@ of SQLite data types corresponding to the R classes passed through the
     <p>a character vector with the names of SQLite data types.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Convert R data types to SQLite types</span></span></span>
+<span class="r-in"><span><span class="va">r_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="st">"integer"</span>, <span class="st">"numeric"</span>, <span class="st">"logical"</span>, <span class="st">"Date"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sql_types</span> <span class="op">&lt;-</span> <span class="fu">R2SQL_types</span><span class="op">(</span><span class="va">r_types</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Display the mapping</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  R_type <span class="op">=</span> <span class="va">r_types</span>,</span></span>
+<span class="r-in"><span>  SQLite_type <span class="op">=</span> <span class="va">sql_types</span>,</span></span>
+<span class="r-in"><span>  row.names <span class="op">=</span> <span class="cn">NULL</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      R_type SQLite_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 character        TEXT</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   integer     INTEGER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   numeric        REAL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   logical     INTEGER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      Date        DATE</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Handle unknown types (converted to TEXT)</span></span></span>
+<span class="r-in"><span><span class="va">mixed_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="st">"unknown_type"</span>, <span class="st">"integer"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">R2SQL_types</span><span class="op">(</span><span class="va">mixed_types</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> character      &lt;NA&gt;   integer </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    "TEXT"    "TEXT" "INTEGER" </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

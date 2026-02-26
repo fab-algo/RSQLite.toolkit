@@ -107,7 +107,7 @@ dbTableFromFeather(
 
   a one row data frame whose columns will be added to the table in the
   database. The additional table columns will be named as the data frame
-  columns, and the corresponding values will be associeted to each
+  columns, and the corresponding values will be associated to each
   record imported from the input file. It is useful to keep track of
   additional information (e.g., the input file name, additional context
   data not available in the data set, ...) when loading the content of
@@ -117,3 +117,69 @@ dbTableFromFeather(
 
 integer, the number of records in `table_name` after reading data from
 `input_file`.
+
+## Examples
+
+``` r
+# Create a temporary database and load Feather data
+library(RSQLite.toolkit)
+
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Get path to example data
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Load penguins Feather data
+dbTableFromFeather(
+  input_file = file.path(data_path, "penguins.feather"),
+  dbcon = dbcon,
+  table_name = "PENGUINS",
+  drop_table = TRUE
+)
+#> [1] 333
+
+# Check the imported data
+dbListFields(dbcon, "PENGUINS")
+#> [1] "species"           "culmen_length_mm"  "culmen_depth_mm"  
+#> [4] "flipper_length_mm" "body_mass_g"       "sex"              
+head(dbGetQuery(dbcon, "SELECT * FROM PENGUINS"))
+#>   species culmen_length_mm culmen_depth_mm flipper_length_mm body_mass_g    sex
+#> 1  Adelie             39.1            18.7               181        3750   MALE
+#> 2  Adelie             39.5            17.4               186        3800 FEMALE
+#> 3  Adelie             40.3            18.0               195        3250 FEMALE
+#> 4  Adelie             36.7            19.3               193        3450 FEMALE
+#> 5  Adelie             39.3            20.6               190        3650   MALE
+#> 6  Adelie             38.9            17.8               181        3625 FEMALE
+
+# Load with custom column selection and types
+dbTableFromFeather(
+  input_file = file.path(data_path, "penguins.feather"),
+  dbcon = dbcon,
+  table_name = "PENGUINS_SUBSET",
+  drop_table = TRUE,
+  col_import = c("species", "flipper_length_mm", "body_mass_g", "sex")
+)
+#> [1] 333
+
+# Check the imported data
+dbListFields(dbcon, "PENGUINS_SUBSET")
+#> [1] "species"           "flipper_length_mm" "body_mass_g"      
+#> [4] "sex"              
+head(dbGetQuery(dbcon, "SELECT * FROM PENGUINS_SUBSET"))
+#>   species flipper_length_mm body_mass_g    sex
+#> 1  Adelie               181        3750   MALE
+#> 2  Adelie               186        3800 FEMALE
+#> 3  Adelie               195        3250 FEMALE
+#> 4  Adelie               193        3450 FEMALE
+#> 5  Adelie               190        3650   MALE
+#> 6  Adelie               181        3625 FEMALE
+
+# Check available tables
+dbListTables(dbcon)
+#> [1] "ABALONE"         "ABALONE_SUBSET"  "ABALONE_SUMMARY" "PENGUINS"       
+#> [5] "PENGUINS_SUBSET" "SAMPLE_DATA"     "SAMPLE_SUBSET"  
+
+# Clean up
+dbDisconnect(dbcon)
+```

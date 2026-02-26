@@ -99,6 +99,39 @@ the current locale).</p></dd>
 <li><p><code>unquoted</code>: the cleaned names, without any quoting.</p></li>
 </ul></div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example with DB_NAMES method</span></span></span>
+<span class="r-in"><span><span class="va">col_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"column 1"</span>, <span class="st">"column-2"</span>, <span class="st">"3rd_column"</span>, <span class="st">"SELECT"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">formatted_names</span> <span class="op">&lt;-</span> <span class="fu">format_column_names</span><span class="op">(</span><span class="va">col_names</span>, quote_method <span class="op">=</span> <span class="st">"DB_NAMES"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">formatted_names</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         quoted     unquoted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     column_1     column_1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     column_2     column_2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 N_3rd_column N_3rd_column</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     F_SELECT     F_SELECT</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example with SINGLE_QUOTES method</span></span></span>
+<span class="r-in"><span><span class="va">formatted_names_sq</span> <span class="op">&lt;-</span> <span class="fu">format_column_names</span><span class="op">(</span><span class="va">col_names</span>, quote_method <span class="op">=</span> <span class="st">"SINGLE_QUOTES"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">formatted_names_sq</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         quoted   unquoted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   'column 1'   column 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   'column-2'   column-2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 '3rd_column' 3rd_column</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     'SELECT'     SELECT</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example with SQL_SERVER method</span></span></span>
+<span class="r-in"><span><span class="va">formatted_names_sqlsrv</span> <span class="op">&lt;-</span> <span class="fu">format_column_names</span><span class="op">(</span><span class="va">col_names</span>, quote_method <span class="op">=</span> <span class="st">"SQL_SERVER"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">formatted_names_sqlsrv</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         quoted   unquoted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   [column 1]   column 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   [column-2]   column-2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 [3rd_column] 3rd_column</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     [SELECT]     SELECT</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -35,3 +35,50 @@ dbCreatePK(dbcon, table_name, pk_fields, drop_index = FALSE)
 ## Value
 
 nothing
+
+## Examples
+
+``` r
+# Create a database and table, then add a primary key
+library(RSQLite.toolkit)
+
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Load sample data
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+dbTableFromFeather(
+  input_file = file.path(data_path, "penguins.feather"),
+  dbcon = dbcon, table_name = "PENGUINS",
+  drop_table = TRUE
+)
+#> [1] 333
+
+dbGetQuery(dbcon, "select species, sex, body_mass_g,
+                   culmen_length_mm, culmen_depth_mm 
+                   from PENGUINS 
+                   group by species, sex, body_mass_g,
+                   culmen_length_mm, culmen_depth_mm 
+                   having count(*) > 1")
+#> [1] species          sex              body_mass_g      culmen_length_mm
+#> [5] culmen_depth_mm 
+#> <0 rows> (or 0-length row.names)
+
+# Create a primary key on multiple fields
+dbCreatePK(dbcon, "PENGUINS", 
+           c("species", "sex", "body_mass_g",
+             "culmen_length_mm", "culmen_depth_mm"))
+#> [1] 0
+
+# Check that the index was created
+dbGetQuery(dbcon, 
+  "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='PENGUINS'")
+#>          name
+#> 1 PENGUINS_PK
+#>                                                                                                              sql
+#> 1 CREATE UNIQUE INDEX PENGUINS_PK ON  PENGUINS  ( species, sex, body_mass_g, culmen_length_mm, culmen_depth_mm )
+
+# Clean up
+dbDisconnect(dbcon)
+```

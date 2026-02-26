@@ -82,6 +82,53 @@ if an index with that name exists and eventually stops. Default to <code>FALSE</
     <p>nothing</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create a database and table, then add a primary key</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/fab-algo/RSQLite.toolkit" class="external-link">RSQLite.toolkit</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Set up database connection</span></span></span>
+<span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">dbConnect</span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"example.sqlite"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load sample data</span></span></span>
+<span class="r-in"><span><span class="va">data_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"RSQLite.toolkit"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="dbTableFromFeather.html">dbTableFromFeather</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  input_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_path</span>, <span class="st">"penguins.feather"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  dbcon <span class="op">=</span> <span class="va">dbcon</span>, table_name <span class="op">=</span> <span class="st">"PENGUINS"</span>,</span></span>
+<span class="r-in"><span>  drop_table <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 333</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select species, sex, body_mass_g,</span></span></span>
+<span class="r-in"><span><span class="st">                   culmen_length_mm, culmen_depth_mm </span></span></span>
+<span class="r-in"><span><span class="st">                   from PENGUINS </span></span></span>
+<span class="r-in"><span><span class="st">                   group by species, sex, body_mass_g,</span></span></span>
+<span class="r-in"><span><span class="st">                   culmen_length_mm, culmen_depth_mm </span></span></span>
+<span class="r-in"><span><span class="st">                   having count(*) &gt; 1"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] species          sex              body_mass_g      culmen_length_mm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] culmen_depth_mm </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;0 rows&gt; (or 0-length row.names)</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create a primary key on multiple fields</span></span></span>
+<span class="r-in"><span><span class="fu">dbCreatePK</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"PENGUINS"</span>, </span></span>
+<span class="r-in"><span>           <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"species"</span>, <span class="st">"sex"</span>, <span class="st">"body_mass_g"</span>,</span></span>
+<span class="r-in"><span>             <span class="st">"culmen_length_mm"</span>, <span class="st">"culmen_depth_mm"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check that the index was created</span></span></span>
+<span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, </span></span>
+<span class="r-in"><span>  <span class="st">"SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='PENGUINS'"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 PENGUINS_PK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                              sql</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 CREATE UNIQUE INDEX PENGUINS_PK ON  PENGUINS  ( species, sex, body_mass_g, culmen_length_mm, culmen_depth_mm )</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Clean up</span></span></span>
+<span class="r-in"><span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
