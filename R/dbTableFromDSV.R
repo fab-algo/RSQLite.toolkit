@@ -122,8 +122,10 @@
 #'   header = TRUE,
 #'   sep = ",",
 #'   dec = ".",
-#'   col_import = c("SEX", "LENGTH", "DIAMETER", "WHOLE")
+#'   col_import = c("Sex", "Length", "Diam", "Whole")
 #' )
+#' 
+#' head(dbGetQuery(dbcon, "SELECT * FROM ABALONE_SUBSET"))
 #' 
 #' # Check available tables
 #' dbListTables(dbcon)

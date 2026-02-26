@@ -39,3 +39,45 @@ to an already existing table (with the same name of the source one), or
 a new table can be created. It is possible to move also the indexes
 from source to target.
 }
+\examples{
+db_source <- tempfile(fileext = ".sqlite")
+db_target <- tempfile(fileext = ".sqlite")
+
+# Load some sample data
+dbcon <- dbConnect(RSQLite::SQLite(), db_source)
+
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+dbTableFromDSV(
+  input_file = file.path(data_path, "abalone.csv"),
+  dbcon = dbcon,
+  table_name = "ABALONE",
+  drop_table = TRUE,
+  auto_pk = TRUE,
+  header = TRUE,
+  sep = ",",
+  dec = "."
+)
+
+dbDisconnect(dbcon)
+
+# Copy the table to a new database, recreating it 
+# if it already exists and copying indexes
+dbCopyTable(
+  db_file_src = db_source, 
+  db_file_tgt = db_target,
+  table_name = "ABALONE",
+  drop_table = TRUE,        # Recreate table if it exists
+  copy_indexes = TRUE       # Copy indexes too
+)
+
+# Check that the table was copied correctly
+dbcon_tgt <- dbConnect(RSQLite::SQLite(), db_target)
+print(dbListTables(dbcon_tgt))
+print(dbListFields(dbcon_tgt, "ABALONE"))
+print(dbGetQuery(dbcon_tgt, "SELECT COUNT(*) AS TOTAL_ROWS FROM ABALONE;"))
+dbDisconnect(dbcon_tgt)
+
+# Clean up temporary database files
+unlink(c(db_source, db_target))
+
+}

@@ -42,8 +42,10 @@
 #' )
 #' 
 #' # Create a view with aggregated data
+#' dbExecute(dbcon, "DROP VIEW IF EXISTS VW_ABALONE_SUMMARY;")
+#' 
 #' dbExecute(dbcon, 
-#'   "CREATE VIEW ABALONE_SUMMARY AS 
+#'   "CREATE VIEW VW_ABALONE_SUMMARY AS 
 #'    SELECT SEX, 
 #'           COUNT(*) as COUNT, 
 #'           AVG(LENGTH) as AVG_LENGTH,
@@ -54,7 +56,7 @@
 #' 
 #' # Convert the view to a permanent table
 #' dbTableFromView(
-#'   view_name = "ABALONE_SUMMARY",
+#'   view_name = "VW_ABALONE_SUMMARY",
 #'   dbcon = dbcon,
 #'   table_name = "ABALONE_STATS",
 #'   drop_table = TRUE

@@ -57,7 +57,7 @@
 #'
 #' @param constant_values a one row data frame whose columns will be added to
 #'    the table in the database. The additional table columns will be named
-#'    as the data frame columns, and the corresponding values will be associeted
+#'    as the data frame columns, and the corresponding values will be associated
 #'    to each record imported from the input file. It is useful to keep
 #'    track of additional information (e.g., the input file name, additional
 #'    context data not available in the data set, ...) when loading
@@ -84,23 +84,27 @@
 #'   table_name = "PENGUINS",
 #'   drop_table = TRUE
 #' )
-#' 
+#'
 #' # Check the imported data
 #' dbListFields(dbcon, "PENGUINS")
 #' head(dbGetQuery(dbcon, "SELECT * FROM PENGUINS"))
-#' 
+#'
 #' # Load with custom column selection and types
 #' dbTableFromFeather(
 #'   input_file = file.path(data_path, "penguins.feather"),
 #'   dbcon = dbcon,
 #'   table_name = "PENGUINS_SUBSET",
 #'   drop_table = TRUE,
-#'   col_import = c("species", "bill_length_mm", "bill_depth_mm", "body_mass_g")
+#'   col_import = c("species", "flipper_length_mm", "body_mass_g", "sex")
 #' )
-#' 
+#'
+#' # Check the imported data
+#' dbListFields(dbcon, "PENGUINS_SUBSET")
+#' head(dbGetQuery(dbcon, "SELECT * FROM PENGUINS_SUBSET"))
+#'
 #' # Check available tables
 #' dbListTables(dbcon)
-#' 
+#'
 #' # Clean up
 #' dbDisconnect(dbcon)
 #'
@@ -303,8 +307,8 @@ dbTableFromFeather <- function(input_file, dbcon, table_name,  #nolint
       df <- cbind(df, SEQ = NA_integer_)
     }
 
-    df <- df[, idx_import2]
     names(df) <- cnames_unquoted2
+    df <- df[, idx_import2]
 
     dbWriteTable(dbcon, table_name, as.data.frame(df),
                  row.names = FALSE, append = TRUE)

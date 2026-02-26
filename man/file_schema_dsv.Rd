@@ -111,8 +111,35 @@ separated values (DSV) text file to infer column names and data types
 to the candidate data frame columns' names and data types.
 }
 \examples{
-\dontrun{
-file_schema_dsv("data.csv", sep=",", dec=".", max_lines=50)
-file_schema_dsv("euro.csv", sep=";", dec=",", header=FALSE)
-}
+# Inspect CSV file schema without loading full dataset
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Get schema information for abalone CSV
+schema_info <- file_schema_dsv(
+  input_file = file.path(data_path, "abalone.csv"),
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  max_lines = 50
+)
+
+# Display schema information
+print(schema_info$schema[, c("col_names", "col_types", "sql_types")])
+
+# Check column consistency
+print(schema_info$col_counts)
+print(paste("Guessed columns:", schema_info$n_cols))
+
+# Example with different parameters
+schema_custom <- file_schema_dsv(
+  input_file = file.path(data_path, "abalone.csv"),
+  header = TRUE,
+  sep = ",",
+  dec = ".",
+  max_lines = 50,
+  id_quote_method = "SQL_SERVER"
+)
+
+print(schema_custom$schema[, c("col_names", "col_types", "src_names")])
+
 }

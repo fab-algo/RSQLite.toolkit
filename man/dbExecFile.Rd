@@ -31,3 +31,72 @@ assuming that they are separated by the \verb{;} character. The list of SQL
 statements is then executed, one at a time; the results of each statement
 are stored in a list with length equal to the number of statements.
 }
+\examples{
+# Create a database and execute SQL from a file
+library(RSQLite.toolkit)
+
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Load some sample data
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+dbTableFromDSV(
+  input_file = file.path(data_path, "abalone.csv"),
+  dbcon = dbcon,
+  table_name = "ABALONE",
+  drop_table = TRUE,
+  auto_pk = TRUE,
+  header = TRUE,
+  sep = ",",
+  dec = "."
+)
+
+# Create a SQL file with multiple statements
+sql_content <- "
+-- Create a summary table
+DROP TABLE IF EXISTS ABALONE_SUMMARY;
+
+CREATE TABLE ABALONE_SUMMARY AS 
+SELECT SEX, 
+       COUNT(*) as TOTAL_COUNT,
+       ROUND(AVG(LENGTH), 3) as AVG_LENGTH,
+       ROUND(AVG(WHOLE), 3) as AVG_WEIGHT
+FROM ABALONE 
+GROUP BY SEX;
+
+-- Query the results  
+SELECT * FROM ABALONE_SUMMARY ORDER BY SEX;
+
+-- Parameterized query example
+SELECT SEX, COUNT(*) as COUNT 
+FROM ABALONE 
+WHERE LENGTH > :min_length
+GROUP BY SEX;
+"
+
+sql_file <- tempfile(fileext = ".sql")
+writeLines(sql_content, sql_file)
+
+# Execute SQL statements with parameters
+plist <- list(
+  NULL,  # DROP TABLE statement (no parameters)
+  NULL,  # CREATE TABLE statement (no parameters)
+  NULL,  # First SELECT (no parameters) 
+  list(min_length = 0.5)  # Parameterized SELECT
+)
+
+results <- dbExecFile(
+  input_file = sql_file,
+  dbcon = dbcon,
+  plist = plist
+)
+
+# Check results
+print(results[[3]])  # Summary data
+print(results[[4]])  # Filtered data
+
+# Clean up
+unlink(sql_file)
+dbDisconnect(dbcon)
+
+}

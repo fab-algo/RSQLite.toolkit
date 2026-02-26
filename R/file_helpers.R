@@ -31,10 +31,8 @@
 #' The implementation is based on this question on
 #' [Stackoverflow](https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow). # nolint: line_length_linter.
 #'
-#' @importFrom arrow ReadableFile
-#' @importFrom arrow FeatherReader
 #' @examples
-#' # Inspect Feather file schema without loading data into memory
+#' # Inspect Feather file schema
 #' data_path <- system.file("extdata", package = "RSQLite.toolkit")
 #' 
 #' # Get schema information for penguins Feather file
@@ -49,6 +47,9 @@
 #' print(paste("Number of columns:", nrow(schema_info)))
 #' print(paste("Column names:", paste(schema_info$col_names, collapse = ", ")))
 #'
+#' @importFrom arrow ReadableFile
+#' @importFrom arrow FeatherReader
+#' 
 #' @export
 file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 
@@ -158,8 +159,6 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    - `col_flush`, logical, it is set to `TRUE` if there are lines with
 #'       more columns than `n_cols`.
 #'
-#' @export
-#'
 #' @examples
 #' # Inspect CSV file schema without loading full dataset
 #' data_path <- system.file("extdata", package = "RSQLite.toolkit")
@@ -170,7 +169,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'   header = TRUE,
 #'   sep = ",",
 #'   dec = ".",
-#'   max_lines = 100
+#'   max_lines = 50
 #' )
 #' 
 #' # Display schema information
@@ -187,10 +186,13 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'   sep = ",",
 #'   dec = ".",
 #'   max_lines = 50,
-#'   id_quote_method = "DOUBLE_QUOTE"
+#'   id_quote_method = "SQL_SERVER"
 #' )
 #' 
-#' print(head(schema_custom$schema))
+#' print(schema_custom$schema[, c("col_names", "col_types", "src_names")])
+#' 
+#' @export
+#' 
 file_schema_dsv <- function(input_file,
                             header = TRUE, sep = ",", dec = ".", grp = "",
                             id_quote_method = "DB_NAMES",
@@ -556,7 +558,29 @@ file_schema_dsv <- function(input_file,
 #'    - `src_types`: data type attribute of each column, as determined by the
 #'       [openxlsx2::wb_to_df()] function.
 #'
+#' @examples 
+#' # Inspect xlsx file schema
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' 
+#' # Get schema information for Excel file
+#' schema_info <- file_schema_xlsx(
+#'   input_file = file.path(data_path, "stock_portfolio.xlsx"),
+#'   sheet_name = "all period",
+#'   first_row = 2,
+#'   cols_range = "A:S",
+#'   header = TRUE,
+#'   id_quote_method = "DB_NAMES",
+#'   max_lines = 10
+#' )
+#'
+#' # Display schema information
+#' head(schema_info[, c("col_names", "src_names")])
+#'
+#' # Check specific columns
+#' print(paste("Number of columns:", nrow(schema_info)))
+#' 
 #' @importFrom openxlsx2 wb_to_df
+#' 
 #' @export
 file_schema_xlsx <- function(input_file,
                              sheet_name, first_row, cols_range, header = TRUE,

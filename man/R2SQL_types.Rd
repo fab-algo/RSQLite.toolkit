@@ -19,3 +19,20 @@ of SQLite data types corresponding to the R classes passed through the
 
 If any class is not recognized, it will be replaced with \code{TEXT} data type.
 }
+\examples{
+# Convert R data types to SQLite types
+r_types <- c("character", "integer", "numeric", "logical", "Date")
+sql_types <- R2SQL_types(r_types)
+
+# Display the mapping
+data.frame(
+  R_type = r_types,
+  SQLite_type = sql_types,
+  row.names = NULL
+)
+
+# Handle unknown types (converted to TEXT)
+mixed_types <- c("character", "unknown_type", "integer")
+R2SQL_types(mixed_types)
+
+}

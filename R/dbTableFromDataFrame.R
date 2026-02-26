@@ -44,8 +44,6 @@
 #'
 #' @examples
 #' # Create a temporary database and load data frame
-#' library(RSQLite.toolkit)
-#' 
 #' # Set up database connection
 #' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
 #' 
@@ -56,7 +54,8 @@
 #'   value = runif(10, 1, 100),
 #'   active = c(TRUE, FALSE),
 #'   date = Sys.Date() + 0:9,
-#'   stringsAsFactors = FALSE
+#'   stringsAsFactors = FALSE,
+#'   row.names = NULL
 #' )
 #' 
 #' # Load data frame with automatic primary key
@@ -65,13 +64,13 @@
 #'   dbcon = dbcon,
 #'   table_name = "SAMPLE_DATA",
 #'   drop_table = TRUE,
-#'   auto_pk = TRUE
+#'   auto_pk = TRUE  
 #' )
-#' 
+#'
 #' # Check the imported data
 #' dbListFields(dbcon, "SAMPLE_DATA")
 #' dbGetQuery(dbcon, "SELECT * FROM SAMPLE_DATA LIMIT 5")
-#' 
+#'
 #' # Load with column selection and custom naming
 #' dbTableFromDataFrame(
 #'   df = sample_data,
@@ -81,6 +80,8 @@
 #'   col_names = c("ID", "ITEM_NAME", "ITEM_VALUE", "IS_ACTIVE", "DATE_CREATED")
 #' )
 #' 
+#' dbGetQuery(dbcon, "SELECT * FROM SAMPLE_SUBSET LIMIT 5")
+#'
 #' # Clean up
 #' dbDisconnect(dbcon)
 #'
@@ -168,11 +169,11 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
   ## Write data -------------------------------
   tryCatch({
-    names(df) <- cnames_unquoted2
 
     if (auto_pk1) {
       df <- cbind(df, NA)
     }
+    names(df) <- cnames_unquoted2
 
     dbWriteTable(dbcon, table_name, as.data.frame(df),
                  row.names = FALSE, append = TRUE)

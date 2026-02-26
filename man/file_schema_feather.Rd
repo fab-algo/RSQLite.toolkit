@@ -44,3 +44,20 @@ The implementation is based on this question on
 \href{https://stackoverflow.com/questions/66529055/how-to-read-column-names-and-metadata-from-feather-files-in-r-arrow}{Stackoverflow}. # nolint: line_length_linter.
 }
 
+\examples{
+# Inspect Feather file schema
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Get schema information for penguins Feather file
+schema_info <- file_schema_feather(
+  input_file = file.path(data_path, "penguins.feather")
+)
+
+# Display schema information
+print(schema_info[, c("col_names", "col_types", "sql_types", "src_names")])
+
+# Check specific columns
+print(paste("Number of columns:", nrow(schema_info)))
+print(paste("Column names:", paste(schema_info$col_names, collapse = ", ")))
+
+}

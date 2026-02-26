@@ -78,7 +78,6 @@
 #'    from `input_file`.
 #'
 #' @examples
-#' \donttest{
 #' # Create a temporary database and load Excel data
 #' library(RSQLite.toolkit)
 #' 
@@ -90,26 +89,32 @@
 #' 
 #' # Check if Excel file exists (may not be available in all installations)
 #' xlsx_file <- file.path(data_path, "stock_portfolio.xlsx")
-#' if (file.exists(xlsx_file)) {
-#'   # Load Excel data from specific sheet and range
-#'   dbTableFromXlsx(
-#'     input_file = xlsx_file,
-#'     dbcon = dbcon,
-#'     table_name = "PORTFOLIO_PERF",
-#'     sheet_name = "all period",
-#'     first_row = 2,
-#'     cols_range = "A:S",
-#'     drop_table = TRUE
-#'   )
 #' 
-#'   # Check the imported data
-#'   dbListFields(dbcon, "PORTFOLIO_PERF")
-#'   dbGetQuery(dbcon, "SELECT COUNT(*) as row_count FROM PORTFOLIO_PERF")
-#' }
+#' fschema <- file_schema_xlsx(xlsx_file, sheet_name="all period", 
+#'                             first_row=2, cols_range="A:S", header=TRUE,
+#'                             id_quote_method="DB_NAMES", max_lines=10)
+#' 
+#' fschema[, c("col_names", "src_names")]
+#' 
+#' # Load Excel data from specific sheet and range
+#' dbTableFromXlsx(
+#'   input_file = xlsx_file,
+#'   dbcon = dbcon,
+#'   table_name = "PORTFOLIO_PERF",
+#'   sheet_name = "all period",
+#'   first_row = 2,
+#'   cols_range = "A:S",
+#'   drop_table = TRUE,
+#'   col_import = c("ID", "Large_B_P", "Large_ROE", "Large_S_P",
+#'                  "Annual_Return_7", "Excess_Return_8", "Systematic_Risk_9")
+#' )
+#' 
+#' # Check the imported data
+#' dbListFields(dbcon, "PORTFOLIO_PERF")
+#' head(dbGetQuery(dbcon, "SELECT * FROM PORTFOLIO_PERF"))
 #' 
 #' # Clean up
 #' dbDisconnect(dbcon)
-#' }
 #'
 #' @import RSQLite
 #' @importFrom openxlsx2 wb_to_df

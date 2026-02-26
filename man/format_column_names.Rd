@@ -52,3 +52,19 @@ The \code{format_column_names()} function formats a vector of
 strings to be used as columns' names for a table in a SQLite
 database.
 }
+\examples{
+# Example with DB_NAMES method
+col_names <- c("column 1", "column-2", "3rd_column", "SELECT")
+
+formatted_names <- format_column_names(col_names, quote_method = "DB_NAMES")
+print(formatted_names)
+
+# Example with SINGLE_QUOTES method
+formatted_names_sq <- format_column_names(col_names, quote_method = "SINGLE_QUOTES")
+print(formatted_names_sq)
+
+# Example with SQL_SERVER method
+formatted_names_sqlsrv <- format_column_names(col_names, quote_method = "SQL_SERVER")
+print(formatted_names_sqlsrv)
+
+}

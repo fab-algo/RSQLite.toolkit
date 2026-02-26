@@ -69,6 +69,7 @@
 #' 
 #' # Execute SQL statements with parameters
 #' plist <- list(
+#'   NULL,  # DROP TABLE statement (no parameters)
 #'   NULL,  # CREATE TABLE statement (no parameters)
 #'   NULL,  # First SELECT (no parameters) 
 #'   list(min_length = 0.5)  # Parameterized SELECT
@@ -81,8 +82,8 @@
 #' )
 #' 
 #' # Check results
-#' print(results[[2]])  # Summary data
-#' print(results[[3]])  # Filtered data
+#' print(results[[3]])  # Summary data
+#' print(results[[4]])  # Filtered data
 #' 
 #' # Clean up
 #' unlink(sql_file)
@@ -156,6 +157,47 @@ dbExecFile <- function(input_file, dbcon, plist = NULL) {
 #'
 #' @returns nothing
 #'
+#' @examples
+#' db_source <- tempfile(fileext = ".sqlite")
+#' db_target <- tempfile(fileext = ".sqlite")
+#'
+#' # Load some sample data
+#' dbcon <- dbConnect(RSQLite::SQLite(), db_source)
+#' 
+#' data_path <- system.file("extdata", package = "RSQLite.toolkit")
+#' dbTableFromDSV(
+#'   input_file = file.path(data_path, "abalone.csv"),
+#'   dbcon = dbcon,
+#'   table_name = "ABALONE",
+#'   drop_table = TRUE,
+#'   auto_pk = TRUE,
+#'   header = TRUE,
+#'   sep = ",",
+#'   dec = "."
+#' )
+#'
+#' dbDisconnect(dbcon)
+#'
+#' # Copy the table to a new database, recreating it 
+#' # if it already exists and copying indexes
+#' dbCopyTable(
+#'   db_file_src = db_source, 
+#'   db_file_tgt = db_target,
+#'   table_name = "ABALONE",
+#'   drop_table = TRUE,        # Recreate table if it exists
+#'   copy_indexes = TRUE       # Copy indexes too
+#' )
+#' 
+#' # Check that the table was copied correctly
+#' dbcon_tgt <- dbConnect(RSQLite::SQLite(), db_target)
+#' print(dbListTables(dbcon_tgt))
+#' print(dbListFields(dbcon_tgt, "ABALONE"))
+#' print(dbGetQuery(dbcon_tgt, "SELECT COUNT(*) AS TOTAL_ROWS FROM ABALONE;"))
+#' dbDisconnect(dbcon_tgt)
+#' 
+#' # Clean up temporary database files
+#' unlink(c(db_source, db_target))
+#' 
 #' @import RSQLite
 #' @export
 dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
@@ -277,26 +319,31 @@ dbCopyTable <- function(db_file_src, db_file_tgt, table_name,
 #' 
 #' # Set up database connection
 #' dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
-#' 
+#'
 #' # Load sample data
 #' data_path <- system.file("extdata", package = "RSQLite.toolkit")
-#' dbTableFromDSV(
-#'   input_file = file.path(data_path, "abalone.csv"),
-#'   dbcon = dbcon,
-#'   table_name = "ABALONE",
-#'   drop_table = TRUE,
-#'   header = TRUE,
-#'   sep = ",",
-#'   dec = "."
+#' 
+#' dbTableFromFeather(
+#'   input_file = file.path(data_path, "penguins.feather"),
+#'   dbcon = dbcon, table_name = "PENGUINS",
+#'   drop_table = TRUE
 #' )
 #' 
+#' dbGetQuery(dbcon, "select species, sex, body_mass_g,
+#'                    culmen_length_mm, culmen_depth_mm 
+#'                    from PENGUINS 
+#'                    group by species, sex, body_mass_g,
+#'                    culmen_length_mm, culmen_depth_mm 
+#'                    having count(*) > 1")
+#' 
 #' # Create a primary key on multiple fields
-#' dbCreatePK(dbcon, "ABALONE", c("SEX", "LENGTH", "DIAMETER"))
+#' dbCreatePK(dbcon, "PENGUINS", 
+#'            c("species", "sex", "body_mass_g",
+#'              "culmen_length_mm", "culmen_depth_mm"))
 #' 
 #' # Check that the index was created
-#' indexes <- dbGetQuery(dbcon, 
-#'   "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='ABALONE'")
-#' print(indexes)
+#' dbGetQuery(dbcon, 
+#'   "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='PENGUINS'")
 #' 
 #' # Clean up
 #' dbDisconnect(dbcon)

@@ -68,3 +68,47 @@ The \code{dbTableFromDataFrame()} function reads the data from a rectangula regi
 of a sheet in an Excel file and copies it to a table in a SQLite
 database. If table does not exist, it will create it.
 }
+\examples{
+# Create a temporary database and load data frame
+# Set up database connection
+dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "example.sqlite"))
+
+# Create a sample data frame
+sample_data <- data.frame(
+  id = 1:10,
+  name = paste0("Item_", 1:10),
+  value = runif(10, 1, 100),
+  active = c(TRUE, FALSE),
+  date = Sys.Date() + 0:9,
+  stringsAsFactors = FALSE,
+  row.names = NULL
+)
+
+# Load data frame with automatic primary key
+dbTableFromDataFrame(
+  df = sample_data,
+  dbcon = dbcon,
+  table_name = "SAMPLE_DATA",
+  drop_table = TRUE,
+  auto_pk = TRUE  
+)
+
+# Check the imported data
+dbListFields(dbcon, "SAMPLE_DATA")
+dbGetQuery(dbcon, "SELECT * FROM SAMPLE_DATA LIMIT 5")
+
+# Load with column selection and custom naming
+dbTableFromDataFrame(
+  df = sample_data,
+  dbcon = dbcon,
+  table_name = "SAMPLE_SUBSET",
+  drop_table = TRUE,
+  col_names = c("ID", "ITEM_NAME", "ITEM_VALUE", "IS_ACTIVE", "DATE_CREATED")
+)
+
+dbGetQuery(dbcon, "SELECT * FROM SAMPLE_SUBSET LIMIT 5")
+
+# Clean up
+dbDisconnect(dbcon)
+
+}

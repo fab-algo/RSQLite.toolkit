@@ -132,18 +132,20 @@ Xlsx2R_types <- function(x) {
 #' # Convert R data types to SQLite types
 #' r_types <- c("character", "integer", "numeric", "logical", "Date")
 #' sql_types <- R2SQL_types(r_types)
-#' 
+#'
 #' # Display the mapping
 #' data.frame(
 #'   R_type = r_types,
-#'   SQLite_type = sql_types
+#'   SQLite_type = sql_types,
+#'   row.names = NULL
 #' )
-#' 
+#'
 #' # Handle unknown types (converted to TEXT)
 #' mixed_types <- c("character", "unknown_type", "integer")
 #' R2SQL_types(mixed_types)
 #'
 #' @export
+#' 
 R2SQL_types <- function(x) {
   r2sql_dict <- c("character" = "TEXT",
                   "double"    = "REAL",
@@ -224,7 +226,23 @@ convert_grouped_digits <- function(x, to, dec, grp) {
 #'   - `quoted`: the quoted names, as per the selected `quote_method`;
 #'   - `unquoted`: the cleaned names, without any quoting.
 #'
+#' @examples
+#' # Example with DB_NAMES method
+#' col_names <- c("column 1", "column-2", "3rd_column", "SELECT")
+#' 
+#' formatted_names <- format_column_names(col_names, quote_method = "DB_NAMES")
+#' print(formatted_names)
+#'
+#' # Example with SINGLE_QUOTES method
+#' formatted_names_sq <- format_column_names(col_names, quote_method = "SINGLE_QUOTES")
+#' print(formatted_names_sq)
+#'
+#' # Example with SQL_SERVER method
+#' formatted_names_sqlsrv <- format_column_names(col_names, quote_method = "SQL_SERVER")
+#' print(formatted_names_sqlsrv)
+#'
 #' @importFrom DBI .SQL92Keywords
+#' 
 #' @export
 #'
 format_column_names <- function(x, quote_method = "DB_NAMES",

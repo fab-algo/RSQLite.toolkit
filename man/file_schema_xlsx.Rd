@@ -71,3 +71,25 @@ the specified worksheet to infer column names and data types.
 Then it converts them to the candidate data frame columns' names
 and data types.
 }
+\examples{
+# Inspect xlsx file schema
+data_path <- system.file("extdata", package = "RSQLite.toolkit")
+
+# Get schema information for Excel file
+schema_info <- file_schema_xlsx(
+  input_file = file.path(data_path, "stock_portfolio.xlsx"),
+  sheet_name = "all period",
+  first_row = 2,
+  cols_range = "A:S",
+  header = TRUE,
+  id_quote_method = "DB_NAMES",
+  max_lines = 10
+)
+
+# Display schema information
+head(schema_info[, c("col_names", "src_names")])
+
+# Check specific columns
+print(paste("Number of columns:", nrow(schema_info)))
+
+}
