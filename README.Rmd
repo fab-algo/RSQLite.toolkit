@@ -30,18 +30,25 @@ tables.
 
 ## Installation
 
-You can install the development version of RSQLite.toolkit
-from [GitHub](https://github.com/) with:
+Install the released version of RSQLite.toolkit from CRAN:
 
 ::: .pkgdown-devel
+```{r}
+#| eval: false
+install.packages("RSQLite.toolkit")
+```
+:::
 
-``` {r}
+You can install the development version from
+[GitHub](https://github.com/) with:
+
+::: .pkgdown-devel
+```{r}
 #| eval: false
 # Install development version from GitHub
 # install.packages("pak")
 pak::pak("fab-algo/RSQLite.toolkit")
 ```
-
 :::
 
 ## Usage

@@ -19,7 +19,17 @@ tables.
 
 ## Installation
 
-You can install the development version of RSQLite.toolkit from
+Install the released version of RSQLite.toolkit from CRAN:
+
+<div class=".pkgdown-devel">
+
+``` r
+install.packages("RSQLite.toolkit")
+```
+
+</div>
+
+You can install the development version from
 [GitHub](https://github.com/) with:
 
 <div class=".pkgdown-devel">
