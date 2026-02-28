@@ -24,6 +24,7 @@ database. If table does not exist, it will create it."><meta property="og:image"
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/dealing_with_DSV_files.html">Dealing with DSV files</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/fab-algo/RSQLite.toolkit/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -164,11 +165,11 @@ from the data frame.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "id"      "name"    "F_value" "active"  "F_date"  "SEQ"    </span>
 <span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM SAMPLE_DATA LIMIT 5"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   id   name  F_value active F_date SEQ</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 Item_1 20.27480      1  20510   1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2 Item_2 17.29236      0  20511   2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3 Item_3 66.65745      1  20512   3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4 Item_4 85.80093      0  20513   4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5 Item_5 92.72810      1  20514   5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 Item_1 20.27480      1  20512   1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2 Item_2 17.29236      0  20513   2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3 Item_3 66.65745      1  20514   3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4 Item_4 85.80093      0  20515   4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5 Item_5 92.72810      1  20516   5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Load with column selection and custom naming</span></span></span>
 <span class="r-in"><span><span class="fu">dbTableFromDataFrame</span><span class="op">(</span></span></span>
@@ -182,11 +183,11 @@ from the data frame.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM SAMPLE_SUBSET LIMIT 5"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ID ITEM_NAME ITEM_VALUE IS_ACTIVE DATE_CREATED</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1    Item_1   20.27480         1        20510</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2    Item_2   17.29236         0        20511</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3    Item_3   66.65745         1        20512</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4    Item_4   85.80093         0        20513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5    Item_5   92.72810         1        20514</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1    Item_1   20.27480         1        20512</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2    Item_2   17.29236         0        20513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3    Item_3   66.65745         1        20514</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4    Item_4   85.80093         0        20515</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5    Item_5   92.72810         1        20516</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Clean up</span></span></span>
 <span class="r-in"><span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></span>
