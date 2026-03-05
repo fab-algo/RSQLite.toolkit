@@ -11,13 +11,7 @@ tables.
 
 ## Installation
 
-Install the released version of RSQLite.toolkit from CRAN:
-
-``` r
-install.packages("RSQLite.toolkit")
-```
-
-You can install the development version from
+You can install the development version of RSQLite.toolkit from
 [GitHub](https://github.com/) with:
 
 ``` r
