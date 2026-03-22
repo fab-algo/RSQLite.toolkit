@@ -33,8 +33,8 @@ table. Defaults to \code{FALSE}.}
 nothing
 }
 \description{
-The \code{dbCopyTable()} function can be used to create a copy of the data in a table
-of a SQLite database in another database. The data can be appended
+The \code{dbCopyTable()} function can be used to create a copy of the data in
+a table of a SQLite database in another database. The data can be appended
 to an already existing table (with the same name of the source one), or
 a new table can be created. It is possible to move also the indexes
 from source to target.

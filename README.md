@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/fab-algo/RSQLite.toolkit/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/fab-algo/RSQLite.toolkit/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/RSQLite.toolkit)](https://CRAN.R-project.org/package=RSQLite.toolkit)
 <!-- badges: end -->
 
 RSQLite.toolkit is a lightweight wrapper around the RSQLite package for
