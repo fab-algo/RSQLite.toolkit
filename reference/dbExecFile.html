@@ -116,20 +116,20 @@ If no statements require parameters, <code>plist</code> can be set to <code>NULL
 <span class="r-in"><span><span class="st">-- Create a summary table</span></span></span>
 <span class="r-in"><span><span class="st">DROP TABLE IF EXISTS ABALONE_SUMMARY;</span></span></span>
 <span class="r-in"><span><span class="st"></span></span></span>
-<span class="r-in"><span><span class="st">CREATE TABLE ABALONE_SUMMARY AS </span></span></span>
-<span class="r-in"><span><span class="st">SELECT SEX, </span></span></span>
+<span class="r-in"><span><span class="st">CREATE TABLE ABALONE_SUMMARY AS</span></span></span>
+<span class="r-in"><span><span class="st">SELECT SEX,</span></span></span>
 <span class="r-in"><span><span class="st">       COUNT(*) as TOTAL_COUNT,</span></span></span>
 <span class="r-in"><span><span class="st">       ROUND(AVG(LENGTH), 3) as AVG_LENGTH,</span></span></span>
 <span class="r-in"><span><span class="st">       ROUND(AVG(WHOLE), 3) as AVG_WEIGHT</span></span></span>
-<span class="r-in"><span><span class="st">FROM ABALONE </span></span></span>
+<span class="r-in"><span><span class="st">FROM ABALONE</span></span></span>
 <span class="r-in"><span><span class="st">GROUP BY SEX;</span></span></span>
 <span class="r-in"><span><span class="st"></span></span></span>
-<span class="r-in"><span><span class="st">-- Query the results  </span></span></span>
+<span class="r-in"><span><span class="st">-- Query the results</span></span></span>
 <span class="r-in"><span><span class="st">SELECT * FROM ABALONE_SUMMARY ORDER BY SEX;</span></span></span>
 <span class="r-in"><span><span class="st"></span></span></span>
 <span class="r-in"><span><span class="st">-- Parameterized query example</span></span></span>
-<span class="r-in"><span><span class="st">SELECT SEX, COUNT(*) as COUNT </span></span></span>
-<span class="r-in"><span><span class="st">FROM ABALONE </span></span></span>
+<span class="r-in"><span><span class="st">SELECT SEX, COUNT(*) as COUNT</span></span></span>
+<span class="r-in"><span><span class="st">FROM ABALONE</span></span></span>
 <span class="r-in"><span><span class="st">WHERE LENGTH &gt; :min_length</span></span></span>
 <span class="r-in"><span><span class="st">GROUP BY SEX;</span></span></span>
 <span class="r-in"><span><span class="st">"</span></span></span>
