@@ -21,3 +21,4 @@
 ^revdep$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+mise.toml

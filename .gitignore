@@ -39,6 +39,7 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+mise.toml
 
 # pkgdown site
 docs/
