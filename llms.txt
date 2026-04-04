@@ -33,6 +33,7 @@ to load example data in different tables in a test database:
 
 ``` r
 library(RSQLite.toolkit)
+#> Loading required package: RSQLite
 
 dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
 

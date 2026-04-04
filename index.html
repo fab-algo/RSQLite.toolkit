@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,6 +90,7 @@
 <p>These basic examples show how to use the core functions of the package to load example data in different tables in a test database:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/fab-algo/RSQLite.toolkit" class="external-link">RSQLite.toolkit</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: RSQLite</span></span>
 <span></span>
 <span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">dbConnect</span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tests.sqlite"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -542,7 +543,6 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/fab-algo/RSQLite.toolkit/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/fab-algo/RSQLite.toolkit/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://CRAN.R-project.org/package=RSQLite.toolkit" class="external-link"><img src="https://www.r-pkg.org/badges/version/RSQLite.toolkit" alt="CRAN status"></a></li>
 </ul>
 </div>
 
