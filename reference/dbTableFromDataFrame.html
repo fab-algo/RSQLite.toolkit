@@ -11,7 +11,7 @@ database. If table does not exist, it will create it."><meta property="og:image"
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -165,11 +165,11 @@ from the data frame.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "id"      "name"    "F_value" "active"  "F_date"  "SEQ"    </span>
 <span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM SAMPLE_DATA LIMIT 5"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   id   name  F_value active F_date SEQ</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 Item_1 58.86305      1  20534   1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2 Item_2 63.76366      0  20535   2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3 Item_3 86.00795      1  20536   3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4 Item_4 57.12254      0  20537   4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5 Item_5 26.04670      1  20538   5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 Item_1 58.86305      1  20547   1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2 Item_2 63.76366      0  20548   2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3 Item_3 86.00795      1  20549   3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4 Item_4 57.12254      0  20550   4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5 Item_5 26.04670      1  20551   5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Load with column selection and custom naming</span></span></span>
 <span class="r-in"><span><span class="fu">dbTableFromDataFrame</span><span class="op">(</span></span></span>
@@ -183,11 +183,11 @@ from the data frame.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM SAMPLE_SUBSET LIMIT 5"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ID ITEM_NAME ITEM_VALUE IS_ACTIVE DATE_CREATED</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1    Item_1   58.86305         1        20534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2    Item_2   63.76366         0        20535</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3    Item_3   86.00795         1        20536</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4    Item_4   57.12254         0        20537</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5    Item_5   26.04670         1        20538</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1    Item_1   58.86305         1        20547</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2    Item_2   63.76366         0        20548</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3    Item_3   86.00795         1        20549</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4    Item_4   57.12254         0        20550</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5    Item_5   26.04670         1        20551</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Clean up</span></span></span>
 <span class="r-in"><span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></span>
