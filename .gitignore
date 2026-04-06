@@ -56,7 +56,6 @@ rsconnect/
 .quarto
 tmp/
 *~
-inst/doc
-/doc/
-/Meta/
-docs
+inst/doc/
+doc/
+Meta/
