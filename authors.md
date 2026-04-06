@@ -7,16 +7,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/fab-algo/RSQLite.toolkit/blob/v0.1.2/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/fab-algo/RSQLite.toolkit/blob/master/DESCRIPTION)
 
 Beretta L (2026). *RSQLite.toolkit: Load Data in SQLite from Tabular
-Files*. R package version 0.1.1,
+Files*. R package version 0.1.2,
 <https://github.com/fab-algo/RSQLite.toolkit>.
 
     @Manual{,
       title = {RSQLite.toolkit: Load Data in SQLite from Tabular Files},
       author = {Ludovico G. Beretta},
       year = {2026},
-      note = {R package version 0.1.1},
+      note = {R package version 0.1.2},
       url = {https://github.com/fab-algo/RSQLite.toolkit},
     }

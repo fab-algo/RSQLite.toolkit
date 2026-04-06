@@ -19,7 +19,7 @@ are stored in a list with length equal to the number of statements."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ are stored in a list with length equal to the number of statements."><meta prope
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Execute SQL statements from a text file</h1>
-      <small class="dont-index">Source: <a href="https://github.com/fab-algo/RSQLite.toolkit/blob/v0.1.2/R/db_helpers.R" class="external-link"><code>R/db_helpers.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/fab-algo/RSQLite.toolkit/blob/master/R/db_helpers.R" class="external-link"><code>R/db_helpers.R</code></a></small>
       <div class="d-none name"><code>dbExecFile.Rd</code></div>
     </div>
 
@@ -116,20 +116,20 @@ If no statements require parameters, <code>plist</code> can be set to <code>NULL
 <span class="r-in"><span><span class="st">-- Create a summary table</span></span></span>
 <span class="r-in"><span><span class="st">DROP TABLE IF EXISTS ABALONE_SUMMARY;</span></span></span>
 <span class="r-in"><span><span class="st"></span></span></span>
-<span class="r-in"><span><span class="st">CREATE TABLE ABALONE_SUMMARY AS </span></span></span>
-<span class="r-in"><span><span class="st">SELECT SEX, </span></span></span>
+<span class="r-in"><span><span class="st">CREATE TABLE ABALONE_SUMMARY AS</span></span></span>
+<span class="r-in"><span><span class="st">SELECT SEX,</span></span></span>
 <span class="r-in"><span><span class="st">       COUNT(*) as TOTAL_COUNT,</span></span></span>
 <span class="r-in"><span><span class="st">       ROUND(AVG(LENGTH), 3) as AVG_LENGTH,</span></span></span>
 <span class="r-in"><span><span class="st">       ROUND(AVG(WHOLE), 3) as AVG_WEIGHT</span></span></span>
-<span class="r-in"><span><span class="st">FROM ABALONE </span></span></span>
+<span class="r-in"><span><span class="st">FROM ABALONE</span></span></span>
 <span class="r-in"><span><span class="st">GROUP BY SEX;</span></span></span>
 <span class="r-in"><span><span class="st"></span></span></span>
-<span class="r-in"><span><span class="st">-- Query the results  </span></span></span>
+<span class="r-in"><span><span class="st">-- Query the results</span></span></span>
 <span class="r-in"><span><span class="st">SELECT * FROM ABALONE_SUMMARY ORDER BY SEX;</span></span></span>
 <span class="r-in"><span><span class="st"></span></span></span>
 <span class="r-in"><span><span class="st">-- Parameterized query example</span></span></span>
-<span class="r-in"><span><span class="st">SELECT SEX, COUNT(*) as COUNT </span></span></span>
-<span class="r-in"><span><span class="st">FROM ABALONE </span></span></span>
+<span class="r-in"><span><span class="st">SELECT SEX, COUNT(*) as COUNT</span></span></span>
+<span class="r-in"><span><span class="st">FROM ABALONE</span></span></span>
 <span class="r-in"><span><span class="st">WHERE LENGTH &gt; :min_length</span></span></span>
 <span class="r-in"><span><span class="st">GROUP BY SEX;</span></span></span>
 <span class="r-in"><span><span class="st">"</span></span></span>
