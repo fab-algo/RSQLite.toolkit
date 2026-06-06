@@ -324,7 +324,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
     if (cclass[ii] == "Date") {
       lclass[[ii]] <- vector("character", 0)
     } else if (cclass[ii] %in%
-                 c("integer_grouped", "numeric_grouped", "double_grouped")) {
+                 c("integer_grouped", "numeric_grouped", "double_grouped",
+				          "percentage")) {
       lclass[[ii]] <- vector("character", 0)
     } else {
       lclass[[ii]] <- vector(cclass[ii], 0)
@@ -332,7 +333,7 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
   }
 
   tryCatch({
-    fcon <- file(input_file, "r", blocking = FALSE)
+    fcon <- file(input_file, "rb", blocking = FALSE)
 
     if (header) {
       scan(file = fcon, what = character(),
@@ -355,9 +356,12 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
                             "allowEscapes", "strip.white",
                             "skip", "fill",  "flush", "skipNul",
                             "blank.lines.skip",
-                            "fileEncoding", "encoding")
+                            "fileEncoding")
 
       lpar <- lpar[which(names(lpar) %in% allowed_par_scan)]
+      if ("fileEncoding" %in% names(lpar)) {
+			  lpar <- append(x = lpar, values = list(encoding = lpar$fileEncoding))
+	    }
 
       lpar1 <- append(x = lpar,
                       values = list(
@@ -370,8 +374,8 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
                         quiet = TRUE
                       ),
                       after = 0)
-
-      dfbuffer <- do.call(scan, lpar1)
+      
+	    dfbuffer <- do.call(scan, lpar1)
 
       if (length(dfbuffer[[1]]) == 0) break
 
@@ -402,6 +406,15 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
           apply(X = dfbuffer[, idx2], MARGIN = 2,
                 FUN = convert_grouped_digits,
                 to = "integer", dec = dec, grp = grp)
+        )
+      }
+
+      idx2 <- which(cclass %in% c("percentage"))
+      if (length(idx2) > 0) {
+        dfbuffer[, idx2] <- as.data.frame(
+          apply(X = dfbuffer[, idx2], MARGIN = 2,
+                FUN = convert_percentage,
+                dec = dec, grp = grp)
         )
       }
 

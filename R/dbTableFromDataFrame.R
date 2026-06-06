@@ -108,7 +108,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
     if (!is.null(col_names)) {
       if (length(col_names) != length(cnames)) {
-        stop("dbTableFromFeather: wrong 'col_names' length, must be ",
+        stop("dbTableFromDataFrame: wrong 'col_names' length, must be ",
              length(cnames), " elements but found ", length(col_names))
       }
       dnames <- format_column_names(x = col_names,
@@ -120,7 +120,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
     if (!is.null(col_types)) {
       if (length(col_types) != length(cclass)) {
-        stop("dbTableFromFeather: wrong 'col_types' length, must be ",
+        stop("dbTableFromDataFrame: wrong 'col_types' length, must be ",
              length(cclass), " elements but found ", length(col_types))
       }
       cclass <- col_types
@@ -190,7 +190,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
     if (!is.null(pk_fields) && build_pk) {
 
       if (!is.character(pk_fields)) {
-        stop("dbCreateTableFromDF: 'pk_fields' must be a character vector.")
+        stop("dbTableFromDataFrame: 'pk_fields' must be a character vector.")
       }
 
       pk_fields <- format_column_names(
@@ -198,7 +198,7 @@ dbTableFromDataFrame <- function(df, dbcon, table_name,
 
       check_fields <- setdiff(pk_fields, cnames)
       if (length(check_fields) > 0) {
-        stop("dbCreateTableFromDF: 'pk_fields' contains unknown field names: ",
+        stop("dbTableFromDataFrame: 'pk_fields' contains unknown field names: ",
              check_fields)
       }
 

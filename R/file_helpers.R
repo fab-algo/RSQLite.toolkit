@@ -238,13 +238,13 @@ file_schema_dsv <- function(input_file,
   }
 
   ## reading all lines -----------------------------------------
-  text_con <- file(input_file, open = "r",
-                   encoding = lpar$fileEncoding)
+  text_con <- file(input_file, open = "rb")
   on.exit(close(text_con), add = TRUE)
 
   text <- readLines(con = text_con, n = max_lines,
-                    ok = TRUE, skipNul = TRUE)
-
+                    ok = TRUE, skipNul = TRUE, 
+                    encoding = lpar$fileEncoding)
+  
   if (lpar$comment.char != "") {
     rx_comment <- paste0("^", lpar$comment.char, ".*")
     text <- gsub(rx_comment, "", text, perl = TRUE)
@@ -463,8 +463,8 @@ file_schema_dsv <- function(input_file,
           }
 
           test1 <- gsub(pattern = pd, replacement = ".",
-            x = gsub(pattern = pg, replacement = "", x = test)
-          )
+                        x = gsub(pattern = pg, replacement = "", x = test)
+                        )
           grp_suffix <- "_grouped"
         }
 
@@ -472,6 +472,8 @@ file_schema_dsv <- function(input_file,
           col_types[ii] <- paste0("integer", grp_suffix)
         } else if (!any(is.na(suppressWarnings(as.numeric(test1))))) {
           col_types[ii] <- paste0("numeric", grp_suffix)
+        } else if (all(grepl(pattern = "^[\\+\\-]{0,1}[0-9]*[\\.]{0,1}[0-9]+%$", x = test1))) {
+          col_types[ii] <- "percentage"
         }
 
         if (max(nchar(test1)) > 512) {

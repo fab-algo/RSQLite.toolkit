@@ -155,7 +155,8 @@ R2SQL_types <- function(x) {
                   "Date"      = "DATE",
                   "double_grouped"   = "REAL",
                   "integer_grouped"  = "INTEGER",
-                  "numeric_grouped"  = "REAL")
+                  "numeric_grouped"  = "REAL",
+                  "percentage"       = "REAL")
 
   y <- r2sql_dict[x]
   y[which(is.na(y))] <- "TEXT"
@@ -191,6 +192,29 @@ convert_grouped_digits <- function(x, to, dec, grp) {
   y
 }
 
+convert_percentage <- function(x, dec, grp) {
+
+  check1 <-  grep(pattern = "[.\\|()[{^$*+?]", x = grp)
+  if (length(check1) > 0) {
+    pg <- paste0("\\", grp)
+  } else {
+    pg <- grp
+  }
+
+  check2 <-  grep(pattern = "[.\\|()[{^$*+?]", x = dec)
+  if (length(check2) > 0) {
+    pd <- paste0("\\", dec)
+  } else {
+    pd <- dec
+  }
+
+  y <- gsub(pattern = pd, replacement = ".",
+    x = gsub(pattern = pg, replacement = "", x = x)
+  )
+  y <- as.numeric(y) / 100
+
+  y
+}
 
 #' Format column names for SQLite
 #' 
