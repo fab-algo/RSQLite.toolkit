@@ -20,7 +20,7 @@ Since there isn't a strict technical standard that specifies how different data 
 should be represented in plain text, and a lot of possible customizations are left to
 the final users, it is very common to encounter issues when data is imported from this
 kind of files.
-The purpose of this article is to show some problems you can encounter 
+The purpose of this article is to show some problems you can encounter when
 loading data in a SQLite database from DSV files and how to deal with them.
 
 ## Data interpretation issues
@@ -36,13 +36,13 @@ library(RSQLite.toolkit)
 
 Let's start with a simple example using real-world data. To retrieve some example
 files, we can use the package [piggyback](https://github.com/ropensci/piggyback)
-to download public datasets that have been stored in the 
+to download public datasets that have been stored in the
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
 GitHub repository[^1].
 
 The first example will deal with a table contained in a "standard" CSV file
 (i.e. a text file with the first line containing column names, using the
-comma to separate fields' values and the dot as a decimal separator for 
+comma to separate fields' values and the dot as a decimal separator for
 numbers); we will load  the data in a new table inside a SQLite database
 using the `dbTableFromDSV()` function.
 
@@ -70,15 +70,16 @@ n_rows
 
 So we expect to have `r format(n_rows-1, nsmall=0)` records in the SQLite
 table at the end of the import process.
-Now we connect to a sample database (i.e. `tests.sqlite`): 
+Now we connect to a sample database (i.e. `tests.sqlite`):
 
 ```{r dbcon}
 dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
 ```
-and move the dataset in a table there, calling the `dbTableFromDSV()` function 
-specifying the connection to the database (i.e., `dbcon` parameter) and the 
+
+and move the dataset in a table there, calling the `dbTableFromDSV()` function
+specifying the connection to the database (i.e., `dbcon` parameter) and the
 table name (i.e., `table_name` parameter). We don't need to specify the parameters
-for the CSV file structure (i.e., `header = TRUE`, `sep = ","`, `dec = "."`, 
+for the CSV file structure (i.e., `header = TRUE`, `sep = ","`, `dec = "."`,
 `grp = ""`) since the default values will be fine.
 
 ```{r, label=loaddata1, error=TRUE}
@@ -86,7 +87,7 @@ for the CSV file structure (i.e., `header = TRUE`, `sep = ","`, `dec = "."`,
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 ```
 
-To understand what happened we need to keep in mind that the `dbTableFromDSV()` 
+To understand what happened we need to keep in mind that the `dbTableFromDSV()`
 function calls *`file_schema_dsv`* function, to guess the table structure stored
 in the DSV file, and then it calls the *`scan`* function to actually read the
 file content in a data frame and write it to the SQLite table.
@@ -109,20 +110,20 @@ the `read.table` function for comparison):
 
 : `scan` and `read.table` parameters to handle data interpretation.
 
-These parameters control the conventions used to interpret the text read 
+These parameters control the conventions used to interpret the text read
 from the file:
 
 - *quoting*: convention used to include in strings "special" characters or to
    preserve the exact string without interpretation.
    Parameter: `quote`
-- *escaping*: rule used to represent characters that would otherwise be interpreted 
+- *escaping*: rule used to represent characters that would otherwise be interpreted
    as delimiters or special commands.
    Parameter: `allowEscapes`
-- *NUL characters*: how to manage ASCII NUL characters that could be found 
+- *NUL characters*: how to manage ASCII NUL characters that could be found
    inside strings.
    Parameter: `skipNul`
-- *whitespace stripping*: whether unwanted spaces from the beginning, end, or middle of a 
-   string should be removed. 
+- *whitespace stripping*: whether unwanted spaces from the beginning, end, or middle of a
+   string should be removed.
    Parameter: `strip.white`
 - *commenting*: a character used to identify that one line (or the rest of a line after
    the "comment" identifier) does not contain data and should be ignored.
@@ -154,18 +155,18 @@ operating systems.
 
 If we open the file and inspect some records, we understand that:
 
-- there are strings with comma and single quote inside, surrounded by 
+- there are strings with comma and single quote inside, surrounded by
   double quotes, so the file is using a specific quoting convention;
 - missing data is represented by a "zero-lenght" string;
-- many strings use special characters that need a specific encoding 
+- many strings use special characters that need a specific encoding
   system; in this file the UTF-8 encoding is used.
 
 For the input file used in this example we need:
 
-- to explicitly force the `quote` parameter to `"\""` (i.e., only the double quote 
+- to explicitly force the `quote` parameter to `"\""` (i.e., only the double quote
   character) and the `na.strings` parameter to `""`;
 - to turn off the commenting option: `comment.char = ""`;
-- to tell the `base::scan()` function that the input file is encoded in UTF-8: 
+- to tell the `base::scan()` function that the input file is encoded in UTF-8:
   `fileEncoding = "UTF-8"`.
 
 ```{r schema}
@@ -237,11 +238,11 @@ also some interesting discussions on Stack Overflow:
 
 Some typical problems you might encounter include:
 
-- *Special characters*: Column names containing spaces, hyphens, or other 
+- *Special characters*: Column names containing spaces, hyphens, or other
   special characters (e.g., `"Patient-ID"`, `"Test Result"`, `"Cost($)"`);
 - *Reserved keywords*: Column names that match SQLite reserved words
   (e.g., `"SELECT"`, `"TABLE"`, `"WHERE"`);
-- *Starting with numbers*: Column names beginning with digits 
+- *Starting with numbers*: Column names beginning with digits
   (e.g., `"2025_Sales"`);
 - *Case sensitivity*: While SQLite is case-insensitive for column names,
   mixing cases can lead to confusion;
@@ -288,6 +289,7 @@ repository.
 
 ```{r getdata2}
 library("piggyback", quietly = TRUE)
+
 pb_download(file = "Blockchain_Banking_Scopus_Dataset_2015_2025.zip",
             dest = tempdir(), repo = "fab-algo/RSQLite.toolkit-tests",
             tag = "latest")
@@ -313,7 +315,7 @@ f_schema2$schema[1:10, ]
 
 The `src_names` column contains the original column names found in the input file.
 As we can see, there are some problematic column names, such as `Author(s) ID`,
-`Document Title`, `Funding Text`, `Art. No.`, etc. 
+`Document Title`, `Funding Text`, `Art. No.`, etc.
 
 The `col_names` column contains the transformed column names using the
 `DB_NAMES` method (i.e., the default value for the `id_quote_method` parameter).
@@ -321,7 +323,7 @@ Comparing the two columns, we can see how some characters have been replaced wit
 the `_` character, spaces have been replaced with `_`, and some names have been
 prefixed with `F_` to avoid conflicts with SQLite reserved keywords (e.g., `Year`).
 
-Now let's see how the column names are handled when using the `SQL_SERVER` method: 
+Now let's see how the column names are handled when using the `SQL_SERVER` method:
 
 ```{r inspect_colnames2}
 f_schema2 <- file_schema_dsv(input_file = data_file,
@@ -330,7 +332,7 @@ f_schema2 <- file_schema_dsv(input_file = data_file,
                              comment.char = "", fileEncoding = "UTF-8")
 
 f_schema2$schema[1:10, ]
-``` 
+```
 
 As we can see, now the column names have been enclosed in square brackets
 (`[` and `]`) to make them valid SQLite identifiers. This quoting convention

@@ -120,8 +120,8 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'    equal to `n_cols`, the function will return a list without the `schema`
 #'    element. It defaults to `TRUE`.
 #' @param ... Additional arguments for quoting and data interpretation as
-#'    described in the [base::scan()] function. The parameters used
-#'    by `file_schema_dsv` are:
+#'    described in the [base::scan()] function. The main parameters useful
+#'    for the `file_schema_dsv` function are:
 #'    - `quote`, character, the set of quoting characters. Defaults to `""`
 #'      (i.e., no quoting).
 #'    - `comment.char`, character, the comment character. Defaults to `""`
@@ -241,9 +241,35 @@ file_schema_dsv <- function(input_file,
   text_con <- file(input_file, open = "rb")
   on.exit(close(text_con), add = TRUE)
 
-  text <- readLines(con = text_con, n = max_lines,
-                    ok = TRUE, skipNul = TRUE, 
-                    encoding = lpar$fileEncoding)
+  allowed_par_scan <- c("quote", "comment.char", "na.strings",
+                        "allowEscapes", "strip.white",
+                        "skip", "fill", "flush", "skipNul",
+                        "blank.lines.skip",
+                        "fileEncoding")
+
+  lpar <- lpar[which(names(lpar) %in% allowed_par_scan)]
+  if ("fileEncoding" %in% names(lpar)) {
+    lpar <- append(x = lpar, values = list(encoding = lpar$fileEncoding))
+  }
+
+  lpar1 <- append(x = lpar,
+                  values = list(
+                    file = text_con,
+                    nlines = max_lines,
+                    sep = "\n",
+                    what = character(),
+                    multi.line = FALSE,
+                    quiet = TRUE
+                  ),
+                  after = 0)
+
+  ## force quoting of before and after sep character to avoid
+  ## misinterpretation of sep in quoted text
+  if ("quote" %in% names(lpar1)) {
+   lpar1$quote <- ""
+  }
+
+  text <- do.call(scan, lpar1)
   
   if (lpar$comment.char != "") {
     rx_comment <- paste0("^", lpar$comment.char, ".*")
@@ -253,10 +279,6 @@ file_schema_dsv <- function(input_file,
   idx <- which(nchar(text) == 0)
   if (length(idx) > 0)
     text <- text[-idx]
-
-  if (lpar$skip > 0) {
-    text <- text[-(1:lpar$skip)]
-  }
 
   ## clean sep character from quoted columns -------------------
   if (lpar$quote == "" || length(lpar$quote) == 0) {

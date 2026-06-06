@@ -166,6 +166,22 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
     lpar$fileEncoding <- ""
   }
 
+  if (!("encoding" %in% names(lpar)) && "fileEncoding" %in% names(lpar)) {
+    lpar$encoding <- lpar$fileEncoding
+  }
+
+  if ("nlines" %in% names(lpar)) {
+    if (lpar$nlines > 0) {
+      max_read_lines <- lpar$nlines
+      lpar$nlines <- NULL
+    } else {
+      max_read_lines <- -1
+    }
+  } else {
+    max_read_lines <- -1
+  }
+
+
   ## formal checks on parameters ................
   if (!("data.frame" %in% class(constant_values)) &&
         !is.null(constant_values)) {
@@ -332,36 +348,40 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
     }
   }
 
-  tryCatch({
-    fcon <- file(input_file, "rb", blocking = FALSE)
-
-    if (header) {
-      scan(file = fcon, what = character(),
-           nlines = 1, quiet = TRUE, ...)
-    }
-
-  }, error = function(e) {
-    close(fcon)
-
-    err <- conditionMessage(e)
-    step <- 104
-    stop(error_handler(err, fun_name, step), call. = FALSE)
-  })
-
+  fcon <- file(input_file, "rb", blocking = FALSE)
 
   nread <- 0
   repeat {
     tryCatch({
       allowed_par_scan <- c("quote", "comment.char", "na.strings",
                             "allowEscapes", "strip.white",
-                            "skip", "fill",  "flush", "skipNul",
+                            "skip", "fill", "flush", "skipNul",
                             "blank.lines.skip",
-                            "fileEncoding")
+                            "fileEncoding", "encoding")
 
       lpar <- lpar[which(names(lpar) %in% allowed_par_scan)]
-      if ("fileEncoding" %in% names(lpar)) {
-			  lpar <- append(x = lpar, values = list(encoding = lpar$fileEncoding))
-	    }
+
+      if (header && nread == 0) {
+        lpar1 <- append(x = lpar,
+                        values = list(
+                          file = fcon,
+                          nlines = 1,
+                          sep = "\n",
+                          dec = dec,
+                          what = character(),
+                          multi.line = FALSE,
+                          quiet = TRUE
+                        ),
+                        after = 0)
+        lpar1$skip <- 0
+        do.call(scan, lpar1)
+      }
+
+      if (max_read_lines > 0 && nread >= max_read_lines) break
+
+      if (max_read_lines > 0 && (nread + chunk_size) > max_read_lines) {
+        chunk_size <- max_read_lines - nread
+      }
 
       lpar1 <- append(x = lpar,
                       values = list(
@@ -374,7 +394,11 @@ dbTableFromDSV <- function(input_file, dbcon, table_name,  #nolint
                         quiet = TRUE
                       ),
                       after = 0)
-      
+
+      if ("skip" %in% names(lpar1) && lpar1$skip > 0 && nread > 0) {
+        lpar1$skip <- 0
+      }
+
 	    dfbuffer <- do.call(scan, lpar1)
 
       if (length(dfbuffer[[1]]) == 0) break
