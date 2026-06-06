@@ -84,7 +84,7 @@ file_schema_dsv(
 
   Additional arguments for quoting and data interpretation as described
   in the [`base::scan()`](https://rdrr.io/r/base/scan.html) function.
-  The parameters used by `file_schema_dsv` are:
+  The main parameters useful for the `file_schema_dsv` function are:
 
   - `quote`, character, the set of quoting characters. Defaults to `""`
     (i.e., no quoting).

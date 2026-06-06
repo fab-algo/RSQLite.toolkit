@@ -7,8 +7,8 @@ specifies how different data types should be represented in plain text,
 and a lot of possible customizations are left to the final users, it is
 very common to encounter issues when data is imported from this kind of
 files. The purpose of this article is to show some problems you can
-encounter loading data in a SQLite database from DSV files and how to
-deal with them.
+encounter when loading data in a SQLite database from DSV files and how
+to deal with them.
 
 ## Data interpretation issues
 
@@ -46,7 +46,7 @@ First, we download the data from the repo:
 library("piggyback", quietly = TRUE)
 pb_download(file = "DOSE_V2.10.zip", dest = tempdir(),
             repo = "fab-algo/RSQLite.toolkit-tests", tag = "latest")
-#> ⠙ 1 items, page 1 | 35ms
+#> ⠙ 1 items, page 1 | 34ms
 
 unzip(zipfile = file.path(tempdir(), "DOSE_V2.10.zip"), exdir = tempdir())
 dir(file.path(tempdir(), "DOSE_V2.10"))
@@ -350,6 +350,7 @@ repository.
 ``` r
 
 library("piggyback", quietly = TRUE)
+
 pb_download(file = "Blockchain_Banking_Scopus_Dataset_2015_2025.zip",
             dest = tempdir(), repo = "fab-algo/RSQLite.toolkit-tests",
             tag = "latest")
