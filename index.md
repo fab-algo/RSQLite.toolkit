@@ -14,6 +14,7 @@ tables.
 Install the released version of RSQLite.toolkit from CRAN:
 
 ``` r
+
 install.packages("RSQLite.toolkit")
 ```
 
@@ -21,6 +22,7 @@ You can install the development version from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # Install development version from GitHub
 # install.packages("pak")
 pak::pak("fab-algo/RSQLite.toolkit")
@@ -32,6 +34,7 @@ These basic examples show how to use the core functions of the package
 to load example data in different tables in a test database:
 
 ``` r
+
 library(RSQLite.toolkit)
 #> Loading required package: RSQLite
 
@@ -208,6 +211,7 @@ All three functions return a data frame with the following key columns:
 ### Usage Examples
 
 ``` r
+
 library(RSQLite.toolkit)
 
 data_path <- system.file("extdata", package = "RSQLite.toolkit")
@@ -289,6 +293,7 @@ the main R code, making the source more readable.
 #### Usage Examples
 
 ``` r
+
 library(RSQLite.toolkit)
 
 dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
@@ -411,6 +416,7 @@ recent data or you can reuse previous results.
 #### Usage Examples
 
 ``` r
+
 # Copy a table from one database to another
 dbCopyTable(
   db_file_src = "source.sqlite", 

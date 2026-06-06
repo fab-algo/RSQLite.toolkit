@@ -1,9 +1,9 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   dealing_with_DSV_files: dealing_with_DSV_files.html
-last_built: 2026-04-06T06:37Z
+last_built: 2026-06-06T07:08Z
 urls:
   reference: https://fab-algo.github.io/RSQLite.toolkit/reference
   article: https://fab-algo.github.io/RSQLite.toolkit/articles

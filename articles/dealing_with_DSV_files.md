@@ -19,6 +19,7 @@ different data types (e.g., strings, numbers, dates, missing data,
 etc.).
 
 ``` r
+
 library(RSQLite.toolkit)
 #> Loading required package: RSQLite
 ```
@@ -28,7 +29,7 @@ some example files, we can use the package
 [piggyback](https://github.com/ropensci/piggyback) to download public
 datasets that have been stored in the
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
-GitHub repository[¹](#fn1).
+GitHub repository[^1].
 
 The first example will deal with a table contained in a “standard” CSV
 file (i.e. a text file with the first line containing column names,
@@ -41,9 +42,11 @@ function.
 First, we download the data from the repo:
 
 ``` r
+
 library("piggyback", quietly = TRUE)
 pb_download(file = "DOSE_V2.10.zip", dest = tempdir(),
             repo = "fab-algo/RSQLite.toolkit-tests", tag = "latest")
+#> ⠙ 1 items, page 1 | 35ms
 
 unzip(zipfile = file.path(tempdir(), "DOSE_V2.10.zip"), exdir = tempdir())
 dir(file.path(tempdir(), "DOSE_V2.10"))
@@ -57,6 +60,7 @@ that contains the dataset we are interested in. We can now check the
 number of rows in the input file:
 
 ``` r
+
 n_rows <- length(count.fields(data_file))
 n_rows
 #> [1] 46852
@@ -67,6 +71,7 @@ import process. Now we connect to a sample database
 (i.e. `tests.sqlite`):
 
 ``` r
+
 dbcon <- dbConnect(RSQLite::SQLite(), file.path(tempdir(), "tests.sqlite"))
 ```
 
@@ -79,6 +84,7 @@ need to specify the parameters for the CSV file structure (i.e.,
 values will be fine.
 
 ``` r
+
 ## do not run: error
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE")
 #> Error:
@@ -111,6 +117,7 @@ comparison):
 | fileEncoding | `""`    | `""`       |
 
 `scan` and `read.table` parameters to handle data interpretation.
+{.table}
 
 These parameters control the conventions used to interpret the text read
 from the file:
@@ -136,14 +143,18 @@ from the file:
   binary form, such as ASCII, UTF-8, EBCDIC. Parameter: `fileEncoding`
 
 To understand how to use each of these parameters you are strongly
-encouraged to read the help pages of the `scan` function.
+encouraged to read the help pages of the `scan` function. Moreover, you
+can find some useful information about the management of the encoding of
+DSV files in the “Encoding” section of the `connections` function help
+page, together with the `iconv` function help page.
 
 It should be noted that the default values are seldom—almost never—the
 right ones and we should invest some time in better understanding the
 strategies used by the data source. If we have a technical description
 of the assumptions used in creating the file, we can follow those
-guidelines, otherwise we have to inspect the file and determine them
-through direct examination.
+guidelines, otherwise we have to inspect the file content to understand
+how data is represented in it and choose the right parameters to
+interpret it correctly.
 
 To look into a DSV file (especially big files) it is better to use log
 file explorers and avoid general purpose text editors. As an example, we
@@ -168,6 +179,7 @@ For the input file used in this example we need:
   `fileEncoding = "UTF-8"`.
 
 ``` r
+
 f_schema1 <- file_schema_dsv(input_file = data_file,
                              quote = "\"", na.strings = "",
                              comment.char = "", fileEncoding = "UTF-8")
@@ -177,6 +189,7 @@ Now we can see that the guessed schema is correct. Let’s look at the
 first few rows of the file schema created using these parameters:
 
 ``` r
+
 f_schema1$schema[1:8, ]
 #>    col_names col_names_unquoted col_types sql_types  src_names src_types
 #> 1    country            country character      TEXT    country      text
@@ -216,6 +229,7 @@ function specifying the correct parameters to interpret the data in the
 input file:
 
 ``` r
+
 dbTableFromDSV(input_file = data_file, dbcon = dbcon, table_name = "DOSE",
                drop_table = TRUE, quote = "\"", na.strings = "",
                comment.char = "", fileEncoding = "UTF-8")
@@ -227,6 +241,7 @@ We can check that by listing the tables in the database, the fields in
 the `DOSE` table and counting the number of records in it:
 
 ``` r
+
 dbListTables(dbcon)
 #> [1] "DOSE"
 
@@ -292,8 +307,8 @@ or unexpected behavior when querying the database.
 
 The
 [`dbTableFromDSV()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromDSV.md)
-function[²](#fn2) offers a built-in mechanism to handle problematic
-column names when importing data from DSV files. It does so through the
+function[^2] offers a built-in mechanism to handle problematic column
+names when importing data from DSV files. It does so through the
 `id_quote_method` parameter that can be set to one of the following
 values:
 
@@ -333,6 +348,7 @@ a DSV file with problematic column names that we will download from the
 repository.
 
 ``` r
+
 library("piggyback", quietly = TRUE)
 pb_download(file = "Blockchain_Banking_Scopus_Dataset_2015_2025.zip",
             dest = tempdir(), repo = "fab-algo/RSQLite.toolkit-tests",
@@ -351,6 +367,7 @@ data_file <- file.path(tempdir(),
 Now we can inspect the column names used in the input file:
 
 ``` r
+
 f_schema2 <- file_schema_dsv(input_file = data_file,
                              quote = "\"", na.strings = "",
                              comment.char = "", fileEncoding = "UTF-8")
@@ -395,6 +412,7 @@ Now let’s see how the column names are handled when using the
 `SQL_SERVER` method:
 
 ``` r
+
 f_schema2 <- file_schema_dsv(input_file = data_file,
                              quote = "\"", na.strings = "",
                              id_quote_method = "SQL_SERVER",
@@ -433,6 +451,7 @@ test that by creating a new table in the database using this quoting
 method:
 
 ``` r
+
 dbTableFromDSV(input_file = data_file,
                dbcon = dbcon, table_name = "BLOCKCHAIN_BANKING",
                quote = "\"", na.strings = "",
@@ -443,6 +462,7 @@ dbTableFromDSV(input_file = data_file,
 ```
 
 ``` r
+
 dbListTables(dbcon)
 #> [1] "BLOCKCHAIN_BANKING" "DOSE"
 
@@ -457,6 +477,7 @@ dbGetQuery(dbcon, "SELECT COUNT(*) AS n_records FROM BLOCKCHAIN_BANKING")
 ```
 
 ``` r
+
 
 dbDisconnect(dbcon)
 ```
@@ -480,12 +501,10 @@ function, you should always:
   [`dbTableFromDSV()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromDSV.md)
   function can be very useful.
 
-------------------------------------------------------------------------
+[^1]: The original source of each dataset is described in the README
+    page of the GitHub repo.
 
-1.  The original source of each dataset is described in the README page
-    of the GitHub repo.
-
-2.  The same mechanism to handle column names is used also by the
+[^2]: The same mechanism to handle column names is used also by the
     [`dbTableFromXlsx()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromXlsx.md),
     [`dbTableFromFeather()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromFeather.md)
     and
