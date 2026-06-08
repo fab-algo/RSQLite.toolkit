@@ -147,6 +147,7 @@ file_schema_feather <- function(input_file, id_quote_method = "DB_NAMES") {
 #'      - `src_types`: defaults to `text` for all columns.
 #'      - `src_is_quoted`: logical vector indicating if each column has at least
 #'         one value enclosed in quotes.
+#'      - `all_na`: logical vector indicating if each column consists only of NAs.
 #'    - `col_counts`, a data frame with these columns:
 #'      - `num_col`: number of columns,
 #'      - `Freq`: number of rows (within `max_lines`) that have the number
@@ -450,6 +451,7 @@ file_schema_dsv <- function(input_file,
 
   ## infer column types ----------------------------------------
   col_types <- vapply(df, function(col) class(col)[1], character(1))
+  all_na <- sapply(df, function(col) all(is.na(col)))
 
   if (length(df) > 0) {
     idx <- which(is_quoted == FALSE)
@@ -512,16 +514,18 @@ file_schema_dsv <- function(input_file,
         if (null_columns == TRUE) {
           col_types[ii] <- "NULL"
         }
+        all_na[ii] <- TRUE
       }
     }
   }
-
+  
   schema <- data.frame(
     col_names, col_names_unquoted, col_types,
     sql_types = R2SQL_types(col_types),
     src_names,
     src_types = c("text"),
     src_is_quoted = is_quoted,
+    all_na = all_na,
     stringsAsFactors = FALSE,
     row.names = NULL
   )

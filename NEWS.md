@@ -5,6 +5,7 @@
 * Added support for reading a group of lines of length `nlines` from the DSV file by `chunk_size` blocks.
 * It is now possible to combine the `skip`, `nlines` and `chunk_size` parameters to read a specific portion of the DSV file.
 * Added support for automatic conversion of percentage numbers (i.e. columns ending with `%`) in DSV files.
+* In function `file_schema_dsv()` added the `all_na` column to the schema of the DSV file, which indicates whether all values in a column are NA.
 * Minor improvements to documentation.
 
 # RSQLite.toolkit 0.1.2

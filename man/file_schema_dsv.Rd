@@ -87,6 +87,7 @@ quoting characters;
 \item \code{src_types}: defaults to \code{text} for all columns.
 \item \code{src_is_quoted}: logical vector indicating if each column has at least
 one value enclosed in quotes.
+\item \code{all_na}: logical vector indicating if each column consists only of NAs.
 }
 \item \code{col_counts}, a data frame with these columns:
 \itemize{
