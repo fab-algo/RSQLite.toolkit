@@ -16,6 +16,10 @@
   parameters to read a specific portion of the DSV file.
 - Added support for automatic conversion of percentage numbers
   (i.e. columns ending with `%`) in DSV files.
+- In function
+  [`file_schema_dsv()`](https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_dsv.md)
+  added the `all_na` column to the schema of the DSV file, which
+  indicates whether all values in a column are NA.
 - Minor improvements to documentation.
 
 ## RSQLite.toolkit 0.1.2

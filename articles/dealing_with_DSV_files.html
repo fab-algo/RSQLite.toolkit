@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.9030</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.9040</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,7 @@ SQLite database using the <code><a href="../reference/dbTableFromDSV.html">dbTab
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://docs.ropensci.org/piggyback" class="external-link">"piggyback"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://docs.ropensci.org/piggyback/reference/pb_download.html" class="external-link">pb_download</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"DOSE_V2.10.zip"</span>, dest <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>            repo <span class="op">=</span> <span class="st">"fab-algo/RSQLite.toolkit-tests"</span>, tag <span class="op">=</span> <span class="st">"latest"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ⠙ 1 items, page 1 | 34ms</span></span>
+<span><span class="co">#&gt; ⠙ 1 items, page 1 | 35ms</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/unzip.html" class="external-link">unzip</a></span><span class="op">(</span>zipfile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"DOSE_V2.10.zip"</span><span class="op">)</span>, exdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"DOSE_V2.10"</span><span class="op">)</span><span class="op">)</span></span>
@@ -293,15 +293,15 @@ first few rows of the file schema created using these parameters:</p>
 <span><span class="co">#&gt; 6    grp_lcu            grp_lcu   numeric      REAL    grp_lcu      text</span></span>
 <span><span class="co">#&gt; 7        pop                pop   numeric      REAL        pop      text</span></span>
 <span><span class="co">#&gt; 8 grp_pc_lcu         grp_pc_lcu   numeric      REAL grp_pc_lcu      text</span></span>
-<span><span class="co">#&gt;   src_is_quoted</span></span>
-<span><span class="co">#&gt; 1         FALSE</span></span>
-<span><span class="co">#&gt; 2         FALSE</span></span>
-<span><span class="co">#&gt; 3         FALSE</span></span>
-<span><span class="co">#&gt; 4         FALSE</span></span>
-<span><span class="co">#&gt; 5         FALSE</span></span>
-<span><span class="co">#&gt; 6         FALSE</span></span>
-<span><span class="co">#&gt; 7         FALSE</span></span>
-<span><span class="co">#&gt; 8         FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;   src_is_quoted all_na</span></span>
+<span><span class="co">#&gt; 1         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 2         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 3         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 4         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 5         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 6         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 7         FALSE  FALSE</span></span>
+<span><span class="co">#&gt; 8         FALSE  FALSE</span></span></code></pre></div>
 <p>The <code><a href="../reference/file_schema_dsv.html">file_schema_dsv()</a></code> function returns a list with many
 useful information about the input file, including the
 <code>schema</code> data frame that describes the columns found in the
@@ -470,17 +470,17 @@ repository.</p>
 <span><span class="co">#&gt; 8              Issue              Issue character      TEXT             Issue</span></span>
 <span><span class="co">#&gt; 9            Art_No_            Art_No_ character      TEXT          Art. No.</span></span>
 <span><span class="co">#&gt; 10        Page_start         Page_start character      TEXT        Page start</span></span>
-<span><span class="co">#&gt;    src_types src_is_quoted</span></span>
-<span><span class="co">#&gt; 1       text          TRUE</span></span>
-<span><span class="co">#&gt; 2       text          TRUE</span></span>
-<span><span class="co">#&gt; 3       text          TRUE</span></span>
-<span><span class="co">#&gt; 4       text          TRUE</span></span>
-<span><span class="co">#&gt; 5       text          TRUE</span></span>
-<span><span class="co">#&gt; 6       text          TRUE</span></span>
-<span><span class="co">#&gt; 7       text          TRUE</span></span>
-<span><span class="co">#&gt; 8       text          TRUE</span></span>
-<span><span class="co">#&gt; 9       text          TRUE</span></span>
-<span><span class="co">#&gt; 10      text          TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt;    src_types src_is_quoted all_na</span></span>
+<span><span class="co">#&gt; 1       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 2       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 3       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 4       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 5       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 6       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 7       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 8       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 9       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 10      text          TRUE  FALSE</span></span></code></pre></div>
 <p>The <code>src_names</code> column contains the original column names
 found in the input file. As we can see, there are some problematic
 column names, such as <code>Author(s) ID</code>,
@@ -513,17 +513,17 @@ conflicts with SQLite reserved keywords (e.g., <code>Year</code>).</p>
 <span><span class="co">#&gt; 8              [Issue]              Issue character      TEXT             Issue</span></span>
 <span><span class="co">#&gt; 9           [Art. No.]           Art. No. character      TEXT          Art. No.</span></span>
 <span><span class="co">#&gt; 10        [Page start]         Page start character      TEXT        Page start</span></span>
-<span><span class="co">#&gt;    src_types src_is_quoted</span></span>
-<span><span class="co">#&gt; 1       text          TRUE</span></span>
-<span><span class="co">#&gt; 2       text          TRUE</span></span>
-<span><span class="co">#&gt; 3       text          TRUE</span></span>
-<span><span class="co">#&gt; 4       text          TRUE</span></span>
-<span><span class="co">#&gt; 5       text          TRUE</span></span>
-<span><span class="co">#&gt; 6       text          TRUE</span></span>
-<span><span class="co">#&gt; 7       text          TRUE</span></span>
-<span><span class="co">#&gt; 8       text          TRUE</span></span>
-<span><span class="co">#&gt; 9       text          TRUE</span></span>
-<span><span class="co">#&gt; 10      text          TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt;    src_types src_is_quoted all_na</span></span>
+<span><span class="co">#&gt; 1       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 2       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 3       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 4       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 5       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 6       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 7       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 8       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 9       text          TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 10      text          TRUE  FALSE</span></span></code></pre></div>
 <p>As we can see, now the column names have been enclosed in square
 brackets (<code>[</code> and <code>]</code>) to make them valid SQLite
 identifiers. This quoting convention allows the use of special

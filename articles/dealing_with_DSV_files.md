@@ -46,7 +46,7 @@ First, we download the data from the repo:
 library("piggyback", quietly = TRUE)
 pb_download(file = "DOSE_V2.10.zip", dest = tempdir(),
             repo = "fab-algo/RSQLite.toolkit-tests", tag = "latest")
-#> ⠙ 1 items, page 1 | 34ms
+#> ⠙ 1 items, page 1 | 35ms
 
 unzip(zipfile = file.path(tempdir(), "DOSE_V2.10.zip"), exdir = tempdir())
 dir(file.path(tempdir(), "DOSE_V2.10"))
@@ -200,15 +200,15 @@ f_schema1$schema[1:8, ]
 #> 6    grp_lcu            grp_lcu   numeric      REAL    grp_lcu      text
 #> 7        pop                pop   numeric      REAL        pop      text
 #> 8 grp_pc_lcu         grp_pc_lcu   numeric      REAL grp_pc_lcu      text
-#>   src_is_quoted
-#> 1         FALSE
-#> 2         FALSE
-#> 3         FALSE
-#> 4         FALSE
-#> 5         FALSE
-#> 6         FALSE
-#> 7         FALSE
-#> 8         FALSE
+#>   src_is_quoted all_na
+#> 1         FALSE  FALSE
+#> 2         FALSE  FALSE
+#> 3         FALSE  FALSE
+#> 4         FALSE  FALSE
+#> 5         FALSE  FALSE
+#> 6         FALSE  FALSE
+#> 7         FALSE  FALSE
+#> 8         FALSE  FALSE
 ```
 
 The
@@ -385,17 +385,17 @@ f_schema2$schema[1:10, ]
 #> 8              Issue              Issue character      TEXT             Issue
 #> 9            Art_No_            Art_No_ character      TEXT          Art. No.
 #> 10        Page_start         Page_start character      TEXT        Page start
-#>    src_types src_is_quoted
-#> 1       text          TRUE
-#> 2       text          TRUE
-#> 3       text          TRUE
-#> 4       text          TRUE
-#> 5       text          TRUE
-#> 6       text          TRUE
-#> 7       text          TRUE
-#> 8       text          TRUE
-#> 9       text          TRUE
-#> 10      text          TRUE
+#>    src_types src_is_quoted all_na
+#> 1       text          TRUE  FALSE
+#> 2       text          TRUE  FALSE
+#> 3       text          TRUE  FALSE
+#> 4       text          TRUE  FALSE
+#> 5       text          TRUE  FALSE
+#> 6       text          TRUE  FALSE
+#> 7       text          TRUE  FALSE
+#> 8       text          TRUE  FALSE
+#> 9       text          TRUE  FALSE
+#> 10      text          TRUE  FALSE
 ```
 
 The `src_names` column contains the original column names found in the
@@ -431,17 +431,17 @@ f_schema2$schema[1:10, ]
 #> 8              [Issue]              Issue character      TEXT             Issue
 #> 9           [Art. No.]           Art. No. character      TEXT          Art. No.
 #> 10        [Page start]         Page start character      TEXT        Page start
-#>    src_types src_is_quoted
-#> 1       text          TRUE
-#> 2       text          TRUE
-#> 3       text          TRUE
-#> 4       text          TRUE
-#> 5       text          TRUE
-#> 6       text          TRUE
-#> 7       text          TRUE
-#> 8       text          TRUE
-#> 9       text          TRUE
-#> 10      text          TRUE
+#>    src_types src_is_quoted all_na
+#> 1       text          TRUE  FALSE
+#> 2       text          TRUE  FALSE
+#> 3       text          TRUE  FALSE
+#> 4       text          TRUE  FALSE
+#> 5       text          TRUE  FALSE
+#> 6       text          TRUE  FALSE
+#> 7       text          TRUE  FALSE
+#> 8       text          TRUE  FALSE
+#> 9       text          TRUE  FALSE
+#> 10      text          TRUE  FALSE
 ```
 
 As we can see, now the column names have been enclosed in square
