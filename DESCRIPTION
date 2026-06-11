@@ -1,7 +1,7 @@
 Package: RSQLite.toolkit
 Type: Package
 Title: Load Data in SQLite from Tabular Files
-Version: 0.1.2.9040
+Version: 0.1.2.9050
 Authors@R: person("Ludovico G.", "Beretta", , "ludovicogiovanni.beretta@gmail.com", role = c("aut", "cre", "cph"))
 Description: A lightweight wrapper around the 'RSQLite' package for streamlined loading of
     data from tabular files (i,e. text delimited files like Comma Separated Values and
@@ -18,7 +18,6 @@ Imports:
 	arrow
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 URL: https://github.com/fab-algo/RSQLite.toolkit, https://fab-algo.github.io/RSQLite.toolkit/
 BugReports: https://github.com/fab-algo/RSQLite.toolkit/issues
 Suggests: 
@@ -26,3 +25,4 @@ Suggests:
     rmarkdown,
     piggyback
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

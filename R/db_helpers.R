@@ -124,7 +124,7 @@ dbExecFile <- function(input_file, dbcon, plist = NULL) {
                              match_start + match_length - 1)
 
         quoted_counter <- quoted_counter + 1
-        quoted_id <- paste0("@@@QUOTED_", quoted_counter)
+        quoted_id <- paste0("@@@QUOTED_", quoted_counter, "@@@")
         list_quoted[[quoted_id]] <- match_text
 
         out_text <- paste0(out_text, pre_text, quoted_id)
