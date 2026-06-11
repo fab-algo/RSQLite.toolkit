@@ -10,6 +10,9 @@
 - Fixed bug when
   [`dbTableFromDSV()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromDSV.md)
   is called with `skip > 0` among the parameters passed to `scan`.
+- Fixed bug in
+  [`dbExecFile()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbExecFile.md)
+  when quoted strings in SQL files were more then 9 elements.
 - Added support for reading a group of lines of length `nlines` from the
   DSV file by `chunk_size` blocks.
 - It is now possible to combine the `skip`, `nlines` and `chunk_size`

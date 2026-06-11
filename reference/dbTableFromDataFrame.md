@@ -123,11 +123,11 @@ dbListFields(dbcon, "SAMPLE_DATA")
 #> [1] "id"      "name"    "F_value" "active"  "F_date"  "SEQ"    
 dbGetQuery(dbcon, "SELECT * FROM SAMPLE_DATA LIMIT 5")
 #>   id   name  F_value active F_date SEQ
-#> 1  1 Item_1 58.86305      1  20612   1
-#> 2  2 Item_2 63.76366      0  20613   2
-#> 3  3 Item_3 86.00795      1  20614   3
-#> 4  4 Item_4 57.12254      0  20615   4
-#> 5  5 Item_5 26.04670      1  20616   5
+#> 1  1 Item_1 58.86305      1  20615   1
+#> 2  2 Item_2 63.76366      0  20616   2
+#> 3  3 Item_3 86.00795      1  20617   3
+#> 4  4 Item_4 57.12254      0  20618   4
+#> 5  5 Item_5 26.04670      1  20619   5
 
 # Load with column selection and custom naming
 dbTableFromDataFrame(
@@ -141,11 +141,11 @@ dbTableFromDataFrame(
 
 dbGetQuery(dbcon, "SELECT * FROM SAMPLE_SUBSET LIMIT 5")
 #>   ID ITEM_NAME ITEM_VALUE IS_ACTIVE DATE_CREATED
-#> 1  1    Item_1   58.86305         1        20612
-#> 2  2    Item_2   63.76366         0        20613
-#> 3  3    Item_3   86.00795         1        20614
-#> 4  4    Item_4   57.12254         0        20615
-#> 5  5    Item_5   26.04670         1        20616
+#> 1  1    Item_1   58.86305         1        20615
+#> 2  2    Item_2   63.76366         0        20616
+#> 3  3    Item_3   86.00795         1        20617
+#> 4  4    Item_4   57.12254         0        20618
+#> 5  5    Item_5   26.04670         1        20619
 
 # Clean up
 dbDisconnect(dbcon)

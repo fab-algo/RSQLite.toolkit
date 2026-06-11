@@ -10,13 +10,13 @@ Source:
 [`DESCRIPTION`](https://github.com/fab-algo/RSQLite.toolkit/blob/master/DESCRIPTION)
 
 Beretta L (2026). *RSQLite.toolkit: Load Data in SQLite from Tabular
-Files*. R package version 0.1.2.9040,
+Files*. R package version 0.1.2.9050,
 <https://github.com/fab-algo/RSQLite.toolkit>.
 
     @Manual{,
       title = {RSQLite.toolkit: Load Data in SQLite from Tabular Files},
       author = {Ludovico G. Beretta},
       year = {2026},
-      note = {R package version 0.1.2.9040},
+      note = {R package version 0.1.2.9050},
       url = {https://github.com/fab-algo/RSQLite.toolkit},
     }
