@@ -23,13 +23,19 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
+      # setup-r may fail transiently when api.r-hub.io is briefly unavailable
+      # (see https://github.com/r-lib/actions/issues/1086); retry once on failure.
+      - id: setup-r
+        continue-on-error: true
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Retry setup-r if it failed
+        if: steps.setup-r.outcome == 'failure'
+        uses: r-lib/actions/setup-r@v2
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -42,7 +48,7 @@ jobs:
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
         with:
           clean: false
           branch: gh-pages
