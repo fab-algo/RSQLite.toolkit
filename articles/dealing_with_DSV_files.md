@@ -46,7 +46,7 @@ First, we download the data from the repo:
 library("piggyback", quietly = TRUE)
 pb_download(file = "DOSE_V2.10.zip", dest = tempdir(),
             repo = "fab-algo/RSQLite.toolkit-tests", tag = "latest")
-#> ⠙ 1 items, page 1 | 34ms
+#> ⠙ 1 items, page 1 | 46ms
 
 unzip(zipfile = file.path(tempdir(), "DOSE_V2.10.zip"), exdir = tempdir())
 dir(file.path(tempdir(), "DOSE_V2.10"))
