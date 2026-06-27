@@ -18,7 +18,7 @@
 - It is now possible to combine the `skip`, `nlines` and `chunk_size`
   parameters to read a specific portion of the DSV file.
 - Added support for automatic conversion of percentage numbers
-  (i.e. columns ending with `%`) in DSV files.
+  (i.e. numeric strings ending with `%`) in DSV files.
 - In function
   [`file_schema_dsv()`](https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_dsv.md)
   added the `all_na` column to the schema of the DSV file, which
