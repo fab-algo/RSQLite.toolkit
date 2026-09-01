@@ -15,7 +15,9 @@ export(file_schema_xlsx)
 export(format_column_names)
 import(RSQLite)
 importFrom(DBI,.SQL92Keywords)
-importFrom(arrow,FeatherReader)
-importFrom(arrow,ReadableFile)
-importFrom(arrow,read_feather)
+importFrom(arrow,
+  FeatherReader,
+  ReadableFile,
+  read_feather
+)
 importFrom(openxlsx2,wb_to_df)

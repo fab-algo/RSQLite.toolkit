@@ -11,7 +11,7 @@ status](https://www.r-pkg.org/badges/version/RSQLite.toolkit)](https://CRAN.R-pr
 <!-- badges: end -->
 
 RSQLite.toolkit is a lightweight wrapper around the RSQLite package for
-streamlined loading of data from **tabular files** (i.e. text delimited
+streamlined loading of data from **tabular files** (i.e. delimited text
 files like CSV and TSV, Microsoft Excel, and Arrow IPC files) in SQLite
 databases.
 
