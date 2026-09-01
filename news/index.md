@@ -1,6 +1,16 @@
 # Changelog
 
+## RSQLite.toolkit 0.1.4
+
+- Using the `piggyback` package in the vignette “Dealing with DSV files”
+  caused an “API rate limit exceeded” error when accessing the examples
+  files stored in a GitHub repository. To avoid this problem, the code
+  has been modified implementing a function that downloads the files
+  from their static URL.
+
 ## RSQLite.toolkit 0.1.3
+
+CRAN release: 2026-06-27
 
 - Fixed bug in
   [`file_schema_dsv()`](https://fab-algo.github.io/RSQLite.toolkit/reference/file_schema_dsv.md)

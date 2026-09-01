@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,21 +90,64 @@ etc.).</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/fab-algo/RSQLite.toolkit" class="external-link">RSQLite.toolkit</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: RSQLite</span></span></code></pre></div>
 <p>Let’s start with a simple example using real-world data. To retrieve
-some example files, we can use the package <a href="https://github.com/ropensci/piggyback" class="external-link">piggyback</a> to download
-public datasets that have been stored in the <a href="https://github.com/fab-algo/RSQLite.toolkit-tests" class="external-link">RSQLite.toolkit-tests</a>
+some example files, we can download public datasets stored in the <a href="https://github.com/fab-algo/RSQLite.toolkit-tests" class="external-link">RSQLite.toolkit-tests</a>
 GitHub repository<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The original source of each dataset is described in the
-README page of the GitHub repo.&lt;/p&gt;"><sup>1</sup></a>.</p>
+README page of the GitHub repo.&lt;/p&gt;"><sup>1</sup></a> directly from its release assets, avoiding
+GitHub API rate-limit issues for anonymous requests.</p>
 <p>The first example will deal with a table contained in a “standard”
 CSV file (i.e. a text file with the first line containing column names,
 using the comma to separate fields’ values and the dot as a decimal
 separator for numbers); we will load the data in a new table inside a
 SQLite database using the <code><a href="../reference/dbTableFromDSV.html">dbTableFromDSV()</a></code> function.</p>
-<p>First, we download the data from the repo:</p>
+<p>First, we set up a function to download the data from the repo:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://docs.ropensci.org/piggyback" class="external-link">"piggyback"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://docs.ropensci.org/piggyback/reference/pb_download.html" class="external-link">pb_download</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"DOSE_V2.10.zip"</span>, dest <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>            repo <span class="op">=</span> <span class="st">"fab-algo/RSQLite.toolkit-tests"</span>, tag <span class="op">=</span> <span class="st">"latest"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ⠙ 1 items, page 1 | 46ms</span></span>
+<code class="sourceCode R"><span><span class="va">download_release_asset</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">file</span>, <span class="va">dest</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                   <span class="va">repo</span> <span class="op">=</span> <span class="st">"fab-algo/RSQLite.toolkit-tests"</span>,</span>
+<span>                                   <span class="va">tag</span> <span class="op">=</span> <span class="st">"latest"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">asset_name</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/URLencode.html" class="external-link">URLencode</a></span><span class="op">(</span><span class="va">file</span>, reserved <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="va">download_url</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">tag</span>, <span class="st">"latest"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"https://github.com/%s/releases/latest/download/%s"</span>,</span>
+<span>            <span class="va">repo</span>, <span class="va">asset_name</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"https://github.com/%s/releases/download/%s/%s"</span>,</span>
+<span>            <span class="va">repo</span>, <span class="va">tag</span>, <span class="va">asset_name</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">destfile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dest</span>, <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">download_problem</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers</a></span><span class="op">(</span></span>
+<span>      <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="va">download_url</span>, destfile <span class="op">=</span> <span class="va">destfile</span>, mode <span class="op">=</span> <span class="st">"wb"</span>,</span>
+<span>                           quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      warning <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">warning</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">download_problem</span> <span class="op">&lt;&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">warning</span><span class="op">)</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">invokeRestart</a></span><span class="op">(</span><span class="st">"muffleWarning"</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">error</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">download_problem</span> <span class="op">&lt;&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">error</span><span class="op">)</span></span>
+<span>      <span class="cn">NA_integer_</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">result</span>, <span class="fl">0L</span><span class="op">)</span> <span class="op">||</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">destfile</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">message</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
+<span>      <span class="st">"Failed to download '%s' from '%s'. Check that the release asset exists and that network access to GitHub is available."</span>,</span>
+<span>      <span class="va">file</span>, <span class="va">repo</span></span>
+<span>    <span class="op">)</span></span>
+<span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">download_problem</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">message</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%s Original error: %s"</span>, <span class="va">message</span>, <span class="va">download_problem</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="va">message</span>, call. <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="va">destfile</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Now we can download the first dataset:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">download_release_asset</span><span class="op">(</span><span class="st">"DOSE_V2.10.zip"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/unzip.html" class="external-link">unzip</a></span><span class="op">(</span>zipfile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"DOSE_V2.10.zip"</span><span class="op">)</span>, exdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"DOSE_V2.10"</span><span class="op">)</span><span class="op">)</span></span>
@@ -115,14 +158,14 @@ SQLite database using the <code><a href="../reference/dbTableFromDSV.html">dbTab
 <code>DOSE_V2.10.csv</code> file that contains the dataset we are
 interested in. We can now check the number of rows in the input
 file:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/count.fields.html" class="external-link">count.fields</a></span><span class="op">(</span><span class="va">data_file</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">n_rows</span></span>
 <span><span class="co">#&gt; [1] 46852</span></span></code></pre></div>
 <p>So we expect to have 46851 records in the SQLite table at the end of
 the import process. Now we connect to a sample database
 (i.e. <code>tests.sqlite</code>):</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">dbConnect</span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tests.sqlite"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>and move the dataset in a table there, calling the
 <code><a href="../reference/dbTableFromDSV.html">dbTableFromDSV()</a></code> function specifying the connection to the
@@ -131,7 +174,7 @@ database (i.e., <code>dbcon</code> parameter) and the table name (i.e.,
 parameters for the CSV file structure (i.e., <code>header = TRUE</code>,
 <code>sep = ","</code>, <code>dec = "."</code>, <code>grp = ""</code>)
 since the default values will be fine.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## do not run: error</span></span>
 <span><span class="fu"><a href="../reference/dbTableFromDSV.html">dbTableFromDSV</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">data_file</span>, dbcon <span class="op">=</span> <span class="va">dbcon</span>, table_name <span class="op">=</span> <span class="st">"DOSE"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
@@ -276,13 +319,13 @@ system; in this file the UTF-8 encoding is used.</li>
 <li>to tell the <code><a href="https://rdrr.io/r/base/scan.html" class="external-link">base::scan()</a></code> function that the input file
 is encoded in UTF-8: <code>fileEncoding = "UTF-8"</code>.</li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_schema1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/file_schema_dsv.html">file_schema_dsv</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">data_file</span>,</span>
 <span>                             quote <span class="op">=</span> <span class="st">"\""</span>, na.strings <span class="op">=</span> <span class="st">""</span>,</span>
 <span>                             comment.char <span class="op">=</span> <span class="st">""</span>, fileEncoding <span class="op">=</span> <span class="st">"UTF-8"</span><span class="op">)</span></span></code></pre></div>
 <p>Now we can see that the guessed schema is correct. Let’s look at the
 first few rows of the file schema created using these parameters:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_schema1</span><span class="op">$</span><span class="va">schema</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;    col_names col_names_unquoted col_types sql_types  src_names src_types</span></span>
 <span><span class="co">#&gt; 1    country            country character      TEXT    country      text</span></span>
@@ -314,7 +357,7 @@ column names (see next section for more details).</p>
 <p>Now we can re-run the <code><a href="../reference/dbTableFromDSV.html">dbTableFromDSV()</a></code> function
 specifying the correct parameters to interpret the data in the input
 file:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/dbTableFromDSV.html">dbTableFromDSV</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">data_file</span>, dbcon <span class="op">=</span> <span class="va">dbcon</span>, table_name <span class="op">=</span> <span class="st">"DOSE"</span>,</span>
 <span>               drop_table <span class="op">=</span> <span class="cn">TRUE</span>, quote <span class="op">=</span> <span class="st">"\""</span>, na.strings <span class="op">=</span> <span class="st">""</span>,</span>
 <span>               comment.char <span class="op">=</span> <span class="st">""</span>, fileEncoding <span class="op">=</span> <span class="st">"UTF-8"</span><span class="op">)</span></span>
@@ -323,7 +366,7 @@ file:</p>
 table. We can check that by listing the tables in the database, the
 fields in the <code>DOSE</code> table and counting the number of records
 in it:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">dbListTables</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "DOSE"</span></span>
 <span></span>
@@ -437,12 +480,8 @@ table using the <code>col_names</code> parameter of the
 use a DSV file with problematic column names that we will download from
 the <a href="https://github.com/fab-algo/RSQLite.toolkit-tests" class="external-link">RSQLite.toolkit-tests</a>
 repository.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://docs.ropensci.org/piggyback" class="external-link">"piggyback"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://docs.ropensci.org/piggyback/reference/pb_download.html" class="external-link">pb_download</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"Blockchain_Banking_Scopus_Dataset_2015_2025.zip"</span>,</span>
-<span>            dest <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, repo <span class="op">=</span> <span class="st">"fab-algo/RSQLite.toolkit-tests"</span>,</span>
-<span>            tag <span class="op">=</span> <span class="st">"latest"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">download_release_asset</span><span class="op">(</span><span class="st">"Blockchain_Banking_Scopus_Dataset_2015_2025.zip"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/unzip.html" class="external-link">unzip</a></span><span class="op">(</span>zipfile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                          <span class="st">"Blockchain_Banking_Scopus_Dataset_2015_2025.zip"</span><span class="op">)</span>,</span>
@@ -453,7 +492,7 @@ repository.</p>
 <span><span class="va">data_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                       <span class="st">"Blockchain/Blockchain_Banking_Scopus_Dataset_2015_2025.csv"</span><span class="op">)</span> <span class="co"># nolint</span></span></code></pre></div>
 <p>Now we can inspect the column names used in the input file:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_schema2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/file_schema_dsv.html">file_schema_dsv</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">data_file</span>,</span>
 <span>                             quote <span class="op">=</span> <span class="st">"\""</span>, na.strings <span class="op">=</span> <span class="st">""</span>,</span>
 <span>                             comment.char <span class="op">=</span> <span class="st">""</span>, fileEncoding <span class="op">=</span> <span class="st">"UTF-8"</span><span class="op">)</span></span>
@@ -495,7 +534,7 @@ and some names have been prefixed with <code>F_</code> to avoid
 conflicts with SQLite reserved keywords (e.g., <code>Year</code>).</p>
 <p>Now let’s see how the column names are handled when using the
 <code>SQL_SERVER</code> method:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_schema2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/file_schema_dsv.html">file_schema_dsv</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">data_file</span>,</span>
 <span>                             quote <span class="op">=</span> <span class="st">"\""</span>, na.strings <span class="op">=</span> <span class="st">""</span>,</span>
 <span>                             id_quote_method <span class="op">=</span> <span class="st">"SQL_SERVER"</span>,</span>
@@ -530,7 +569,7 @@ identifiers. This quoting convention allows the use of special
 characters and spaces in column names without causing issues during
 database operations. We can test that by creating a new table in the
 database using this quoting method:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/dbTableFromDSV.html">dbTableFromDSV</a></span><span class="op">(</span>input_file <span class="op">=</span> <span class="va">data_file</span>,</span>
 <span>               dbcon <span class="op">=</span> <span class="va">dbcon</span>, table_name <span class="op">=</span> <span class="st">"BLOCKCHAIN_BANKING"</span>,</span>
 <span>               quote <span class="op">=</span> <span class="st">"\""</span>, na.strings <span class="op">=</span> <span class="st">""</span>,</span>
@@ -538,7 +577,7 @@ database using this quoting method:</p>
 <span>               id_quote_method <span class="op">=</span> <span class="st">"SQL_SERVER"</span>,</span>
 <span>               drop_table <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 389</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">dbListTables</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "BLOCKCHAIN_BANKING" "DOSE"</span></span>
 <span></span>
@@ -550,7 +589,7 @@ database using this quoting method:</p>
 <span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT COUNT(*) AS n_records FROM BLOCKCHAIN_BANKING"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   n_records</span></span>
 <span><span class="co">#&gt; 1       389</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -586,7 +625,7 @@ of the <code><a href="../reference/dbTableFromDSV.html">dbTableFromDSV()</a></co
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

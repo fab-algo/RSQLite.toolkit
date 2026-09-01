@@ -25,11 +25,10 @@ library(RSQLite.toolkit)
 ```
 
 Let’s start with a simple example using real-world data. To retrieve
-some example files, we can use the package
-[piggyback](https://github.com/ropensci/piggyback) to download public
-datasets that have been stored in the
+some example files, we can download public datasets stored in the
 [RSQLite.toolkit-tests](https://github.com/fab-algo/RSQLite.toolkit-tests)
-GitHub repository[^1].
+GitHub repository[^1] directly from its release assets, avoiding GitHub
+API rate-limit issues for anonymous requests.
 
 The first example will deal with a table contained in a “standard” CSV
 file (i.e. a text file with the first line containing column names,
@@ -39,14 +38,61 @@ SQLite database using the
 [`dbTableFromDSV()`](https://fab-algo.github.io/RSQLite.toolkit/reference/dbTableFromDSV.md)
 function.
 
-First, we download the data from the repo:
+First, we set up a function to download the data from the repo:
 
 ``` r
 
-library("piggyback", quietly = TRUE)
-pb_download(file = "DOSE_V2.10.zip", dest = tempdir(),
-            repo = "fab-algo/RSQLite.toolkit-tests", tag = "latest")
-#> ⠙ 1 items, page 1 | 46ms
+download_release_asset <- function(file, dest = tempdir(),
+                                   repo = "fab-algo/RSQLite.toolkit-tests",
+                                   tag = "latest") {
+  asset_name <- utils::URLencode(file, reserved = TRUE)
+  download_url <- if (identical(tag, "latest")) {
+    sprintf("https://github.com/%s/releases/latest/download/%s",
+            repo, asset_name)
+  } else {
+    sprintf("https://github.com/%s/releases/download/%s/%s",
+            repo, tag, asset_name)
+  }
+
+  destfile <- file.path(dest, basename(file))
+  download_problem <- NULL
+  result <- tryCatch(
+    withCallingHandlers(
+      utils::download.file(download_url, destfile = destfile, mode = "wb",
+                           quiet = TRUE),
+      warning = function(warning) {
+        download_problem <<- conditionMessage(warning)
+        invokeRestart("muffleWarning")
+      }
+    ),
+    error = function(error) {
+      download_problem <<- conditionMessage(error)
+      NA_integer_
+    }
+  )
+
+  if (!identical(result, 0L) || !file.exists(destfile)) {
+    message <- sprintf(
+      "Failed to download '%s' from '%s'. Check that the release asset exists and that network access to GitHub is available.",
+      file, repo
+    )
+
+    if (!is.null(download_problem)) {
+      message <- sprintf("%s Original error: %s", message, download_problem)
+    }
+
+    stop(message, call. = FALSE)
+  }
+
+  invisible(destfile)
+}
+```
+
+Now we can download the first dataset:
+
+``` r
+
+download_release_asset("DOSE_V2.10.zip")
 
 unzip(zipfile = file.path(tempdir(), "DOSE_V2.10.zip"), exdir = tempdir())
 dir(file.path(tempdir(), "DOSE_V2.10"))
@@ -349,11 +395,7 @@ repository.
 
 ``` r
 
-library("piggyback", quietly = TRUE)
-
-pb_download(file = "Blockchain_Banking_Scopus_Dataset_2015_2025.zip",
-            dest = tempdir(), repo = "fab-algo/RSQLite.toolkit-tests",
-            tag = "latest")
+download_release_asset("Blockchain_Banking_Scopus_Dataset_2015_2025.zip")
 
 unzip(zipfile = file.path(tempdir(),
                           "Blockchain_Banking_Scopus_Dataset_2015_2025.zip"),

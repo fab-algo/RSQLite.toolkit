@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,11 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.3" id="rsqlitetoolkit-013">RSQLite.toolkit 0.1.3<a class="anchor" aria-label="anchor" href="#rsqlitetoolkit-013"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.1.4" id="rsqlitetoolkit-014">RSQLite.toolkit 0.1.4<a class="anchor" aria-label="anchor" href="#rsqlitetoolkit-014"></a></h2>
+<ul><li>Using the <code>piggyback</code> package in the vignette “Dealing with DSV files” caused an “API rate limit exceeded” error when accessing the examples files stored in a GitHub repository. To avoid this problem, the code has been modified implementing a function that downloads the files from their static URL.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3" id="rsqlitetoolkit-013">RSQLite.toolkit 0.1.3<a class="anchor" aria-label="anchor" href="#rsqlitetoolkit-013"></a></h2><p class="text-muted">CRAN release: 2026-06-27</p>
 <ul><li>Fixed bug in <code><a href="../reference/file_schema_dsv.html">file_schema_dsv()</a></code> and <code><a href="../reference/dbTableFromDSV.html">dbTableFromDSV()</a></code> when 1A character is present in the DSV file.</li>
 <li>Fixed bug when <code><a href="../reference/dbTableFromDSV.html">dbTableFromDSV()</a></code> is called with <code>skip &gt; 0</code> among the parameters passed to <code>scan</code>.</li>
 <li>Fixed bug in <code><a href="../reference/dbExecFile.html">dbExecFile()</a></code> when quoted strings in SQL files were more then 9 elements.</li>
@@ -63,7 +67,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
