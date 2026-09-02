@@ -165,11 +165,11 @@ from the data frame.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "id"      "name"    "F_value" "active"  "F_date"  "SEQ"    </span>
 <span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM SAMPLE_DATA LIMIT 5"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   id   name  F_value active F_date SEQ</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 Item_1 58.86305      1  20697   1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2 Item_2 63.76366      0  20698   2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3 Item_3 86.00795      1  20699   3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4 Item_4 57.12254      0  20700   4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5 Item_5 26.04670      1  20701   5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 Item_1 58.86305      1  20698   1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2 Item_2 63.76366      0  20699   2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3 Item_3 86.00795      1  20700   3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4 Item_4 57.12254      0  20701   4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5 Item_5 26.04670      1  20702   5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Load with column selection and custom naming</span></span></span>
 <span class="r-in"><span><span class="fu">dbTableFromDataFrame</span><span class="op">(</span></span></span>
@@ -183,11 +183,11 @@ from the data frame.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"SELECT * FROM SAMPLE_SUBSET LIMIT 5"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ID ITEM_NAME ITEM_VALUE IS_ACTIVE DATE_CREATED</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1    Item_1   58.86305         1        20697</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2    Item_2   63.76366         0        20698</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3    Item_3   86.00795         1        20699</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4    Item_4   57.12254         0        20700</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5    Item_5   26.04670         1        20701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1    Item_1   58.86305         1        20698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2    Item_2   63.76366         0        20699</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3    Item_3   86.00795         1        20700</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  4    Item_4   57.12254         0        20701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5    Item_5   26.04670         1        20702</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Clean up</span></span></span>
 <span class="r-in"><span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></span>
