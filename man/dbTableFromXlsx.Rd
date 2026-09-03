@@ -143,7 +143,8 @@ dbTableFromXlsx(
   cols_range = "A:S",
   drop_table = TRUE,
   col_import = c("ID", "Large_B_P", "Large_ROE", "Large_S_P",
-                 "Annual_Return_7", "Excess_Return_8", "Systematic_Risk_9")
+                 "Annual_Return_7", "Excess_Return_8", "Systematic_Risk_9"),
+  rows = c(2:23) 
 )
 
 # Check the imported data
