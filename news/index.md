@@ -1,5 +1,9 @@
 # Changelog
 
+## RSQLite.toolkit 0.1.5
+
+- Minor improvements to documentation.
+
 ## RSQLite.toolkit 0.1.4
 
 - Using the `piggyback` package in the vignette “Dealing with DSV files”

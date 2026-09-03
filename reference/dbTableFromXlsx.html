@@ -15,7 +15,7 @@ create it."><meta property="og:image" content="https://fab-algo.github.io/RSQLit
 
     <a class="navbar-brand me-2" href="../index.html">RSQLite.toolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -264,9 +264,10 @@ from <code>input_file</code>.</p>
 <span class="r-in"><span>  cols_range <span class="op">=</span> <span class="st">"A:S"</span>,</span></span>
 <span class="r-in"><span>  drop_table <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  col_import <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ID"</span>, <span class="st">"Large_B_P"</span>, <span class="st">"Large_ROE"</span>, <span class="st">"Large_S_P"</span>,</span></span>
-<span class="r-in"><span>                 <span class="st">"Annual_Return_7"</span>, <span class="st">"Excess_Return_8"</span>, <span class="st">"Systematic_Risk_9"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                 <span class="st">"Annual_Return_7"</span>, <span class="st">"Excess_Return_8"</span>, <span class="st">"Systematic_Risk_9"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">23</span><span class="op">)</span> </span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 63</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 21</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Check the imported data</span></span></span>
 <span class="r-in"><span><span class="fu">dbListFields</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"PORTFOLIO_PERF"</span><span class="op">)</span></span></span>
