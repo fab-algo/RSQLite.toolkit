@@ -4,7 +4,7 @@ Title: Load Data in SQLite from Tabular Files
 Version: 0.1.4
 Authors@R: person("Ludovico G.", "Beretta", , "ludovicogiovanni.beretta@gmail.com", role = c("aut", "cre", "cph"))
 Description: A lightweight wrapper around the 'RSQLite' package for streamlined loading of
-    data from tabular files (i,e. text delimited files like Comma Separated Values and
+    data from tabular files (i,e. delimited text files like Comma Separated Values and
     Tab Separated Values, Microsoft Excel, and Arrow Inter-process Communication files)
     in 'SQLite' databases. Includes helper functions for inspecting the structure of
     the input files, and some functions to simplify activities on the 'SQLite' tables.
