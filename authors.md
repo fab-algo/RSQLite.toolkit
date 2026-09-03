@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/fab-algo/RSQLite.toolkit/blob/v0.1.4/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/fab-algo/RSQLite.toolkit/blob/master/DESCRIPTION)
 
 Beretta L (2026). *RSQLite.toolkit: Load Data in SQLite from Tabular
 Files*. R package version 0.1.4,
